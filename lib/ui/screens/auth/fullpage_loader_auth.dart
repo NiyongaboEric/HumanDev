@@ -1,0 +1,288 @@
+import 'dart:convert';
+
+import 'package:connectivity/connectivity.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:getwidget/getwidget.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../../data/auth/model/auth_response.dart';
+import '../../../data/constants/shared_prefs.dart';
+import '../../utilities/custom_colors.dart';
+import '../../widgets/constants/offline_model.dart';
+import 'auth_bloc/auth_bloc.dart';
+
+var sl = GetIt.instance;
+
+class FullPageLoaderAuth extends StatefulWidget {
+  const FullPageLoaderAuth({super.key});
+
+  @override
+  State<FullPageLoaderAuth> createState() => _FullPageLoaderAuthState();
+}
+
+class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
+  ConnectivityResult _connectivityResult = ConnectivityResult.none;
+  bool hasSpace = false;
+  bool logout = false;
+  final Connectivity _connectivity = Connectivity();
+  bool refreshSuccess = false;
+  var prefs = sl<SharedPreferences>();
+  Key startLoader = const Key("start-loader");
+  bool isCurrentPage = false;
+
+  // Get User Data
+  void _getSpaces() {
+    context.read<SpaceBloc>().add(const SpaceEventGetSpaces());
+  }
+
+  // Logout
+  void _logout() {
+    context.read<AuthBloc>().add(const AuthEventLogout());
+  }
+
+  saveOfflineToDB() {
+    // Tuition Fees
+    var tuitionObject = prefs.getString("offlineTuitionFee");
+    if (tuitionObject != null) {
+      List<OfflineModel> offlineTuitionFee = json.decode(tuitionObject);
+      for (var element in offlineTuitionFee) {
+          JournalRequest journalRequest = element.data;
+          context.read<JournalBloc>().add(
+                AddNewJournalEvent(
+                  journalRequest,
+                ),
+              );
+        }
+    }
+  }
+
+  // Refresh Tokens
+  void _refreshTokens() {
+    var prefs = sl<SharedPreferenceModule>();
+    TokenResponse? token = prefs.getToken();
+    if (token != null) {
+      context.read<AuthBloc>().add(
+            AuthEventRefresh(
+              RefreshRequest(refresh: token.refreshToken),
+            ),
+          );
+    }
+  }
+
+  // Handle Get User Data State Change
+  void _handleRefreshStateChange(BuildContext context, AuthState state) {
+    var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
+    }
+    if (state.status == AuthStateStatus.authenticated) {
+      // Check network connectivity
+      if (_connectivityResult != ConnectivityResult.none) {
+        Future.delayed(const Duration(seconds: 5), () {
+          logger.d("Internet Connection Available");
+        });
+        _getSpaces();
+      } else {
+        logger.d("Internet Connection Not Available");
+        nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      }
+
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                ? GFToastPosition.TOP
+                                : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (_connectivityResult != ConnectivityResult.none) {
+        if (state.refreshFailure != null &&
+            state.refreshFailure!.contains("Invalid refresh token")) {
+          setState(() {
+            logout = true;
+          });
+          _logout();
+        } else {
+          GFToast.showToast(
+            state.refreshFailure,
+            context,
+            toastBorderRadius: 8.0,
+            toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                ? GFToastPosition.TOP
+                                : GFToastPosition.BOTTOM,
+            backgroundColor: CustomColor.red,
+            toastDuration: 6,
+          );
+        }
+      } else {
+        GFToast.showToast(
+          "No Internet Connection",
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                ? GFToastPosition.TOP
+                                : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+      // GFToast.showToast(
+      //   state.logoutFailure,
+      //   context,
+      //   toastBorderRadius: 8.0,
+      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                // ? GFToastPosition.TOP
+                                // : GFToastPosition.BOTTOM,
+      //   backgroundColor: CustomColor.red,
+      //   toastDuration: 6,
+      // );
+    }
+  }
+
+  // Handle Space State Change
+  void _handleSpaceStateChange(BuildContext context, SpaceState state) {
+    var prefs = sl<SharedPreferenceModule>();
+    if (state.status == SpaceStateStatus.success) {
+      // setState(() {
+      //   navigate = true;
+      // });
+      logger.i(prefs.getSpaces().first.id);
+      if (prefs.getSpaces().isNotEmpty) {
+        nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      }
+    }
+    if (state.status == SpaceStateStatus.error) {
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      }
+    }
+  }
+
+  // Handle Offline Tuition HTTP Req State Change
+  void _handleTuitionRequestStateChange(
+      BuildContext context, JournalState state) {
+    if (state.status == JournalStatus.success) {
+      GFToast.showToast(
+        "All Pending Records Saved",
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                ? GFToastPosition.TOP
+                                : GFToastPosition.BOTTOM,
+        backgroundColor: Colors.green.shade800,
+      );
+      prefs.remove("offlineTuitionFee");
+    }
+    if (state.status == JournalStatus.error) {
+      GFToast.showToast(
+        "Unable To Save Pending Records",
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                ? GFToastPosition.TOP
+                                : GFToastPosition.BOTTOM,
+        backgroundColor: CustomColor.red,
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _connectivity.onConnectivityChanged.listen((result) {
+      _connectivityResult = result;
+    });
+    _getSpaces();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: startLoader,
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction > 0.5) {
+          setState(() {
+            isCurrentPage = true;
+          });
+        } else {
+          setState(() {
+            isCurrentPage = false;
+          });
+        }
+      },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(
+            // listenWhen: (context, state) {
+            //   return true;
+            // },
+            listener: (context, state) {
+              // TODO: implement refresh listener
+              if (isCurrentPage) {
+                _handleRefreshStateChange(context, state);
+                _handleLogoutStateChange(context, state);
+              }
+            },
+          ),
+          BlocListener<JournalBloc, JournalState>(
+            listenWhen: (context, state) {
+              return true;
+            },
+            listener: (context, state) {
+              // TODO: implement tuitions listener
+              _handleTuitionRequestStateChange(context, state);
+            },
+          ),
+          BlocListener<SpaceBloc, SpaceState>(
+            listenWhen: (context, state) {
+              return true;
+            },
+            listener: (context, state) {
+              // TODO: implement space listener
+              _handleSpaceStateChange(context, state);
+            },
+          )
+        ],
+        child: const Scaffold(
+          body: Center(
+            child: GFLoader(type: GFLoaderType.ios),
+          ),
+        ),
+      ),
+    );
+  }
+}
