@@ -83,17 +83,18 @@ class _ParentsState extends State<Parents> {
     }
   }
 
-  void addParent(List<RelatedPersons> parents) {
+  void addParent(RelatedPersons parents) {
     setState(() {
-      selectedParents.addAll(parents);
+      selectedParents.add(parents);
     });
   }
 
-  void removeParent(List<RelatedPersons> parents) {
+  void removeParent(RelatedPersons parents) {
     setState(() {
-      for (var parent in parents) {
-        selectedParents.remove(parent);
-      }
+      // for (var parent in parents) {
+      //   selectedParents.remove(parent);
+      // }
+      selectedParents.remove(parents);
     });
   }
 
@@ -256,14 +257,15 @@ class _ParentsState extends State<Parents> {
     List<PersonModel> studentsWithoutParentNumber = [];
     for (var element in selectedParents) {
       if (element.phoneNumber == null) {
-        // Find students with this parent data
-        var studentsWithoutNumber = students.where((student) {
-          return student.relatedPersons?.any((relatedPerson) =>
-                  relatedPerson.id == element.id &&
-                  relatedPerson.phoneNumber == null) ??
-              false;
-        }).toList();
-        studentsWithoutParentNumber.addAll(studentsWithoutNumber);
+          logger.d(element.id);
+        // Find
+
+        // var studentsWithoutNumber = students.where((student) {
+        //   return student.relatedPersons?.every((relatedPerson) =>
+        //           relatedPerson.id == element.id) ??
+        //       false;
+        // }).toList();
+        // studentsWithoutParentNumber.addAll(studentsWithoutNumber);
       }
     }
 
@@ -306,8 +308,8 @@ class _ParentsState extends State<Parents> {
         ),
       );
     } else {
-      logger.d(
-          selectedParents.map((e) => "${e.firstName} ${e.lastName1}").toList());
+      // logger.d(
+      //     selectedParents.map((e) => "${e.firstName} ${e.lastName1}").toList());
       nextScreen(
           context: context, screen: destinationRoutes(widget.parentSection));
     }
@@ -449,35 +451,48 @@ class _ParentsState extends State<Parents> {
                                               .withOpacity(0.7),
                                     )),
                                 const SizedBox(width: 10),
-                                relative.relatedPersons == null ||
-                                relative.relatedPersons!.isEmpty ||
-                                relative.relatedPersons!.any((element) => element.phoneNumber == null) ||
-                                relative.relatedPersons!.first.phoneNumber!.isEmpty
-                                    ? Image.asset(
+                                (relative.relatedPersons == null ||
+                                        relative.relatedPersons!.isEmpty ||
+                                        relative.relatedPersons!.any(
+                                            (element) =>
+                                                element.phoneNumber != null &&
+                                                element
+                                                    .phoneNumber!.isNotEmpty))
+                                    ? const SizedBox()
+                                    : Image.asset(
                                         "assets/icons/null_number.png",
                                         width: 25,
                                         height: 25,
                                         color: Colors.red,
                                       )
-                                    : const SizedBox()
                               ],
                             )
                           : null,
                       trailing: parentSection == ParentSection.sms
                           ? Checkbox(
-                              activeColor: primaryColorSelection(parentSection),
-                              value: selectedParents
-                                  .contains(relative.relatedPersons?.first),
-                              onChanged: (value) {
-                                if (relative.relatedPersons != null) {
-                                  if (value!) {
-                                    addParent(relative.relatedPersons!);
-                                  } else {
-                                    removeParent(relative.relatedPersons!);
-                                  }
-                                }
-                              },
-                            )
+  activeColor: primaryColorSelection(parentSection),
+  value: selectedParents.any((selectedParent) {
+    return relative.relatedPersons?.contains(selectedParent) ?? false;
+  }),
+  onChanged: (value) {
+    if (relative.relatedPersons != null) {
+      if (value!) {
+        for (var relatedPerson in relative.relatedPersons!) {
+          if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+            addParent(relatedPerson);
+          }                                      
+        }
+      } else {
+        for (var relatedPerson in relative.relatedPersons!) {
+          if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+            removeParent(relatedPerson);
+          }
+        }
+      }
+    }
+  },
+)
+
                           : null,
                     ),
                     Divider(
@@ -506,51 +521,76 @@ class _ParentsState extends State<Parents> {
                 return Column(
                   children: [
                     ListTile(
+                      onTap: parentSection != ParentSection.sms
+                          ? () {
+                              nextScreen(
+                                context: context,
+                                screen: destinationRoutes(parentSection,
+                                    personData: relative),
+                              );
+                            }
+                          : null,
                       title: Text(
                           "${relative.firstName} ${relative.middleName ?? ""} ${relative.lastName1}",
                           style: TextStyle(
                             color: secondaryColorSelection(parentSection),
                             fontSize: CustomFontSize.medium,
                           )),
-                      subtitle: Row(
-                        children: [
-                          Text(
-                              "${DateFormat('dd MMM yy').format(date)} - Due: GHS ${50 + Random().nextInt(150 - 50)}",
-                              style: TextStyle(
-                                fontSize: CustomFontSize.small,
-                                color: secondaryColorSelection(parentSection)
-                                    .withOpacity(0.7),
-                              )),
-                          const SizedBox(width: 10),
-                          relative.relatedPersons == null ||
-                                  relative.relatedPersons!.isEmpty ||
-                                  relative.relatedPersons!.first.phoneNumber ==
-                                      null ||
-                                  relative.relatedPersons!.first.phoneNumber!
-                                      .isEmpty
-                              ? Image.asset(
-                                  "assets/icons/null_number.png",
-                                  width: 25,
-                                  height: 25,
-                                  color: Colors.red,
-                                )
-                              : const SizedBox()
-                        ],
-                      ),
-                      trailing: Checkbox(
-                        activeColor: Colors.orange,
-                        value: selectedParents
-                            .contains(relative.relatedPersons?.first),
-                        onChanged: (value) {
-                          if (relative.relatedPersons != null) {
-                            if (value!) {
-                              addParent(relative.relatedPersons!);
-                            } else {
-                              removeParent(relative.relatedPersons!);
-                            }
-                          }
-                        },
-                      ),
+                      subtitle: parentSection == ParentSection.sms
+                          ? Row(
+                              children: [
+                                Text(
+                                    "${DateFormat('dd MMM yy').format(date)} - Due: GHS ${50 + Random().nextInt(150 - 50)}",
+                                    style: TextStyle(
+                                      fontSize: CustomFontSize.small,
+                                      color:
+                                          secondaryColorSelection(parentSection)
+                                              .withOpacity(0.7),
+                                    )),
+                                const SizedBox(width: 10),
+                                (relative.relatedPersons == null ||
+                                        relative.relatedPersons!.isEmpty ||
+                                        relative.relatedPersons!.any(
+                                            (element) =>
+                                                element.phoneNumber != null &&
+                                                element
+                                                    .phoneNumber!.isNotEmpty))
+                                    ? const SizedBox()
+                                    : Image.asset(
+                                        "assets/icons/null_number.png",
+                                        width: 25,
+                                        height: 25,
+                                        color: Colors.red,
+                                      )
+                              ],
+                            )
+                          : null,
+                      trailing: parentSection == ParentSection.sms
+                          ? Checkbox(
+                              activeColor: primaryColorSelection(parentSection),
+                              value: selectedParents
+                                  .contains(relative.relatedPersons?.first),
+                              onChanged: (value) {
+                                if (relative.relatedPersons != null) {
+                                  if (value!) {
+                                    for (var relatedPerson in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+                                        addParent(relatedPerson);
+                                      }                                      
+                                    }
+                                    // addParent(relative.relatedPersons!);
+                                  } else {
+                                    for (var relatedPerson in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+                                        removeParent(relatedPerson);
+                                      }
+                                    }
+                                    // removeParent(relative.relatedPersons!);
+                                  }
+                                }
+                              },
+                            )
+                          : null,
                     ),
                     Divider(
                       color: Colors.grey.shade300,

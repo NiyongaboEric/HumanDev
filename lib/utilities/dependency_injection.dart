@@ -21,7 +21,7 @@ import '../ui/screens/main/transaction_records/paid_money/bloc/paid_money_bloc.d
 Future<void> init() async {
   final sl = GetIt.instance;
 
-  // Pref
+  // Pref / LocalStorage
   sl.registerSingletonAsync<SharedPreferences>(
       () => SharedPreferences.getInstance());
   sl.registerSingletonWithDependencies<SharedPreferenceModule>(

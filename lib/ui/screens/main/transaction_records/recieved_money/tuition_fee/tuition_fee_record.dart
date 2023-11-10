@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:connectivity/connectivity.dart';
+// import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -11,6 +11,7 @@ import 'package:seymo_pay_mobile_application/data/journal/model/request_model.da
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/currency_selector.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/constants/offline_model.dart';
@@ -43,7 +44,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   TextEditingController descriptionController = TextEditingController();
   var prefs = sl<SharedPreferences>();
 
-  final Connectivity _connectivity = Connectivity();
+  // final Connectivity _connectivity = Connectivity();
 
   String selectedPaymentMethod = 'Cash';
   String selectedCurrency = 'GHS';
@@ -155,9 +156,9 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
       print(state.successMessage);
       prefs.remove("offlineTuitionFee");
       GFToast.showToast(state.successMessage, context,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           toastDuration: 5,
           toastBorderRadius: 12.0,
           backgroundColor: Colors.green.shade700);
@@ -169,9 +170,9 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
       print(state.errorMessage);
       logger.f(state.errorMessage);
       GFToast.showToast(state.errorMessage!, context,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           toastDuration: 5,
           toastBorderRadius: 12.0,
           backgroundColor: CustomColor.red);
@@ -213,9 +214,11 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                               selectedPaymentMethod.isEmpty ||
                               selectedCurrency.isEmpty) {
                             GFToast.showToast("Please fill all fields", context,
-                                toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+                                toastPosition:
+                                    MediaQuery.of(context).viewInsets.bottom !=
+                                            0
+                                        ? GFToastPosition.TOP
+                                        : GFToastPosition.BOTTOM,
                                 backgroundColor: CustomColor.red,
                                 toastBorderRadius: 8.0,
                                 toastDuration: 5);
@@ -275,14 +278,32 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 14),
-                      child: Text(
-                        "GHS",
-                        style: TextStyle(
-                          fontSize: CustomFontSize.extraLarge,
-                          color:
-                              SecondaryColors.secondaryGreen.withOpacity(0.7),
+                    GestureDetector(
+                      onTap: () async {
+                        var value = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CurrencySelector(
+                              primaryColor: Colors.green,
+                              secondaryColor: SecondaryColors.secondaryGreen,
+                              initialCurrency: selectedCurrency,
+                            ),
+                          ),
+                        );
+                        logger.f(value);
+                        setState(() {
+                          selectedCurrency = value;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: Text(
+                          selectedCurrency,
+                          style: TextStyle(
+                            fontSize: CustomFontSize.extraLarge,
+                            color:
+                                SecondaryColors.secondaryGreen.withOpacity(0.7),
+                          ),
                         ),
                       ),
                     ),
@@ -386,9 +407,12 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                                   logger.d("Please fill all fields");
                                   GFToast.showToast(
                                       "Please fill all fields", context,
-                                      toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+                                      toastPosition: MediaQuery.of(context)
+                                                  .viewInsets
+                                                  .bottom !=
+                                              0
+                                          ? GFToastPosition.TOP
+                                          : GFToastPosition.BOTTOM,
                                       backgroundColor: CustomColor.red,
                                       toastBorderRadius: 8.0,
                                       toastDuration: 5);
