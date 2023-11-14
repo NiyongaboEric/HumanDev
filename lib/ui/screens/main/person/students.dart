@@ -128,12 +128,12 @@ class _StudentsState extends State<Students> {
         students.clear();
       });
       // Handle Success
-      for (var student in state.students) {
-        if (student.role == Role.STUDENT) {
-          if (!students.contains(student)) {
-            students.add(student);
+      for (var person in state.persons) {
+        if (person.role == Role.STUDENT) {
+          if (!students.contains(person)) {
+            students.add(person);
           } else {
-            students.remove(student);
+            students.remove(person);
           }
         }
       }

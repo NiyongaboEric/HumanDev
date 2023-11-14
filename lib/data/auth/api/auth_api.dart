@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 
+import '../../constants/constants.dart';
 import '../../constants/request_interceptor.dart';
 import '../model/auth_request.dart';
 import '../model/auth_response.dart';
@@ -26,7 +27,7 @@ class AuthApiImpl implements AuthApi {
     // TODO: implement register
     var interceptor = sl.get<RequestInterceptor>();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.post("https://dev.auth.seymo.ai/auth/registration",
+    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/registration",
         data: registrationRequest.toJson());
     logger.e(res.data);
     if (res.statusCode == 201) {
@@ -40,7 +41,7 @@ class AuthApiImpl implements AuthApi {
     // TODO: implement login
     var interceptor = sl.get<RequestInterceptor>();
     var dio = Dio()..interceptors.add(interceptor);
-    final res = await dio.post("https://dev.auth.seymo.ai/auth/login",
+    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/login",
         data: loginRequest.toJson());
     if (res.statusCode == 200) {
       return TokenResponse.fromJson(res.data);
@@ -53,7 +54,7 @@ class AuthApiImpl implements AuthApi {
     // TODO: implement refresh
     var interceptor = sl.get<RequestInterceptor>();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.post("https://dev.auth.seymo.ai/auth/refresh",
+    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/refresh",
         data: refreshRequest.toJson());
     if (res.statusCode == 200) {
       return TokenResponse.fromJson(res.data);
@@ -68,7 +69,7 @@ class AuthApiImpl implements AuthApi {
     var prefs = sl<SharedPreferenceModule>();
     var token = prefs.getToken();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.post("https://dev.auth.seymo.ai/auth/logout",
+    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/logout",
         data: token?.refreshToken);
     logger.f(res.data);
     if (res.statusCode == 200) {

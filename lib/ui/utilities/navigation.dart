@@ -27,3 +27,17 @@ nextScreenAndRemoveAll(
     (Route<dynamic> route) => false,
   );
 }
+
+// Navigate to previous screen and return data
+Future<dynamic> previousScreenWithData(
+    {required BuildContext context, required dynamic data}) async {
+  return Navigator.pop(context, data);
+}
+
+// Navigate to next screen and get data
+Future<dynamic> nextScreenAndGethData(
+    {required BuildContext context, required Widget screen}) async {
+  var data = await Navigator.push(
+      context, MaterialPageRoute(builder: (context) => screen));
+  return data;
+}

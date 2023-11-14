@@ -1,6 +1,5 @@
-
 class Constants {
-  static const String appName = "Seymo Pay";
+  static const String appName = "Seymo School";
 
   // List of all alphabets in uppercase
   static const List<String> alphabets = [
@@ -31,4 +30,7 @@ class Constants {
     'Y',
     'Z'
   ];
+
+  // Payment Payment Methods
+  static const paymentMethods = ['Cash', 'MOMO', "Bank", 'Others'];
 }

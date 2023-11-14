@@ -5,7 +5,7 @@ enum PersonStatus { initial, success, error }
 
 final class PersonState extends Equatable {
   final bool isLoading;
-  final List<PersonModel> students;
+  final List<PersonModel> persons;
   final List<PersonModel> relatives;
   final PersonRequest? personRequest;
   final PersonModel? personResponse;
@@ -15,7 +15,7 @@ final class PersonState extends Equatable {
 
   const PersonState({
     this.isLoading = false,
-    this.students = const <PersonModel>[],
+    this.persons = const <PersonModel>[],
     this.relatives = const <PersonModel>[],
     this.personRequest,
     this.personResponse,
@@ -26,7 +26,7 @@ final class PersonState extends Equatable {
 
   PersonState copyWith({
     bool? isLoading,
-    List<PersonModel>? students,
+    List<PersonModel>? persons,
     List<PersonModel>? relatives,
     PersonRequest? personRequest,
     PersonModel? personResponse,
@@ -36,7 +36,7 @@ final class PersonState extends Equatable {
   }) {
     return PersonState(
       isLoading: isLoading ?? this.isLoading,
-      students: students ?? this.students,
+      persons: persons ?? this.persons,
       relatives: relatives ?? this.relatives,
       personRequest: personRequest ?? this.personRequest,
       personResponse: personResponse ?? this.personResponse,
@@ -47,5 +47,5 @@ final class PersonState extends Equatable {
   }
 
   @override
-  List<Object> get props => [isLoading, students];
+  List<Object> get props => [isLoading, persons];
 }

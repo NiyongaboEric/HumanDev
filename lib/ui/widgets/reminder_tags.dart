@@ -39,6 +39,7 @@ class _ReminderTagsState extends State<ReminderTags> {
         (entry) {
           String tag = entry.value;
           return ChoiceChip(
+            showCheckmark: false,
             selectedColor: widget.btnColor,
             backgroundColor: widget.defaultColor,
             label: Text(

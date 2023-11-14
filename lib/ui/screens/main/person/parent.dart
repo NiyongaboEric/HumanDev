@@ -31,7 +31,7 @@ import 'bloc/person_bloc.dart';
 
 var sl = GetIt.instance;
 
-enum ParentSection { sms, letter, conversation, todo }
+enum ParentSection { sms, letter, conversation, todo, family, sendSMS }
 
 class Parents extends StatefulWidget {
   final ParentSection parentSection;
@@ -49,6 +49,8 @@ class _ParentsState extends State<Parents> {
   List<RelatedPersons> selectedParents = <RelatedPersons>[];
   List<PersonModel> students = <PersonModel>[];
   List<RelatedPersons> relatives = <RelatedPersons>[];
+  List<PersonModel> parents = <PersonModel>[];
+  List<PersonModel> teachers = <PersonModel>[];
   var prefs = sl<SharedPreferences>();
   bool showResults = false;
   List<PersonModel> searchResults = <PersonModel>[];
@@ -59,6 +61,20 @@ class _ParentsState extends State<Parents> {
   List<int> randomNumbers = [];
   bool isCurrentPage = false;
   Key parentData = const Key("parent-data");
+  List<bool> personSelection = [true, false, false];
+
+  // Update Person Selection
+  void updatePersonSelection(int index) {
+    setState(() {
+      for (int i = 0; i < personSelection.length; i++) {
+        if (i == index) {
+          personSelection[i] = true;
+        } else {
+          personSelection[i] = false;
+        }
+      }
+    });
+  }
 
   // Search Function
   search(String query) {
@@ -68,6 +84,7 @@ class _ParentsState extends State<Parents> {
         showResults = false;
       });
     } else {
+      
       setState(() {
         showResults = true;
         searchResults = students
@@ -108,7 +125,9 @@ class _ParentsState extends State<Parents> {
       case ParentSection.conversation:
         return SecondaryColors.secondaryYellow;
       case ParentSection.todo:
-        return Colors.pink;
+        return Colors.brown;
+      case ParentSection.family:
+        return SecondaryColors.secondaryPink;
       default:
         return Colors.white;
     }
@@ -123,6 +142,8 @@ class _ParentsState extends State<Parents> {
       case ParentSection.conversation:
         return Colors.amber;
       case ParentSection.todo:
+        return Colors.brown;
+      case ParentSection.family:
         return Colors.pink;
       default:
         return Colors.blue;
@@ -144,6 +165,8 @@ class _ParentsState extends State<Parents> {
           parent: personData!,
         );
       case ParentSection.todo:
+        return const SendSMS();
+      case ParentSection.family:
         return const SendSMS();
       default:
         return const SendSMS();
@@ -200,17 +223,30 @@ class _ParentsState extends State<Parents> {
     if (state.status == PersonStatus.success) {
       setState(() {
         students.clear();
+        parents.clear();
+        teachers.clear();
       });
-      for (var student in state.students) {
-        if (student.role == Role.STUDENT) {
-          if (!students.contains(student)) {
-            students.add(student);
-            if (student.relatedPersons != null) {
-              relatives.addAll(student.relatedPersons!);
+      for (var person in state.persons) {
+        if (person.role == Role.STUDENT) {
+          if (!students.contains(person)) {
+            students.add(person);
+            if (person.relatedPersons != null) {
+              relatives.addAll(person.relatedPersons!);
             }
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
+        if (person.role == Role.RELATIVE) {
+          if (!parents.contains(person)) {
+            parents.add(person);
+          }
+        }
+        if (person.role == Role.TEACHER) {
+          if (!teachers.contains(person)) {
+            teachers.add(person);
+          }
+        }
+
         students = students.toSet().toList();
       }
       var offlineRelatives = json.encode(students);
@@ -253,66 +289,79 @@ class _ParentsState extends State<Parents> {
         );
   }
 
-  navigate(BuildContext context) {
-    List<PersonModel> studentsWithoutParentNumber = [];
+  void navigate(BuildContext context) {
+    List<PersonModel> studentsWithoutParentNumber =
+        findStudentsWithoutParentNumber();
+
+    if (studentsWithoutParentNumber.isNotEmpty) {
+      showPhoneNumberErrorDialog(context, studentsWithoutParentNumber);
+    } else {
+      nextScreen(
+          context: context, screen: destinationRoutes(widget.parentSection));
+    }
+  }
+
+  List<PersonModel> findStudentsWithoutParentNumber() {
+    List<PersonModel> result = [];
+
     for (var element in selectedParents) {
       if (element.phoneNumber == null) {
-          logger.d(element.id);
+        logger.d(element.id);
         // Find
-
         // var studentsWithoutNumber = students.where((student) {
         //   return student.relatedPersons?.every((relatedPerson) =>
         //           relatedPerson.id == element.id) ??
         //       false;
         // }).toList();
-        // studentsWithoutParentNumber.addAll(studentsWithoutNumber);
+        // result.addAll(studentsWithoutNumber);
       }
     }
 
-    if (studentsWithoutParentNumber.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          actionsAlignment: MainAxisAlignment.center,
-          backgroundColor: Colors.orange.shade50,
-          icon: const Icon(
-            Icons.info_rounded,
-            color: Colors.red,
-            size: 56,
-          ),
-          content: Text(
-              "No phone number found for parents of: \n ${studentsWithoutParentNumber.map((element) {
-                return "${element.firstName}${element.middleName != null && element.middleName!.isNotEmpty ? ' ' : ''}${element.middleName ?? ''} ${element.lastName1}";
-              }).join(", ")}",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: CustomFontSize.medium,
-                color: secondaryColorSelection(widget.parentSection),
-              )),
-          actions: [
-            SizedBox(
-                width: 100,
-                child: FloatingActionButton.extended(
-                    backgroundColor: Colors.orange.shade100,
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    label: Text(
-                      "OK",
-                      style: TextStyle(
-                        fontSize: CustomFontSize.medium,
-                        color: SecondaryColors.secondaryOrange,
-                      ),
-                    )))
-          ],
+    return result;
+  }
+
+  void showPhoneNumberErrorDialog(
+      BuildContext context, List<PersonModel> studentsWithoutParentNumber) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        actionsAlignment: MainAxisAlignment.center,
+        backgroundColor: Colors.orange.shade50,
+        icon: const Icon(
+          Icons.info_rounded,
+          color: Colors.red,
+          size: 56,
         ),
-      );
-    } else {
-      // logger.d(
-      //     selectedParents.map((e) => "${e.firstName} ${e.lastName1}").toList());
-      nextScreen(
-          context: context, screen: destinationRoutes(widget.parentSection));
-    }
+        content: Text(
+          "No phone number found for parents of: \n ${studentsWithoutParentNumber.map((element) {
+            return "${element.firstName}${element.middleName != null && element.middleName!.isNotEmpty ? ' ' : ''}${element.middleName ?? ''} ${element.lastName1}";
+          }).join(", ")}",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: CustomFontSize.medium,
+            color: secondaryColorSelection(widget.parentSection),
+          ),
+        ),
+        actions: [
+          SizedBox(
+            width: 100,
+            child: FloatingActionButton.extended(
+              backgroundColor: Colors.orange.shade100,
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              label: Text(
+                "OK",
+                style: TextStyle(
+                  fontSize: CustomFontSize.medium,
+                  color: SecondaryColors.secondaryOrange,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Handle Reminder State Change
@@ -408,6 +457,20 @@ class _ParentsState extends State<Parents> {
   @override
   Widget build(BuildContext context) {
     ParentSection parentSection = widget.parentSection;
+    var toggleOptions = [
+      SizedBox(
+        width: (MediaQuery.of(context).size.width - 20) / 3,
+        child: Center(child: Text("Students")),
+      ),
+      SizedBox(
+        width: (MediaQuery.of(context).size.width - 20) / 3,
+        child: Center(child: Text("Parents")),
+      ),
+      SizedBox(
+        width: (MediaQuery.of(context).size.width - 20) / 3,
+        child: Center(child: Text("Teachers")),
+      ),
+    ];
 
     // Get the list of first characters from students list
     List<String> firstCharacters = students.map((student) {
@@ -433,6 +496,12 @@ class _ParentsState extends State<Parents> {
                               );
                             }
                           : null,
+                      // leading: CircleAvatar(
+                      //   child: Icon(
+                      //     Icons.person_rounded,
+                      //     color: SecondaryColors.secondaryYellow.withOpacity(0.7),
+                      //   ),
+                      // ),
                       title: Text(
                           "${relative.firstName} ${relative.middleName ?? ""} ${relative.lastName1}",
                           style: TextStyle(
@@ -470,29 +539,36 @@ class _ParentsState extends State<Parents> {
                           : null,
                       trailing: parentSection == ParentSection.sms
                           ? Checkbox(
-  activeColor: primaryColorSelection(parentSection),
-  value: selectedParents.any((selectedParent) {
-    return relative.relatedPersons?.contains(selectedParent) ?? false;
-  }),
-  onChanged: (value) {
-    if (relative.relatedPersons != null) {
-      if (value!) {
-        for (var relatedPerson in relative.relatedPersons!) {
-          if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
-            addParent(relatedPerson);
-          }                                      
-        }
-      } else {
-        for (var relatedPerson in relative.relatedPersons!) {
-          if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
-            removeParent(relatedPerson);
-          }
-        }
-      }
-    }
-  },
-)
-
+                              activeColor: primaryColorSelection(parentSection),
+                              value: selectedParents.any((selectedParent) {
+                                return relative.relatedPersons
+                                        ?.contains(selectedParent) ??
+                                    false;
+                              }),
+                              onChanged: (value) {
+                                if (relative.relatedPersons != null) {
+                                  if (value!) {
+                                    for (var relatedPerson
+                                        in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null ||
+                                          relatedPerson
+                                              .phoneNumber!.isNotEmpty) {
+                                        addParent(relatedPerson);
+                                      }
+                                    }
+                                  } else {
+                                    for (var relatedPerson
+                                        in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null ||
+                                          relatedPerson
+                                              .phoneNumber!.isNotEmpty) {
+                                        removeParent(relatedPerson);
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                            )
                           : null,
                     ),
                     Divider(
@@ -573,15 +649,21 @@ class _ParentsState extends State<Parents> {
                               onChanged: (value) {
                                 if (relative.relatedPersons != null) {
                                   if (value!) {
-                                    for (var relatedPerson in relative.relatedPersons!) {
-                                      if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+                                    for (var relatedPerson
+                                        in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null ||
+                                          relatedPerson
+                                              .phoneNumber!.isNotEmpty) {
                                         addParent(relatedPerson);
-                                      }                                      
+                                      }
                                     }
                                     // addParent(relative.relatedPersons!);
                                   } else {
-                                    for (var relatedPerson in relative.relatedPersons!) {
-                                      if (relatedPerson.phoneNumber != null || relatedPerson.phoneNumber!.isNotEmpty) {
+                                    for (var relatedPerson
+                                        in relative.relatedPersons!) {
+                                      if (relatedPerson.phoneNumber != null ||
+                                          relatedPerson
+                                              .phoneNumber!.isNotEmpty) {
                                         removeParent(relatedPerson);
                                       }
                                     }
@@ -723,16 +805,42 @@ class _ParentsState extends State<Parents> {
                   },
                   child: Container(),
                 ),
+                widget.parentSection == ParentSection.family
+                    ? IconButton(
+                        onPressed: () {}, icon: Icon(Icons.add_rounded))
+                    : Container()
               ],
               bottom: PreferredSize(
-                preferredSize: const Size(double.infinity, 80),
+                preferredSize: Size(double.infinity,
+                    widget.parentSection == ParentSection.family ? 150 : 80),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: CustomTextField(
-                    color: secondaryColorSelection(parentSection),
-                    hintText: "Search...",
-                    controller: searchController,
-                    onChanged: search,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      widget.parentSection == ParentSection.family
+                          ? ToggleButtons(
+                              selectedColor: Colors.white,
+                              fillColor:
+                                  primaryColorSelection(parentSection).shade300,
+                              borderRadius: BorderRadius.circular(50),
+                              children: toggleOptions,
+                              isSelected: personSelection,
+                              onPressed: updatePersonSelection,
+                            )
+                          : Container(),
+                      widget.parentSection == ParentSection.family
+                          ? SizedBox(
+                              height: 10,
+                            )
+                          : Container(),
+                      CustomTextField(
+                        color: secondaryColorSelection(parentSection),
+                        hintText: "Search...",
+                        controller: searchController,
+                        onChanged: search,
+                      ),
+                    ],
                   ),
                 ),
               ),

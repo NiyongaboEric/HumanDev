@@ -22,10 +22,10 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final students = await studentApiImpl.getAllPersons();
+      final persons = await studentApiImpl.getAllPersons();
       emit(
         state.copyWith(
-          students: students,
+          persons: persons,
           isLoading: false,
           status: PersonStatus.success,
           successMessage: "Request successful",
@@ -54,7 +54,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final student = await studentApiImpl.getOnePerson(event.personID);
+      final persons = await studentApiImpl.getOnePerson(event.personID);
       emit(
         state.copyWith(
           // student: student,

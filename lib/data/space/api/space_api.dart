@@ -29,6 +29,7 @@ class SpaceApiImpl implements SpaceApi {
           logger.d(response);
           throw Exception(response['message']);
         }
+          logger.d(response);
         List responseData = response;
         final List<Space> spaces =
             responseData.map((data) => Space.fromJson(data)).toList();

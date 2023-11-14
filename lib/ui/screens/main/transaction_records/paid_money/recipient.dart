@@ -148,26 +148,26 @@ class _RecipientState extends State<Recipient> {
         parents.clear();
       });
       // Handle Success
-      for (var student in state.students) {
-        if (!parents.contains(student)) {
+      for (var person in state.persons) {
+        if (!parents.contains(person)) {
           parents.add(RecipientModel(
-            id: student.id,
-            firstName: student.firstName,
-            lastName: student.lastName1,
-            role: student.role == Role.RELATIVE
+            id: person.id,
+            firstName: person.firstName,
+            lastName: person.lastName1,
+            role: person.role == Role.RELATIVE
                 ? "parent"
-                : student.role.name.toLowerCase(),
+                : person.role.name.toLowerCase(),
             isPerson: true,
           ));
         } else {
           parents.remove(RecipientModel(
-            id: student.id,
+            id: person.id,
             isPerson: true,
-            firstName: student.firstName,
-            lastName: student.lastName1,
-            role: student.role == Role.RELATIVE
+            firstName: person.firstName,
+            lastName: person.lastName1,
+            role: person.role == Role.RELATIVE
                 ? "parent"
-                : student.role.name.toLowerCase(),
+                : person.role.name.toLowerCase(),
           ));
         }
       }

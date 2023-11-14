@@ -46,6 +46,7 @@ class _ToggleTagsState extends State<ToggleTags> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ChoiceChip(
+                    showCheckmark: false,
                     selectedColor: widget.btnColor,
                     backgroundColor: widget.defaultColor,
                     label: Text(

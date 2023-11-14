@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
@@ -9,9 +11,11 @@ import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/reminder_tags.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/toggle_tags.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../../data/constants/logger.dart';
 import '../../../../../../data/reminders/model/reminder_request.dart';
+import '../../../../../../data/tags/model/tag_model.dart';
 import '../../../../../widgets/inputs/text_area.dart';
 import '../../blocs/reminder_bloc.dart';
 
@@ -25,36 +29,13 @@ class LogConversation extends StatefulWidget {
 }
 
 class _LogConversationState extends State<LogConversation> {
+  var prefs = sl<SharedPreferences>();
   DateTime date = DateTime.now();
-  final List<String> location = [
-    "Office",
-    "Parent's home",
-    "In public",
-    "Other"
-  ];
-  final List<String> financials = [
-    "Financial situation of parents",
-    "New payment schedule"
-  ];
-  final List<String> warnings = [
-    "Exam",
-    "Police",
-    "Suspension",
-    "Sacking",
-    "Other",
-  ];
-  final List<String> kids = [
-    "Learning progress",
-    "Attendance",
-    "Health",
-    "Behaviour",
-    "Other"
-  ];
+  final List<String> location = [];
+  final List<String> financials = [];
+  final List<String> warnings = [];
+  final List<String> kids = [];
   final List<ToggleTagComponents> atmosphere = [
-    // "Friendly",
-    // "Hostile",
-    // "Owning it",
-    // "Excuses",
     ToggleTagComponents(positive: "Friendly", negative: "Hostile"),
     ToggleTagComponents(positive: "Owning it", negative: "Excuses")
   ];
@@ -212,6 +193,52 @@ class _LogConversationState extends State<LogConversation> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    // Get Tags form Shared Preferences
+    var value = prefs.getString("tags");
+    if (value != null) {
+      List<dynamic> decodedTags = json.decode(value);
+      List<TagModel> tagModel =
+          decodedTags.map((tag) => TagModel.fromJson(tag)).toList();
+      var paidMoneyTags =
+          tagModel.where((element) => element.isReminderTag == true);
+      var tags = paidMoneyTags.map((element) => element.name).toList();
+      // List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
+      setState(() {
+        // Add non-existing values to tags
+        for (var tag in tags) {
+          if (tag != null) {
+            if (tag.startsWith("Location")) {
+              var locationTag = tag.split(":");
+              logger.d(locationTag[0]);
+              location.add(locationTag[1]);
+            }
+            if (tag.startsWith("Financial")) {
+              var financialTag = tag.split(":");
+              if (financialTag.length > 1) {
+                financials.add(financialTag[1]);
+              }
+            }
+            if (tag.startsWith("Warning")) {
+              var warningTag = tag.split(":");
+              warnings.add(warningTag[1]);
+            }
+            if (tag.startsWith("Kid")) {
+              var kidTag = tag.split(":");
+              kids.add(kidTag[1]);
+            }
+            if (tag.startsWith("Atmosphere")) {
+              var atmosphereTag = tag.split(":");
+            }
+          }
+        }
+      });
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<ReminderBloc, ReminderState>(
       listener: (context, state) {
@@ -352,7 +379,7 @@ class _LogConversationState extends State<LogConversation> {
                   backgroundColor: SecondaryColors.secondaryYellow,
                   onPressed: !state.isLoading
                       ? () {
-                        if (selectedLocation.isEmpty ||
+                          if (selectedLocation.isEmpty ||
                               selectedWarnings.isEmpty ||
                               selectedFinancials.isEmpty ||
                               selectedKids.isEmpty ||

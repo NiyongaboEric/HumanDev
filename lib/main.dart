@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/accounts_bloc/accounts_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_auth.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 
 import 'data/constants/shared_prefs.dart';
 import 'ui/screens/main/reminder/blocs/reminder_bloc.dart';
-import 'ui/screens/main/transaction_records/paid_money/bloc/paid_money_bloc.dart';
 import 'utilities/dependency_injection.dart';
 
 final sl = GetIt.instance;
@@ -38,9 +39,10 @@ class MyApp extends StatelessWidget {
                 BlocProvider(create: (context) => sl<AuthBloc>()),
                 BlocProvider(create: (context) => sl<PersonBloc>()),
                 BlocProvider(create: (context) => sl<JournalBloc>()),
-                BlocProvider(create: (context) => sl<PaidMoneyBloc>()),
+                BlocProvider(create: (context) => sl<AccountsBloc>()),
                 BlocProvider(create: (context) => sl<SpaceBloc>()),
                 BlocProvider(create: (context) => sl<ReminderBloc>()),
+                BlocProvider(create: (context) => sl<TagsBloc>()),
               ],
               child: MaterialApp(
                 title: 'Seymo Pay',

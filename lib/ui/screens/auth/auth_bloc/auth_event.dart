@@ -1,11 +1,11 @@
 part of 'auth_bloc.dart';
 
-enum AuthEventType {
-  getUser,
-  login,
-  register,
-  refresh,
-}
+// enum AuthEventType {
+//   getUser,
+//   login,
+//   register,
+//   refresh,
+// }
 
 class AuthEvent extends Equatable {
   const AuthEvent();

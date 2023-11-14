@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
+import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -39,7 +41,7 @@ class _PaymentState extends State<Payment> {
   final List<XFile> _images = [];
   bool previewState = false;
   Widget? previewWidget;
-  List<String> tags = ["Salary", "Renovation", "Study materials"];
+  List<String> tags = [];
   List<String> selectedTags = [];
 
   _imgFromCamera() async {
@@ -120,8 +122,8 @@ class _PaymentState extends State<Payment> {
       creditAccountId: state.journalData?.creditAccountId,
       debitAccountId: state.journalData?.debitAccountId,
     );
-    if (_images.isNotEmpty && (descriptionController.text.isNotEmpty ||
-        selectedTags.isNotEmpty)) {
+    if (_images.isNotEmpty &&
+        (descriptionController.text.isNotEmpty || selectedTags.isNotEmpty)) {
       context.read<JournalBloc>().add(SaveDataJournalState(paymentRequest));
     } else {
       showDialog(
@@ -161,7 +163,11 @@ class _PaymentState extends State<Payment> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                label: Text(descriptionController.text.isNotEmpty || selectedTags.isNotEmpty? "No":"Okay",
+                label: Text(
+                    descriptionController.text.isNotEmpty ||
+                            selectedTags.isNotEmpty
+                        ? "No"
+                        : "Okay",
                     style: TextStyle(
                         color: SecondaryColors.secondaryRed,
                         fontSize: CustomFontSize.small)),
@@ -185,11 +191,17 @@ class _PaymentState extends State<Payment> {
     var value = prefs.getString("tags");
     if (value != null) {
       List<dynamic> decodedTags = json.decode(value);
-      List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
+      List<TagModel> tagModel =
+          decodedTags.map((tag) => TagModel.fromJson(tag)).toList();
+      var paidMoneyTags =
+          tagModel.where((element) => element.isPaidMoneyTag == true);
+      var tags =
+          paidMoneyTags.map((element) => element.name).toList();
+      // List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
       setState(() {
         // Add non-existing values to tags
         for (var tag in tags) {
-          if (!this.tags.contains(tag)) {
+          if (tag != null && !this.tags.contains(tag)) {
             this.tags.add(tag);
           }
         }

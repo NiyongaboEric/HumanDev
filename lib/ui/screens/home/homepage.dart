@@ -274,7 +274,13 @@ class _HomePageState extends State<HomePage> {
           color: Colors.white,
           size: 54,
         ),
-        onPressed: () {},
+        onPressed: () {
+          nextScreen(
+              context: context,
+              screen: const Parents(
+                parentSection: ParentSection.family,
+              ));
+        },
       )
     ];
 

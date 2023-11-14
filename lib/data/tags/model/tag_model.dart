@@ -1,16 +1,3 @@
-var schema = {
-  "id": 3423,
-  "name": "Financial situation of parents",
-  "isReminderTag": true,
-  "isMetricsTag": false,
-  "isReceivedMoneyTag": false,
-  "isPaidMoneyTag": false,
-  "isSystem": false,
-  "spaceId": 47,
-  "createdAt": "2023-11-07T09:30:37.870Z",
-  "updatedAt": "2023-11-07T09:30:37.870Z"
-};
-
 class TagModel {
   final int? id;
   final String? name;
@@ -50,18 +37,19 @@ class TagModel {
       updatedAt: json['updatedAt'],
     );
   }
-}
-
-class TagRequest {
-  final String name;
-
-  const TagRequest({required this.name});
-
-  factory TagRequest.fromJson(Map<String, dynamic> json) {
-    return TagRequest(name: json['name']);
-  }
 
   Map<String, dynamic> toJson() {
-    return {'name': name};
+    return {
+      'id': id,
+      'name': name,
+      'isReminderTag': isReminderTag,
+      'isMetricsTag': isMetricsTag,
+      'isReceivedMoneyTag': isReceivedMoneyTag,
+      'isPaidMoneyTag': isPaidMoneyTag,
+      'isSystem': isSystem,
+      'spaceId': spaceId,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+    };
   }
 }

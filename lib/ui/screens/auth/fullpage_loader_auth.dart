@@ -10,6 +10,7 @@ import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
@@ -20,6 +21,7 @@ import '../../../data/auth/model/auth_response.dart';
 import '../../../data/constants/shared_prefs.dart';
 import '../../utilities/custom_colors.dart';
 import '../../widgets/constants/offline_model.dart';
+import 'accounts_bloc/accounts_bloc.dart';
 import 'auth_bloc/auth_bloc.dart';
 
 var sl = GetIt.instance;
@@ -46,6 +48,16 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     context.read<SpaceBloc>().add(const SpaceEventGetSpaces());
   }
 
+  // Get Accounts
+  void _getAccounts() {
+    context.read<AccountsBloc>().add(const AccountsEventGetAccounts());
+  }
+
+  // Get Tags
+  void _getTags() {
+    context.read<TagsBloc>().add(const TagsEventGetTags());
+  }
+
   // Logout
   void _logout() {
     context.read<AuthBloc>().add(const AuthEventLogout());
@@ -57,13 +69,13 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     if (tuitionObject != null) {
       List<OfflineModel> offlineTuitionFee = json.decode(tuitionObject);
       for (var element in offlineTuitionFee) {
-          JournalRequest journalRequest = element.data;
-          context.read<JournalBloc>().add(
-                AddNewJournalEvent(
-                  journalRequest,
-                ),
-              );
-        }
+        JournalRequest journalRequest = element.data;
+        context.read<JournalBloc>().add(
+              AddNewJournalEvent(
+                journalRequest,
+              ),
+            );
+      }
     }
   }
 
@@ -103,9 +115,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
           state.refreshFailure,
           context,
           toastBorderRadius: 8.0,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           backgroundColor: CustomColor.red,
         );
       }
@@ -124,9 +136,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             state.refreshFailure,
             context,
             toastBorderRadius: 8.0,
-            toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+            toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+                ? GFToastPosition.TOP
+                : GFToastPosition.BOTTOM,
             backgroundColor: CustomColor.red,
             toastDuration: 6,
           );
@@ -136,9 +148,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
           "No Internet Connection",
           context,
           toastBorderRadius: 8.0,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           backgroundColor: CustomColor.red,
           toastDuration: 6,
         );
@@ -162,9 +174,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       //   state.logoutFailure,
       //   context,
       //   toastBorderRadius: 8.0,
-      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                // ? GFToastPosition.TOP
-                                // : GFToastPosition.BOTTOM,
+      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0
+      // ? GFToastPosition.TOP
+      // : GFToastPosition.BOTTOM,
       //   backgroundColor: CustomColor.red,
       //   toastDuration: 6,
       // );
@@ -180,7 +192,8 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       // });
       logger.i(prefs.getSpaces().first.id);
       if (prefs.getSpaces().isNotEmpty) {
-        nextScreenAndRemoveAll(context: context, screen: const HomePage());
+        _getAccounts();
+        // nextScreenAndRemoveAll(context: context, screen: const HomePage());
       }
     }
     if (state.status == SpaceStateStatus.error) {
@@ -199,9 +212,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
         "All Pending Records Saved",
         context,
         toastBorderRadius: 8.0,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
         backgroundColor: Colors.green.shade800,
       );
       prefs.remove("offlineTuitionFee");
@@ -211,11 +224,57 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
         "Unable To Save Pending Records",
         context,
         toastBorderRadius: 8.0,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
         backgroundColor: CustomColor.red,
       );
+    }
+  }
+
+  // Handle Accounts State Change
+  void _handleAccountStateChange(BuildContext context, AccountsState state) {
+    if (state.status == AccountsStateStatus.success) {
+      _getTags();
+    }
+    if (state.status == AccountsStateStatus.error) {
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      } else {
+        GFToast.showToast(
+          state.errorMessage,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+  }
+
+  // Handle Tags State Change
+  void _handleTagsStateChange(BuildContext context, TagsState state) {
+    if (state.status == TagsStateStatus.success) {
+      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+    }
+    if (state.status == TagsStateStatus.error) {
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      } else {
+        GFToast.showToast(
+          state.errorMessage,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
     }
   }
 
@@ -264,7 +323,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             },
             listener: (context, state) {
               // TODO: implement tuitions listener
-              _handleTuitionRequestStateChange(context, state);
+              if (isCurrentPage) {
+                _handleTuitionRequestStateChange(context, state);
+              }
             },
           ),
           BlocListener<SpaceBloc, SpaceState>(
@@ -273,8 +334,32 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             },
             listener: (context, state) {
               // TODO: implement space listener
-              _handleSpaceStateChange(context, state);
+              if (isCurrentPage) {
+                _handleSpaceStateChange(context, state);
+              }
             },
+          ),
+          BlocListener<AccountsBloc, AccountsState>(
+            listenWhen: (context, state) {
+              return true;
+            },
+            listener: (context, state) {
+              // TODO: implement accounts listener
+              if (isCurrentPage) {
+                _handleAccountStateChange(context, state);
+              }
+            }
+          ),
+          BlocListener<TagsBloc, TagsState>(
+            listenWhen: (context, state) {
+              return true;
+            },
+            listener: (context, state) {
+              // TODO: implement tags listener
+              if (isCurrentPage) {
+                _handleTagsStateChange(context, state);
+              }
+            }
           )
         ],
         child: const Scaffold(
