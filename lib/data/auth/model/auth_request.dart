@@ -13,16 +13,6 @@ class RegistrationRequest {
     required this.phoneNumber,
   });
 
-  // factory RegistrationRequest.fromJson(Map<String, dynamic> json) {
-  //   return RegistrationRequest(
-  //     email: json['email'],
-  //     password: json['password'],
-  //     firstName: json['firstName'],
-  //     lastName: json['lastName'],
-  //     phoneNumber: json['phoneNumber'],
-  //   );
-  // }
-
   Map<String, dynamic> toJson() {
     return {
       'email': email,
@@ -45,14 +35,6 @@ class LoginRequest {
     required this.rememberMe,
   });
 
-  // factory LoginRequest.fromJson(Map<String, dynamic> json) {
-  //   return LoginRequest(
-  //     email: json['email'],
-  //     password: json['password'],
-  //     rememberMe: json['rememberMe'],
-  //   );
-  // }
-
   Map<String, dynamic> toJson() {
     return {
       'emailOrPhoneNumber': emailOrPhoneNumber,
@@ -68,12 +50,6 @@ class RefreshRequest {
   RefreshRequest({
     required this.refresh,
   });
-
-  // factory RefreshRequest.fromJson(Map<String, dynamic> json) {
-  //   return RefreshRequest(
-  //     refresh: json['email'],
-  //   );
-  // }
 
   Map<String, dynamic> toJson() {
     return {

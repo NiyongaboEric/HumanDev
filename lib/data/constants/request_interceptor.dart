@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 
 import '../auth/model/auth_response.dart';
 import 'shared_prefs.dart';
@@ -19,9 +20,9 @@ class RequestInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    print("=== Dio Error Occured ===");
-    print(err.response?.data['message']);
-    print("=== Dio Error Occurred ===");
+    logger.e("=== Dio Error Occurred ===");
+    logger.e(err.response?.data['message']);
+    logger.e("=== Dio Error Occurred ===");
     return super.onError(err, handler);
   }
 

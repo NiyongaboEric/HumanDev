@@ -82,7 +82,8 @@ class JournalApiImpl implements JournalApi {
           data: tuitionFeesRequest.toJson());
       if (res.statusCode == 201) {
         var response = res.data;
-        if (response is Map && !response.containsKey('statusCode') &&
+        if (response is Map &&
+            !response.containsKey('statusCode') &&
             response['statusCode'] != null) {
           throw Exception(response['message']);
         }
@@ -97,25 +98,12 @@ class JournalApiImpl implements JournalApi {
       // Handle Dio errors and other exceptions
       logger.e("An error occurred: $error");
       if (error.response != null) {
-        throw Exception(error.response?.data["message"] ?? "No Internet Connection");
+        throw Exception(
+            error.response?.data["message"] ?? "No Internet Connection");
       }
       throw Exception("Error From DIO BACKEND");
     }
   }
-
-  // @override
-  // Future<JournalModel> updateJournal(
-  //     JournalRequest tuitionFeesRequest) async {
-  //   // TODO: implement updateTuitionFees
-  //   var interceptor = sl.get<RequestInterceptor>();
-  //   var dio = sl.get<Dio>()..interceptors.add(interceptor);
-  //   final res = await dio.patch("/space/1/journal/${tuitionFeesRequest.id}",
-  //       data: tuitionFeesRequest.toJson());
-  //   if (res.statusCode == 200) {
-  //     return JournalModel.fromJson(res.data);
-  //   }
-  //   throw Exception(res.data["message"]);
-  // }
 
   @override
   Future<void> deleteJournal(String journalID) async {

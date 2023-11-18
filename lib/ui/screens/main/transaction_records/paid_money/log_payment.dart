@@ -6,6 +6,7 @@ import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_reque
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/number_field.dart';
@@ -29,11 +30,6 @@ class _LogPaymentState extends State<LogPayment> {
   TextEditingController otherController = TextEditingController();
   String selectedCurrency = 'GHS';
   DateTime date = DateTime.now();
-
-  // Payment Methods
-  List<String> paymentMethods = ["Cash", "Bank", "MOMO", "Other"];
-
-  List<String> currencies = ['GHS', 'USD', 'NGN', 'EUR'];
 
   // Update Payment Method
   void updatePaymentMethod(value) {
@@ -341,7 +337,7 @@ class _LogPaymentState extends State<LogPayment> {
               ),
               CustomDropDownMenu(
                 color: const Color(0xff410002),
-                options: ["Peyment method", ...paymentMethods],
+                options: const ["Payment method", ...Constants.paymentMethods],
                 value: "Cash",
                 onChanged: updatePaymentMethod,
               ),

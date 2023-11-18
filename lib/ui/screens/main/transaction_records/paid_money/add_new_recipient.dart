@@ -62,14 +62,14 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   // Create Person
   void _createPerson() {
     BlocProvider.of<PersonBloc>(context).add(AddPersonEvent(PersonRequest(
-      firstName: recipientFirstNameController.text != ""
-          ? recipientFirstNameController.text
+      firstName: recipientLastNameController.text.isNotEmpty
+          ? recipientLastNameController.text
           : null,
-      lastName1: recipientLastNameController.text != ""
+      lastName1: recipientLastNameController.text.isNotEmpty
           ? recipientLastNameController.text
           : null,
       role: stringToRole(role.toUpperCase()),
-      counterpartyName: companyNameController.text != ""
+      counterpartyName: companyNameController.text.isNotEmpty
           ? companyNameController.text
           : null,
       isLegal: isSelected[1],

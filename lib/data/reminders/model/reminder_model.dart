@@ -1,13 +1,3 @@
-const reminderModel = {
-  "id": 0,
-  "type": "LOGGED_SMS",
-  "organizerUserId": 0,
-  "attendeePersonId": 0,
-  "note": "string",
-  "spaceId": 0,
-  "createdAt": "2023-10-26T17:19:21.601Z",
-  "updatedAt": "2023-10-26T17:19:21.601Z"
-};
 
 class ReminderModel {
   final int? id;

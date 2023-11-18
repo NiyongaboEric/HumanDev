@@ -10,16 +10,9 @@ import '../../space/model/space_model.dart';
 
 var sl = GetIt.instance;
 
-// var prefs = sl<SharedPreferenceModule>();
-
-// Space? space = prefs.getSpaces()?.first;
 
 abstract class ReminderApi {
-  // Future<List<ReminderModel>> getAllReminders();
-  // Future<ReminderModel> getOneReminder(String ReminderID);
   Future<ReminderModel> createReminder(ReminderRequest reminderRequest);
-  // Future<ReminderModel> updateReminder(ReminderRequest Reminder);
-  // Future<void> deleteReminder(String ReminderID);
 }
 
 class ReminderApiImpl implements ReminderApi {

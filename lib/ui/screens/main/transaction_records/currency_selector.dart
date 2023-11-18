@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
 
 import '../../../utilities/font_sizes.dart';
@@ -19,7 +20,6 @@ class CurrencySelector extends StatefulWidget {
 }
 
 class _CurrencySelectorState extends State<CurrencySelector> {
-  List<String> options = ["GHS", "USD", "NGN", "EUR", "INR", "Add "];
   late String selectedCurrency;
   Color color = Colors.black;
   // update selected currency
@@ -67,13 +67,13 @@ class _CurrencySelectorState extends State<CurrencySelector> {
             )),
       ),
       body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
           const SizedBox(height: 30),
           CustomDropDownMenu(
-            options: [
+            options: const [
               "Select Currency",
-              ...options,
+              ...Constants.currencyOptions,
             ],
             value: selectedCurrency,
             color: color,

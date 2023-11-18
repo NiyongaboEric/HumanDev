@@ -1,4 +1,3 @@
-
 // Enum Type
 enum AccountType {
   BALANCE_SHEET,
@@ -56,30 +55,14 @@ class AccountsModel {
 
 // Name Enum to String
 AccountName accountNameFromString(String name) {
-  switch (name) {
-    case "ACCOUNTS_RECEIVABLE":
-      return AccountName.ACCOUNTS_RECEIVABLE;
-    case "CASH":
-      return AccountName.CASH;
-    case "REVENUE":
-      return AccountName.REVENUE;
-    case "BANK_ACCOUNT":
-      return AccountName.BANK_ACCOUNT;
-    case "MOMO":
-      return AccountName.MOMO;
-    default:
-      return AccountName.ACCOUNTS_RECEIVABLE;
-  }
+  return AccountName.values.firstWhere(
+      (e) => e.toString().split('.').last == name,
+      orElse: () => AccountName.ACCOUNTS_RECEIVABLE);
 }
 
 // Type Enum to String
 AccountType accountTypeFromString(String type) {
-  switch (type) {
-    case "BALANCE_SHEET":
-      return AccountType.BALANCE_SHEET;
-    case "PROFIT_LOSS":
-      return AccountType.PROFIT_LOSS;
-    default:
-      return AccountType.BALANCE_SHEET;
-  }
+  return AccountType.values.firstWhere(
+      (e) => e.toString().split('.').last == type,
+      orElse: () => AccountType.BALANCE_SHEET);
 }

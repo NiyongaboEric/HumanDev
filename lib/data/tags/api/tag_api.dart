@@ -48,8 +48,8 @@ class TagApiImpl implements TagApi {
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
-    final res = await dio
-        .patch("/space/${space.id}/tag/$id", data: tagRequest.toJson());
+    final res = await dio.patch("/space/${space.id}/tag/$id",
+        data: tagRequest.toJson());
     if (res.statusCode == 200) {
       var response = res.data;
       if (response is Map && response['statusCode'] != null) {

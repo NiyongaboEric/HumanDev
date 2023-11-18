@@ -302,7 +302,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             setState(() {
               isCurrentPage = false;
             });
-          }          
+          }
         }
       },
       child: MultiBlocListener(
@@ -365,7 +365,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             if (mounted) {
               if (isCurrentPage) {
                 _handleTagsStateChange(context, state);
-              }              
+              }
             }
           })
         ],

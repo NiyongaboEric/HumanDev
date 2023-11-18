@@ -509,15 +509,15 @@ class _ParentsState extends State<Parents> {
     var toggleOptions = [
       SizedBox(
         width: (MediaQuery.of(context).size.width - 20) / 3,
-        child: Center(child: Text("Students")),
+        child: const Center(child: Text("Students")),
       ),
       SizedBox(
         width: (MediaQuery.of(context).size.width - 20) / 3,
-        child: Center(child: Text("Parents")),
+        child: const Center(child: Text("Parents")),
       ),
       SizedBox(
         width: (MediaQuery.of(context).size.width - 20) / 3,
-        child: Center(child: Text("Teachers")),
+        child: const Center(child: Text("Teachers")),
       ),
     ];
 
@@ -809,7 +809,9 @@ class _ParentsState extends State<Parents> {
       if (searchController.text.isNotEmpty) {
         searchResults.clear();
         for (var student in students) {
-          if (student.firstName!.toLowerCase().contains(searchController.text)) {
+          if (student.firstName!
+              .toLowerCase()
+              .contains(searchController.text)) {
             searchResults.add(student);
           }
         }
@@ -881,11 +883,11 @@ class _ParentsState extends State<Parents> {
                         onPressed: () {
                           nextScreen(
                             context: context,
-                            screen: PersonDetails(
+                            screen: const PersonDetails(
                                 screenFunction: ScreenFunction.add),
                           );
                         },
-                        icon: Icon(Icons.add_rounded))
+                        icon: const Icon(Icons.add_rounded))
                     : Container()
               ],
               bottom: PreferredSize(
@@ -902,13 +904,13 @@ class _ParentsState extends State<Parents> {
                               fillColor:
                                   primaryColorSelection(parentSection).shade300,
                               borderRadius: BorderRadius.circular(50),
-                              children: toggleOptions,
                               isSelected: personSelection,
                               onPressed: updatePersonSelection,
+                              children: toggleOptions,
                             )
                           : Container(),
                       widget.parentSection == ParentSection.family
-                          ? SizedBox(
+                          ? const SizedBox(
                               height: 10,
                             )
                           : Container(),

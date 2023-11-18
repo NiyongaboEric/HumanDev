@@ -64,9 +64,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (state.status == AuthStateStatus.unauthenticated) {
       GFToast.showToast(state.loginFailure, context,
           toastBorderRadius: 8.0,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           backgroundColor: CustomColor.red,
           toastDuration: 6);
     }

@@ -1,14 +1,3 @@
-var schema = {
-  "type": "LOGGED_SMS",
-  "note": "Note for this reminder. Text...",
-  "message": "Message...",
-  "scheduledTime": "2023-11-03T07:58:18.351Z",
-  "tags": [
-    {"name": "string"}
-  ],
-  "attendeePersonIds": [0],
-  "expandRelations": false
-};
 
 class ReminderRequest {
   final String type;
