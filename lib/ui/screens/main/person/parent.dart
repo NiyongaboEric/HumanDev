@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:intl/intl.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/person_details.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/conversation/log_conversation.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/letter/log_letter%20reminder.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -46,9 +47,9 @@ class Parents extends StatefulWidget {
 
 class _ParentsState extends State<Parents> {
   bool logout = false;
-  List<RelatedPersons> selectedParents = <RelatedPersons>[];
+  List<ChildRelation> selectedParents = <ChildRelation>[];
   List<PersonModel> students = <PersonModel>[];
-  List<RelatedPersons> relatives = <RelatedPersons>[];
+  List<ChildRelation> relatives = <ChildRelation>[];
   List<PersonModel> parents = <PersonModel>[];
   List<PersonModel> teachers = <PersonModel>[];
   var prefs = sl<SharedPreferences>();
@@ -61,6 +62,7 @@ class _ParentsState extends State<Parents> {
   List<int> randomNumbers = [];
   bool isCurrentPage = false;
   Key parentData = const Key("parent-data");
+  // PS => personSelection. PS[0] = All, PS[1] = Students, PS[2] = Parents, PS[3] = Teachers
   List<bool> personSelection = [true, false, false];
 
   // Update Person Selection
@@ -84,29 +86,73 @@ class _ParentsState extends State<Parents> {
         showResults = false;
       });
     } else {
-      
-      setState(() {
-        showResults = true;
-        searchResults = students
-            .toSet()
-            .toList()
-            .where((student) =>
-                student.firstName.toLowerCase().contains(query) ||
-                (student.middleName ?? "").toLowerCase().contains(query) ||
-                student.lastName1.toLowerCase().contains(query) ||
-                (student.lastName2 ?? "").toLowerCase().contains(query))
-            .toList();
-      });
+      //
+      if (personSelection[0]) {
+        setState(() {
+          showResults = true;
+          searchResults = students
+              .toSet()
+              .toList()
+              .where((student) =>
+                  (student.firstName ?? "").toLowerCase().contains(query) ||
+                  (student.middleName ?? "").toLowerCase().contains(query) ||
+                  (student.lastName1 ?? "").toLowerCase().contains(query) ||
+                  (student.lastName2 ?? "").toLowerCase().contains(query))
+              .toList();
+        });
+      }
+      //
+      if (personSelection[1]) {
+        setState(() {
+          showResults = true;
+          searchResults = parents
+              .toSet()
+              .toList()
+              .where((parent) =>
+                  (parent.firstName ?? "").toLowerCase().contains(query) ||
+                  (parent.middleName ?? "").toLowerCase().contains(query) ||
+                  (parent.lastName1 ?? "").toLowerCase().contains(query) ||
+                  (parent.lastName2 ?? "").toLowerCase().contains(query))
+              .toList();
+        });
+      }
+      //
+      if (personSelection[2]) {
+        setState(() {
+          showResults = true;
+          searchResults = teachers
+              .toSet()
+              .toList()
+              .where((teacher) =>
+                  (teacher.firstName ?? "").toLowerCase().contains(query) ||
+                  (teacher.middleName ?? "").toLowerCase().contains(query) ||
+                  (teacher.lastName1 ?? "").toLowerCase().contains(query) ||
+                  (teacher.lastName2 ?? "").toLowerCase().contains(query))
+              .toList();
+        });
+      }
+      // setState(() {
+      //   showResults = true;
+      //   searchResults = students
+      //       .toSet()
+      //       .toList()
+      //       .where((student) =>
+      //           student.firstName.toLowerCase().contains(query) ||
+      //           (student.middleName ?? "").toLowerCase().contains(query) ||
+      //           student.lastName1.toLowerCase().contains(query) ||
+      //           (student.lastName2 ?? "").toLowerCase().contains(query))
+      //       .toList();
+      // });
     }
   }
 
-  void addParent(RelatedPersons parents) {
+  void addParent(ChildRelation parents) {
     setState(() {
       selectedParents.add(parents);
     });
   }
 
-  void removeParent(RelatedPersons parents) {
+  void removeParent(ChildRelation parents) {
     setState(() {
       // for (var parent in parents) {
       //   selectedParents.remove(parent);
@@ -167,7 +213,10 @@ class _ParentsState extends State<Parents> {
       case ParentSection.todo:
         return const SendSMS();
       case ParentSection.family:
-        return const SendSMS();
+        return PersonDetails(
+          screenFunction: ScreenFunction.edit,
+          person: personData,
+        );
       default:
         return const SendSMS();
     }
@@ -227,21 +276,21 @@ class _ParentsState extends State<Parents> {
         teachers.clear();
       });
       for (var person in state.persons) {
-        if (person.role == Role.STUDENT) {
+        if (person.role == Role.Student.name) {
           if (!students.contains(person)) {
             students.add(person);
-            if (person.relatedPersons != null) {
-              relatives.addAll(person.relatedPersons!);
+            if (person.childRelations != null) {
+              relatives.addAll(person.childRelations!);
             }
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
-        if (person.role == Role.RELATIVE) {
+        if (person.role == Role.Relative.name) {
           if (!parents.contains(person)) {
             parents.add(person);
           }
         }
-        if (person.role == Role.TEACHER) {
+        if (person.role == Role.Teacher.name) {
           if (!teachers.contains(person)) {
             teachers.add(person);
           }
@@ -474,16 +523,29 @@ class _ParentsState extends State<Parents> {
 
     // Get the list of first characters from students list
     List<String> firstCharacters = students.map((student) {
-      return student.firstName.substring(0, 1);
+      return student.firstName!.substring(0, 1);
     }).toList();
 
     alphabetView = firstCharacters.map(
       (alphabet) {
-        students.sort((a, b) => a.firstName.compareTo(b.firstName));
+        setState(() {});
+        // Change Alphabet View Based on Selected Person
+        List<PersonModel> _selectedPersonState() {
+          if (personSelection[0]) {
+            return students;
+          } else if (personSelection[1]) {
+            return parents;
+          } else {
+            return teachers;
+          }
+        }
+
+        _selectedPersonState()
+            .sort((a, b) => a.firstName!.compareTo(b.firstName!));
         return AlphabetListViewItemGroup(
             tag: alphabet,
-            children: students.map((relative) {
-              if (relative.firstName.startsWith(alphabet)) {
+            children: _selectedPersonState().map((person) {
+              if (person.firstName!.startsWith(alphabet)) {
                 return Column(
                   children: [
                     ListTile(
@@ -492,7 +554,7 @@ class _ParentsState extends State<Parents> {
                               nextScreen(
                                 context: context,
                                 screen: destinationRoutes(parentSection,
-                                    personData: relative),
+                                    personData: person),
                               );
                             }
                           : null,
@@ -503,7 +565,7 @@ class _ParentsState extends State<Parents> {
                       //   ),
                       // ),
                       title: Text(
-                          "${relative.firstName} ${relative.middleName ?? ""} ${relative.lastName1}",
+                          "${person.firstName} ${person.middleName ?? ""} ${person.lastName1}",
                           style: TextStyle(
                             color: secondaryColorSelection(parentSection),
                             fontSize: CustomFontSize.medium,
@@ -520,13 +582,11 @@ class _ParentsState extends State<Parents> {
                                               .withOpacity(0.7),
                                     )),
                                 const SizedBox(width: 10),
-                                (relative.relatedPersons == null ||
-                                        relative.relatedPersons!.isEmpty ||
-                                        relative.relatedPersons!.any(
-                                            (element) =>
-                                                element.phoneNumber != null &&
-                                                element
-                                                    .phoneNumber!.isNotEmpty))
+                                (person.childRelations == null ||
+                                        person.childRelations!.isEmpty ||
+                                        person.childRelations!.any((element) =>
+                                            element.phoneNumber != null &&
+                                            element.phoneNumber!.isNotEmpty))
                                     ? const SizedBox()
                                     : Image.asset(
                                         "assets/icons/null_number.png",
@@ -541,15 +601,15 @@ class _ParentsState extends State<Parents> {
                           ? Checkbox(
                               activeColor: primaryColorSelection(parentSection),
                               value: selectedParents.any((selectedParent) {
-                                return relative.relatedPersons
+                                return person.childRelations
                                         ?.contains(selectedParent) ??
                                     false;
                               }),
                               onChanged: (value) {
-                                if (relative.relatedPersons != null) {
+                                if (person.childRelations != null) {
                                   if (value!) {
                                     for (var relatedPerson
-                                        in relative.relatedPersons!) {
+                                        in person.childRelations!) {
                                       if (relatedPerson.phoneNumber != null ||
                                           relatedPerson
                                               .phoneNumber!.isNotEmpty) {
@@ -558,7 +618,7 @@ class _ParentsState extends State<Parents> {
                                     }
                                   } else {
                                     for (var relatedPerson
-                                        in relative.relatedPersons!) {
+                                        in person.childRelations!) {
                                       if (relatedPerson.phoneNumber != null ||
                                           relatedPerson
                                               .phoneNumber!.isNotEmpty) {
@@ -566,6 +626,17 @@ class _ParentsState extends State<Parents> {
                                       }
                                     }
                                   }
+                                  // if (person.relatedPersons != null && person.relatedPersons!.every((element) =>
+                                  //     element.phoneNumber == null ||
+                                  //     element.phoneNumber!.isEmpty)) {
+                                  //   GFToast.showToast(
+                                  //     "There is no number for either parent of ${person.firstName} ${person.middleName ?? ""} ${person.lastName1}",
+                                  //     context,
+                                  //     toastPosition: GFToastPosition.BOTTOM,
+                                  //     backgroundColor: Colors.red,
+                                  //     toastDuration: 6,
+                                  //   );
+                                  // }
                                 }
                               },
                             )
@@ -584,16 +655,16 @@ class _ParentsState extends State<Parents> {
 
     // Get the list of first characters from searchResults list
     List<String> searchResultsFirstCharacters = searchResults.map((student) {
-      return student.firstName.substring(0, 1);
+      return student.firstName!.substring(0, 1);
     }).toList();
 
     searchResultAlphabetView = searchResultsFirstCharacters.map(
       (alphabet) {
-        searchResults.sort((a, b) => a.firstName.compareTo(b.firstName));
+        searchResults.sort((a, b) => a.firstName!.compareTo(b.firstName!));
         return AlphabetListViewItemGroup(
             tag: alphabet,
             children: searchResults.map((relative) {
-              if (relative.firstName.startsWith(alphabet)) {
+              if (relative.firstName!.startsWith(alphabet)) {
                 return Column(
                   children: [
                     ListTile(
@@ -624,9 +695,9 @@ class _ParentsState extends State<Parents> {
                                               .withOpacity(0.7),
                                     )),
                                 const SizedBox(width: 10),
-                                (relative.relatedPersons == null ||
-                                        relative.relatedPersons!.isEmpty ||
-                                        relative.relatedPersons!.any(
+                                (relative.childRelations == null ||
+                                        relative.childRelations!.isEmpty ||
+                                        relative.childRelations!.any(
                                             (element) =>
                                                 element.phoneNumber != null &&
                                                 element
@@ -645,29 +716,29 @@ class _ParentsState extends State<Parents> {
                           ? Checkbox(
                               activeColor: primaryColorSelection(parentSection),
                               value: selectedParents
-                                  .contains(relative.relatedPersons?.first),
+                                  .contains(relative.childRelations?.first),
                               onChanged: (value) {
-                                if (relative.relatedPersons != null) {
+                                if (relative.childRelations != null) {
                                   if (value!) {
                                     for (var relatedPerson
-                                        in relative.relatedPersons!) {
+                                        in relative.childRelations!) {
                                       if (relatedPerson.phoneNumber != null ||
                                           relatedPerson
                                               .phoneNumber!.isNotEmpty) {
                                         addParent(relatedPerson);
                                       }
                                     }
-                                    // addParent(relative.relatedPersons!);
+                                    // addParent(relative.childRelations!);
                                   } else {
                                     for (var relatedPerson
-                                        in relative.relatedPersons!) {
+                                        in relative.childRelations!) {
                                       if (relatedPerson.phoneNumber != null ||
                                           relatedPerson
                                               .phoneNumber!.isNotEmpty) {
                                         removeParent(relatedPerson);
                                       }
                                     }
-                                    // removeParent(relative.relatedPersons!);
+                                    // removeParent(relative.childRelations!);
                                   }
                                 }
                               },
@@ -738,7 +809,7 @@ class _ParentsState extends State<Parents> {
       if (searchController.text.isNotEmpty) {
         searchResults.clear();
         for (var student in students) {
-          if (student.firstName.toLowerCase().contains(searchController.text)) {
+          if (student.firstName!.toLowerCase().contains(searchController.text)) {
             searchResults.add(student);
           }
         }
@@ -807,7 +878,14 @@ class _ParentsState extends State<Parents> {
                 ),
                 widget.parentSection == ParentSection.family
                     ? IconButton(
-                        onPressed: () {}, icon: Icon(Icons.add_rounded))
+                        onPressed: () {
+                          nextScreen(
+                            context: context,
+                            screen: PersonDetails(
+                                screenFunction: ScreenFunction.add),
+                          );
+                        },
+                        icon: Icon(Icons.add_rounded))
                     : Container()
               ],
               bottom: PreferredSize(

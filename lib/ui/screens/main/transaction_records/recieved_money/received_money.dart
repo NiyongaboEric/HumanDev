@@ -16,8 +16,8 @@ class ReceivedMoney extends StatefulWidget {
 class _ReceivedMoneyState extends State<ReceivedMoney> {
   @override
   Widget build(BuildContext context) {
-    List<HomeSection> receivedMoney = [
-      HomeSection(
+    List<HomeButton> receivedMoney = [
+      HomeButton(
         title: "Tuition fees",
         color: Colors.green.shade100,
         icon: Icon(
@@ -34,7 +34,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
               ));
         },
       ),
-      HomeSection(
+      HomeButton(
         title: "Feeding fees",
         color: Colors.green.shade100,
         icon: Icon(
@@ -52,7 +52,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
           );
         },
       ),
-      HomeSection(
+      HomeButton(
         title: "Other",
         color: Colors.green.shade100,
         icon: Icon(

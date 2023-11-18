@@ -13,9 +13,11 @@ import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/person_details.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/recieved_money/tuition_fee/tuition_fee_record.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -28,9 +30,12 @@ import '../../auth/login.dart';
 import '../../home/homepage.dart';
 import 'bloc/person_bloc.dart';
 
+// This Widget/Screen is meant for Transactions and send SMS to Student Screens...
+
 var sl = GetIt.instance;
 
-enum StudentOption { feeding, tuition, smsReminder }
+// Enum for Feeding Fees, Tuition Fees and Student Contact Screens.
+enum StudentOption { feeding, tuition, studentContact }
 
 class Students extends StatefulWidget {
   final bool select;
@@ -54,6 +59,14 @@ class _StudentsState extends State<Students> {
   List<PersonModel> searchResults = [];
   List<PersonModel> students = [];
   List<PersonModel> selectedStudents = [];
+  List<String> groups = [
+    "All groups",
+    "Group 1",
+    "Group 2",
+    "Group 3",
+    "Group 4",
+  ];
+  String selectedGroup = "All groups";
   bool showResults = false;
   String errorMsg = "";
   late List<AlphabetListViewItemGroup> studentAlphabetView;
@@ -76,13 +89,20 @@ class _StudentsState extends State<Students> {
             .toSet()
             .toList()
             .where((student) =>
-                student.firstName.toLowerCase().contains(query) ||
+                student.firstName!.toLowerCase().contains(query) ||
                 (student.middleName ?? "").toLowerCase().contains(query) ||
-                student.lastName1.toLowerCase().contains(query) ||
+                student.lastName1!.toLowerCase().contains(query) ||
                 (student.lastName2 ?? "").toLowerCase().contains(query))
             .toList();
       });
     }
+  }
+
+  // Update Groups
+  void _updateGroups(group) {
+    setState(() {
+      selectedGroup = group;
+    });
   }
 
   // Refresh Tokens
@@ -129,7 +149,7 @@ class _StudentsState extends State<Students> {
       });
       // Handle Success
       for (var person in state.persons) {
-        if (person.role == Role.STUDENT) {
+        if (person.role == Role.Student.name) {
           if (!students.contains(person)) {
             students.add(person);
           } else {
@@ -149,9 +169,9 @@ class _StudentsState extends State<Students> {
           state.errorMessage,
           context,
           toastBorderRadius: 8.0,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           backgroundColor: CustomColor.red,
           toastDuration: 6,
         );
@@ -226,10 +246,10 @@ class _StudentsState extends State<Students> {
         state.successMessage,
         context,
         toastBorderRadius: 8.0,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
-        backgroundColor: Colors.green.shade700,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
+        backgroundColor: primaryColorSelection(widget.option).shade700,
         toastDuration: 6,
       );
       nextScreenAndRemoveAll(context: context, screen: const HomePage());
@@ -239,9 +259,9 @@ class _StudentsState extends State<Students> {
         state.errorMessage,
         context,
         toastBorderRadius: 8.0,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
         backgroundColor: CustomColor.red,
         toastDuration: 6,
       );
@@ -271,9 +291,9 @@ class _StudentsState extends State<Students> {
           state.refreshFailure,
           context,
           toastBorderRadius: 8.0,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           backgroundColor: CustomColor.red,
           toastDuration: 6,
         );
@@ -297,9 +317,9 @@ class _StudentsState extends State<Students> {
       //   state.logoutFailure,
       //   context,
       //   toastBorderRadius: 8.0,
-      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                // ? GFToastPosition.TOP
-                                // : GFToastPosition.BOTTOM,
+      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0
+      // ? GFToastPosition.TOP
+      // : GFToastPosition.BOTTOM,
       //   backgroundColor: CustomColor.red,
       //   toastDuration: 6,
       // );
@@ -342,174 +362,22 @@ class _StudentsState extends State<Students> {
   Widget build(BuildContext context) {
     bool isSelect = widget.select;
 
-    // Get the list of first characters from students list
-    List<String> firstCharacters = students.map((student) {
-      return student.firstName.substring(0, 1);
-    }).toList();
+    // Initialize the AlphabetListViewOptions
+    final AlphabetListViewOptions options = _buildAlphabetListViewOptions();
+    List<String> firstCharacters = getFirstCharacters(students);
+    List<String> searchResultsFirstCharacters =
+        getFirstCharacters(searchResults);
 
-    // Get the list of first characters from searchResults list
-    List<String> searchResultsFirstCharacters = searchResults.map((student) {
-      return student.firstName.substring(0, 1);
-    }).toList();
-
-    studentAlphabetView = firstCharacters.map(
-      (alphabet) {
-        students.sort((a, b) => a.firstName.compareTo(b.firstName));
-        return AlphabetListViewItemGroup(
-            tag: alphabet,
-            children: students.map((student) {
-              if (student.firstName.startsWith(alphabet)) {
-                return Column(
-                  children: [
-                    ListTile(
-                      onTap: () {
-                        if (!isSelect) {
-                          nextScreen(
-                            context: context,
-                            screen: TuitionFeeRecord(
-                              student: student,
-                            ),
-                          );
-                        }
-                      },
-                      title: Text(
-                        // Student first and last name
-                        "${student.firstName} ${student.lastName1}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      trailing: isSelect
-                          ? Checkbox(
-                              activeColor: Colors.green,
-                              value: selectedStudents.contains(student),
-                              onChanged: (value) {
-                                _onSelected(value!, student);
-                              })
-                          : Container(
-                              width: 0,
-                            ),
-                    ),
-                    Divider(
-                      color: Colors.grey.shade400,
-                    )
-                  ],
-                );
-              }
-              return Container();
-            }).toList());
-      },
-    ).toList();
-
-    searchResultAlphabetView = searchResultsFirstCharacters.map(
-      (alphabet) {
-        searchResults.sort((a, b) => a.firstName.compareTo(b.firstName));
-        return AlphabetListViewItemGroup(
-            tag: alphabet,
-            children: searchResults.map((student) {
-              if (student.firstName.startsWith(alphabet)) {
-                return Column(
-                  children: [
-                    ListTile(
-                      onTap: () {
-                        if (!isSelect) {
-                          nextScreen(
-                            context: context,
-                            screen: TuitionFeeRecord(
-                              student: student,
-                            ),
-                          );
-                        }
-                      },
-                      title: Text(
-                        // Student first and last name
-                        "${student.firstName} ${student.lastName1}",
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                      trailing: isSelect
-                          ? Checkbox(
-                              activeColor: Colors.green,
-                              value: selectedStudents.contains(student),
-                              onChanged: (value) {
-                                _onSelected(value!, student);
-                              })
-                          : Container(
-                              width: 0,
-                            ),
-                    ),
-                    Divider(
-                      color: Colors.grey.shade400,
-                    )
-                  ],
-                );
-              }
-              return Container();
-            }).toList());
-      },
-    ).toList();
+    studentAlphabetView =
+        buildAlphabetView(firstCharacters, students, isSelect);
+    searchResultAlphabetView = buildAlphabetView(
+        searchResultsFirstCharacters, searchResults, isSelect);
 
     searchController.addListener(() {
-      if (searchController.text.isNotEmpty) {
-        searchResults.clear();
-        for (var student in students) {
-          if (student.firstName.toLowerCase().contains(searchController.text)) {
-            searchResults.add(student);
-          }
-        }
-      } else {
-        searchResults.clear();
-        for (var student in students) {
-          searchResults.add(student);
-        }
-      }
+      updateSearchResults();
     });
 
-    final AlphabetListViewOptions options = AlphabetListViewOptions(
-        listOptions: ListOptions(
-          listHeaderBuilder: (context, symbol) => Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade200,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Center(
-                      child: Text(symbol,
-                          style: TextStyle(
-                              color: SecondaryColors.secondaryGreen,
-                              fontSize: CustomFontSize.small))),
-                ),
-              ),
-            ],
-          ),
-        ),
-        scrollbarOptions: ScrollbarOptions(
-          backgroundColor: Colors.green.shade50,
-        ),
-        overlayOptions: OverlayOptions(
-          showOverlay: true,
-          overlayBuilder: (context, symbol) {
-            return Container(
-              height: 150,
-              width: 150,
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-                color: Colors.green.shade300.withOpacity(0.6),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: Text(symbol,
-                    style: const TextStyle(
-                      fontSize: 63,
-                      fontWeight: FontWeight.bold,
-                    )),
-              ),
-            );
-          },
-        ));
+    // options = getAlphabetListViewOptions();
 
     return VisibilityDetector(
       key: studentData,
@@ -526,182 +394,416 @@ class _StudentsState extends State<Students> {
       },
       child: BlocConsumer<PersonBloc, PersonState>(
         listener: (context, state) {
-          // TODO: implement listener
           if (isCurrentPage) {
             _handlePersonStateChange(context, state);
           }
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: Colors.green.shade50,
+            backgroundColor: primaryColorSelection(widget.option).shade50,
             bottomNavigationBar: widget.option == StudentOption.feeding
-                ? Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Divider(
-                        color: CustomColor.grey.withOpacity(0.5),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        color: Colors.transparent,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            selectedStudents.isEmpty
-                                ? Text("GHS 85.00 per student",
-                                    style: TextStyle(
-                                      fontSize: CustomFontSize.small,
-                                      color: SecondaryColors.secondaryGreen,
-                                    ))
-                                : Column(
-                                    children: [
-                                      Text(
-                                          "${selectedStudents.length} ${selectedStudents.length > 1 ? "children" : "child"}",
-                                          style: TextStyle(
-                                            fontSize: CustomFontSize.small,
-                                            color:
-                                                SecondaryColors.secondaryGreen,
-                                          )),
-                                      Text(
-                                          "GHS ${selectedStudents.length * 85}",
-                                          style: TextStyle(
-                                            fontSize: CustomFontSize.small,
-                                            color:
-                                                SecondaryColors.secondaryGreen,
-                                          )),
-                                    ],
-                                  ),
-                            isSelect && students.isNotEmpty
-                                ? FloatingActionButton.extended(
-                                    backgroundColor: selectedStudents.isNotEmpty
-                                        ? Colors.green.shade300
-                                        : Colors.grey.shade300,
-                                    onPressed: selectedStudents.isNotEmpty
-                                        ? () {
-                                            if (selectedStudents.isNotEmpty) {
-                                              createJournalRecord();
-                                            } else {
-                                              // GF Toast
-                                              GFToast.showToast(
-                                                "No student selected",
-                                                context,
-                                                toastPosition:
-                                                     MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
-                                                toastBorderRadius: 12.0,
-                                                toastDuration: 5,
-                                                backgroundColor: Colors.red,
-                                              );
-                                            }
-                                          }
-                                        : null,
-                                    label: SizedBox(
-                                      width: 80,
-                                      child: Center(
-                                        child: !loading
-                                            ? Text("Save",
-                                                style: TextStyle(
-                                                  fontSize:
-                                                      CustomFontSize.large,
-                                                  color: selectedStudents
-                                                          .isNotEmpty
-                                                      ? SecondaryColors
-                                                          .secondaryGreen
-                                                      : Colors.grey,
-                                                ))
-                                            : CircularProgressIndicator(
-                                                color: SecondaryColors
-                                                    .secondaryGreen,
-                                              ),
-                                      ),
-                                    ),
-                                  )
-                                : Container()
-                          ],
-                        ),
-                      ),
-                    ],
-                  )
+                ? _buildBottomNavigationBar(isSelect)
                 : null,
-            appBar: AppBar(
-              title: Text(
-                  widget.option == StudentOption.tuition
-                      ? 'Select student'
-                      : "Select students",
-                  style: TextStyle(
-                    color: SecondaryColors.secondaryGreen,
-                  )),
-              centerTitle: true,
-              actions: [
-                BlocListener<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (isCurrentPage) {
-                      _handleRefreshState(context, state);
-                      _handleLogoutStateChange(context, state);
-                    }
-                  },
-                  child: Container(),
-                ),
-                BlocListener<JournalBloc, JournalState>(
-                    listener: (context, state) {
-                      if (isCurrentPage) {
-                        _handleJournalStateChange(context, state);
-                      }
-                    },
-                    child: Container())
-              ],
-              backgroundColor: Colors.green.shade100,
-              bottom: PreferredSize(
-                preferredSize: const Size(double.infinity, 80),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: CustomTextField(
-                    color: SecondaryColors.secondaryGreen,
-                    hintText: "Search...",
-                    controller: searchController,
-                    onChanged: search,
-                  ),
-                ),
-              ),
-            ),
-            body: state.isLoading && students.isEmpty
-                ? const Center(
-                    child: GFLoader(type: GFLoaderType.ios),
-                  )
-                : errorMsg.isNotEmpty
-                    ? Center(
-                        child: Text(
-                          errorMsg,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
-                      )
-                    : showResults
-                        ? searchResults.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  "No Results Found",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              )
-                            : AlphabetListView(
-                                items: searchResultAlphabetView,
-                                options: options,
-                              )
-                        : AlphabetListView(
-                            options: options,
-                            items: studentAlphabetView,
-                          ),
+            appBar: _buildAppBar(options),
+            body: _buildBody(options, state),
           );
         },
       ),
     );
   }
+
+  List<String> getFirstCharacters(List<PersonModel> students) {
+    return students.map((student) {
+      return student.firstName!.substring(0, 1);
+    }).toList();
+  }
+
+  List<AlphabetListViewItemGroup> buildAlphabetView(
+      List<String> firstCharacters, List<PersonModel> students, bool isSelect) {
+    return firstCharacters.map(
+      (alphabet) {
+        selectedGroupPeople() {
+          if (selectedGroup == groups[0]) {
+            // Students in initial group
+          }
+        }
+
+        students.sort((a, b) => a.firstName!.compareTo(b.firstName!));
+        return AlphabetListViewItemGroup(
+          tag: alphabet,
+          children: buildStudentListTiles(alphabet, students, isSelect),
+        );
+      },
+    ).toList();
+  }
+
+  List<Widget> buildStudentListTiles(
+      String alphabet, List<PersonModel> students, bool isSelect) {
+    return students.map((student) {
+      if (student.firstName!.startsWith(alphabet)) {
+        return buildStudentTile(student, isSelect);
+      }
+      return Container();
+    }).toList();
+  }
+
+  Widget buildStudentTile(PersonModel student, bool isSelect) {
+    return Column(
+      children: [
+        ListTile(
+          onTap: () {
+            onStudentTileTap(student, isSelect, widget.option);
+          },
+          title: Text(
+            "${student.firstName!} ${student.lastName1}",
+            style: const TextStyle(fontSize: 20),
+          ),
+          trailing: isSelect
+              ? Checkbox(
+                  activeColor: primaryColorSelection(widget.option),
+                  value: selectedStudents.contains(student),
+                  onChanged: (value) {
+                    _onSelected(value!, student);
+                  },
+                )
+              : Container(
+                  width: 0,
+                ),
+        ),
+        Divider(
+          color: Colors.grey.shade400,
+        ),
+      ],
+    );
+  }
+
+  void onStudentTileTap(
+      PersonModel student, bool isSelect, StudentOption option) {
+    if (!isSelect) {
+      if (option == StudentOption.tuition) {
+        nextScreen(
+          context: context,
+          screen: TuitionFeeRecord(student: student),
+        );
+      }
+      if (option == StudentOption.studentContact) {
+        nextScreen(
+          context: context,
+          screen: PersonDetails(
+            screenFunction: ScreenFunction.edit,
+            person: student,
+          ),
+        );
+      }
+    }
+  }
+
+  void updateSearchResults() {
+    if (searchController.text.isNotEmpty) {
+      searchResults.clear();
+      for (var student in students) {
+        if (student.firstName!.toLowerCase().contains(searchController.text)) {
+          searchResults.add(student);
+        }
+      }
+    } else {
+      searchResults.clear();
+      searchResults.addAll(students);
+    }
+  }
+
+  AlphabetListViewOptions _buildAlphabetListViewOptions() {
+    return AlphabetListViewOptions(
+      listOptions: _buildListOptions(),
+      scrollbarOptions: _buildScrollbarOptions(),
+      overlayOptions: _buildOverlayOptions(),
+    );
+  }
+
+  ListOptions _buildListOptions() {
+    return ListOptions(
+      listHeaderBuilder: (context, symbol) => _buildListHeader(symbol),
+    );
+  }
+
+  Widget _buildListHeader(String symbol) {
+    return Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: 40,
+            height: 40,
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: primaryColorSelection(widget.option).shade200,
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Center(
+              child: Text(symbol,
+                  style: TextStyle(
+                      color: _secondaryColorSelection(widget.option),
+                      fontSize: CustomFontSize.small)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  ScrollbarOptions _buildScrollbarOptions() {
+    return ScrollbarOptions(
+      backgroundColor: primaryColorSelection(widget.option).shade50,
+    );
+  }
+
+  OverlayOptions _buildOverlayOptions() {
+    return OverlayOptions(
+      showOverlay: true,
+      overlayBuilder: (context, symbol) => _buildOverlay(symbol),
+    );
+  }
+
+  Widget _buildOverlay(String symbol) {
+    return Container(
+      height: 150,
+      width: 150,
+      padding: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: primaryColorSelection(widget.option).shade300.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Center(
+        child: Text(symbol,
+            style: const TextStyle(
+              fontSize: 63,
+              fontWeight: FontWeight.bold,
+            )),
+      ),
+    );
+  }
+
+  AppBar _buildAppBar(AlphabetListViewOptions options) {
+    return AppBar(
+      title: Text(_appBarTitle(widget.option),
+          style: TextStyle(
+            color: _secondaryColorSelection(widget.option),
+          )),
+      centerTitle: true,
+      actions: [
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (isCurrentPage) {
+              _handleRefreshState(context, state);
+              _handleLogoutStateChange(context, state);
+            }
+          },
+          child: Container(),
+        ),
+        BlocListener<JournalBloc, JournalState>(
+            listener: (context, state) {
+              if (isCurrentPage) {
+                _handleJournalStateChange(context, state);
+              }
+            },
+            child: Container())
+      ],
+      backgroundColor: primaryColorSelection(widget.option).shade100,
+      bottom: PreferredSize(
+        preferredSize: Size(double.infinity,
+            widget.option == StudentOption.studentContact ? 170 : 80),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Column(
+            children: [
+              // Student Groups
+              widget.option == StudentOption.studentContact
+                  ? CustomDropDownMenu(
+                      color: _secondaryColorSelection(widget.option),
+                      options: ["Select group", ...groups],
+                      value: selectedGroup,
+                      onChanged: _updateGroups,
+                    )
+                  : Container(),
+              CustomTextField(
+                color: _secondaryColorSelection(widget.option),
+                hintText: "Search...",
+                controller: searchController,
+                onChanged: search,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(AlphabetListViewOptions options, PersonState state) {
+    return state.isLoading && students.isEmpty
+        ? const Center(
+            child: GFLoader(type: GFLoaderType.ios),
+          )
+        : errorMsg.isNotEmpty
+            ? Center(
+                child: Text(
+                  errorMsg,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              )
+            : showResults
+                ? searchResults.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No Results Found",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      )
+                    : AlphabetListView(
+                        items: searchResultAlphabetView,
+                        options: options,
+                      )
+                : AlphabetListView(
+                    options: options,
+                    items: studentAlphabetView,
+                  );
+  }
+
+  Widget _buildBottomNavigationBar(bool isSelect) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Divider(
+          color: CustomColor.grey.withOpacity(0.5),
+        ),
+        Container(
+          padding: const EdgeInsets.all(12),
+          color: Colors.transparent,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildBottomNavigationBarText(),
+              _buildFloatingActionButton(isSelect),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigationBarText() {
+    return selectedStudents.isEmpty
+        ? Text("GHS 85.00 per student",
+            style: TextStyle(
+              fontSize: CustomFontSize.small,
+              color: _secondaryColorSelection(widget.option),
+            ))
+        : Column(
+            children: [
+              Text(
+                  "${selectedStudents.length} ${selectedStudents.length > 1 ? "children" : "child"}",
+                  style: TextStyle(
+                    fontSize: CustomFontSize.small,
+                    color: _secondaryColorSelection(widget.option),
+                  )),
+              Text("GHS ${selectedStudents.length * 85}",
+                  style: TextStyle(
+                    fontSize: CustomFontSize.small,
+                    color: _secondaryColorSelection(widget.option),
+                  )),
+            ],
+          );
+  }
+
+  Widget _buildFloatingActionButton(bool isSelect) {
+    return isSelect && students.isNotEmpty
+        ? FloatingActionButton.extended(
+            backgroundColor: selectedStudents.isNotEmpty
+                ? primaryColorSelection(widget.option).shade300
+                : Colors.grey.shade300,
+            onPressed: selectedStudents.isNotEmpty
+                ? () {
+                    if (selectedStudents.isNotEmpty) {
+                      createJournalRecord();
+                    } else {
+                      _showToast();
+                    }
+                  }
+                : null,
+            label: SizedBox(
+              width: 80,
+              child: Center(
+                child: !loading
+                    ? Text("Save",
+                        style: TextStyle(
+                          fontSize: CustomFontSize.large,
+                          color: selectedStudents.isNotEmpty
+                              ? _secondaryColorSelection(widget.option)
+                              : Colors.grey,
+                        ))
+                    : CircularProgressIndicator(
+                        color: _secondaryColorSelection(widget.option),
+                      ),
+              ),
+            ),
+          )
+        : Container();
+  }
+
+  void _showToast() {
+    // GF Toast
+    GFToast.showToast(
+      "No student selected",
+      context,
+      toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+          ? GFToastPosition.TOP
+          : GFToastPosition.BOTTOM,
+      toastBorderRadius: 12.0,
+      toastDuration: 5,
+      backgroundColor: Colors.red,
+    );
+  }
+
+  Color _secondaryColorSelection(StudentOption studentOption) {
+    if (studentOption == StudentOption.tuition) {
+      return SecondaryColors.secondaryGreen;
+    } else if (studentOption == StudentOption.feeding) {
+      return SecondaryColors.secondaryGreen;
+    } else {
+      return SecondaryColors.secondaryPink;
+    }
+  }
+
+  MaterialColor primaryColorSelection(StudentOption studentOption) {
+    if (studentOption == StudentOption.tuition) {
+      return Colors.green;
+    } else if (studentOption == StudentOption.feeding) {
+      return Colors.green;
+    } else {
+      return Colors.pink;
+    }
+  }
+
+  String _appBarTitle(StudentOption studentOption) {
+    if (studentOption == StudentOption.tuition) {
+      return "Select student";
+    }
+    if (studentOption == StudentOption.feeding) {
+      return "Select students";
+    }
+    return "Manage students";
+  }
+
+  // Widget _destinationRoutes(StudentOption studentOption, PersonModel student){
+  //   if(studentOption == StudentOption.tuition){
+  //     return const Tuition();
+  //   }
+  //   return const PersonDetails(screenFunction: ScreenFunction.edit, person: student,);
+  // }
 }

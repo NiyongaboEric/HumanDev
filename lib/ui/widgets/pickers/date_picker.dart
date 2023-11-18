@@ -117,7 +117,7 @@ class _DatePickerState extends State<DatePicker> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              DateFormat('dd MMM yy').format(widget.date),
+              DateFormat('dd MMM yyyy').format(widget.date),
               style: TextStyle(
                 fontSize: CustomFontSize.large,
                 color: widget.borderColor,

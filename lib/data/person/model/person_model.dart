@@ -1,18 +1,75 @@
+var schema = {
+  "id": 0,
+  "userId": 0,
+  "firstName": "string",
+  "middleName": "string",
+  "lastName1": "string",
+  "lastName2": "string",
+  "dateOfBirth": "string",
+  "spaceId": 0,
+  "phoneNumber": "string",
+  "isActive": true,
+  "isLegal": true,
+  "counterpartyName": "string",
+  "createdAt": "2023-11-17T23:13:04.874Z",
+  "updatedAt": "2023-11-17T23:13:04.874Z",
+  "childRelations": [
+    {
+      "id": 0,
+      "userId": 0,
+      "firstName": "string",
+      "middleName": "string",
+      "lastName1": "string",
+      "lastName2": "string",
+      "dateOfBirth": "string",
+      "spaceId": 0,
+      "phoneNumber": "string",
+      "isActive": true,
+      "isLegal": true,
+      "counterpartyName": "string",
+      "createdAt": "2023-11-17T23:13:04.874Z",
+      "updatedAt": "2023-11-17T23:13:04.874Z",
+      "relation": "PARENT"
+    }
+  ],
+  "relativeRelations": [
+    {
+      "id": 0,
+      "userId": 0,
+      "firstName": "string",
+      "middleName": "string",
+      "lastName1": "string",
+      "lastName2": "string",
+      "dateOfBirth": "string",
+      "spaceId": 0,
+      "phoneNumber": "string",
+      "isActive": true,
+      "isLegal": true,
+      "counterpartyName": "string",
+      "createdAt": "2023-11-17T23:13:04.874Z",
+      "updatedAt": "2023-11-17T23:13:04.874Z",
+      "relation": "PARENT"
+    }
+  ],
+  "groups": [
+    {"id": 0, "name": "string", "isRole": true, "isActive": true, "spaceId": 0}
+  ]
+};
+
 enum Role {
-  STUDENT,
-  TEACHER,
-  RELATIVE,
+  Student,
+  Teacher,
+  Relative,
 }
 
 class PersonModel {
   final int id;
   final int? userId;
-  final String firstName;
+  final String? firstName;
   final String? middleName;
-  final String lastName1;
+  final String? lastName1;
   final String? lastName2;
   final String? dateOfBirth;
-  final Role role;
   final int? spaceId;
   final String? phoneNumber;
   final bool? isActive;
@@ -20,27 +77,38 @@ class PersonModel {
   final String? counterpartyName;
   final String? createdAt;
   final String? updatedAt;
-  final List<RelatedPersons>? relatedPersons;
-  final List<PersonRelation>? personRelations;
+  final List<ChildRelation>? childRelations;
+  final List<RelativePerson>? relativeRelations;
+  final List<Group>? groups;
+
+  // Get Role from 1st group
+  get role {
+    if (groups != null &&
+        groups!.isNotEmpty &&
+        groups!.first.isRole != null &&
+        groups!.first.isRole!) {
+      return groups!.first.name!;
+        }
+  }
 
   const PersonModel({
     required this.id,
-    required this.userId,
-    required this.firstName,
+    this.userId,
+    this.firstName,
     this.middleName,
-    required this.lastName1,
+    this.lastName1,
     this.lastName2,
     this.dateOfBirth,
-    required this.role,
-    required this.spaceId,
+    this.spaceId,
     this.phoneNumber,
     this.isActive,
     this.isLegal,
     this.counterpartyName,
-    required this.createdAt,
-    required this.updatedAt,
-    this.relatedPersons,
-    this.personRelations,
+    this.createdAt,
+    this.updatedAt,
+    this.childRelations,
+    this.relativeRelations,
+    this.groups,
   });
 
   factory PersonModel.fromJson(Map<String, dynamic> json) {
@@ -52,7 +120,6 @@ class PersonModel {
       lastName1: json['lastName1'],
       lastName2: json['lastName2'],
       dateOfBirth: json['dateOfBirth'],
-      role: stringToRole(json['role']),
       spaceId: json['spaceId'],
       phoneNumber: json['phoneNumber'],
       isActive: json['isActive'],
@@ -60,16 +127,19 @@ class PersonModel {
       counterpartyName: json['counterpartyName'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
-      relatedPersons: json['relatedPersons'] == null
-          ? null
-          : (json['relatedPersons'] as List)
-              .map((e) => RelatedPersons.fromJson(e))
-              .toList(),
-      personRelations: json['personRelations'] == null
-          ? null
-          : (json['personRelations'] as List)
-              .map((e) => PersonRelation.fromJson(e))
-              .toList(),
+      childRelations: json['childRelations'] != null
+          ? (json['childRelations'] as List)
+              .map((i) => ChildRelation.fromJson(i))
+              .toList()
+          : null,
+      relativeRelations: json['relativeRelations'] != null
+          ? (json['relativeRelations'] as List)
+              .map((i) => RelativePerson.fromJson(i))
+              .toList()
+          : null,
+      groups: json['groups'] != null
+          ? (json['groups'] as List).map((i) => Group.fromJson(i)).toList()
+          : null,
     );
   }
 
@@ -82,7 +152,6 @@ class PersonModel {
       'lastName1': lastName1,
       'lastName2': lastName2,
       'dateOfBirth': dateOfBirth,
-      'role': role.name,
       'spaceId': spaceId,
       'phoneNumber': phoneNumber,
       'isActive': isActive,
@@ -90,12 +159,50 @@ class PersonModel {
       'counterpartyName': counterpartyName,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      'relatedPersons': relatedPersons,
+      'childRelations': childRelations,
+      'relativeRelations': relativeRelations,
+      'groups': groups,
     };
   }
 }
 
-class RelatedPersons {
+class Group {
+  final int? id;
+  final String? name;
+  final bool? isRole;
+  final bool? isActive;
+  final int? spaceId;
+
+  const Group({
+    this.id,
+    this.name,
+    this.isRole,
+    this.isActive,
+    this.spaceId,
+  });
+
+  factory Group.fromJson(Map<String, dynamic> json) {
+    return Group(
+      id: json['id'],
+      name: json['name'],
+      isRole: json['isRole'],
+      isActive: json['isActive'],
+      spaceId: json['spaceId'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'isRole': isRole,
+      'isActive': isActive,
+      'spaceId': spaceId,
+    };
+  }
+}
+
+class ChildRelation {
   final int id;
   final int? userId;
   final String? firstName;
@@ -103,15 +210,16 @@ class RelatedPersons {
   final String? lastName1;
   final String? lastName2;
   final String? dateOfBirth;
-  final String? role;
-  final int? spaceId;
   final String? phoneNumber;
+  final int? spaceId;
+  final bool? isLegal;
+  final String? counterpartyName;
   final bool? isActive;
   final String? createdAt;
   final String? updatedAt;
   final String? relation;
 
-  const RelatedPersons({
+  const ChildRelation({
     required this.id,
     this.userId,
     this.firstName,
@@ -119,17 +227,18 @@ class RelatedPersons {
     this.lastName1,
     this.lastName2,
     this.dateOfBirth,
-    this.role,
-    this.spaceId,
     this.phoneNumber,
+    this.spaceId,
+    this.isLegal,
+    this.counterpartyName,
     this.isActive,
     this.createdAt,
     this.updatedAt,
     this.relation,
   });
 
-  factory RelatedPersons.fromJson(Map<String, dynamic> json) {
-    return RelatedPersons(
+  factory ChildRelation.fromJson(Map<String, dynamic> json) {
+    return ChildRelation(
       id: json['id'],
       userId: json['userId'],
       firstName: json['firstName'],
@@ -137,9 +246,10 @@ class RelatedPersons {
       lastName1: json['lastName1'],
       lastName2: json['lastName2'],
       dateOfBirth: json['dateOfBirth'],
-      role: json['role'],
-      spaceId: json['spaceId'],
       phoneNumber: json['phoneNumber'],
+      spaceId: json['spaceId'],
+      isLegal: json['isLegal'],
+      counterpartyName: json['counterpartyName'],
       isActive: json['isActive'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
@@ -156,9 +266,85 @@ class RelatedPersons {
       'lastName1': lastName1,
       'lastName2': lastName2,
       'dateOfBirth': dateOfBirth,
-      'role': role,
-      'spaceId': spaceId,
       'phoneNumber': phoneNumber,
+      'spaceId': spaceId,
+      'isLegal': isLegal,
+      'counterpartyName': counterpartyName,
+      'isActive': isActive,
+      'createdAt': createdAt,
+      'updatedAt': updatedAt,
+      'relation': relation,
+    };
+  }
+}
+class RelativePerson {
+  final int? id;
+  final int? userId;
+  final String? firstName;
+  final String? middleName;
+  final String? lastName1;
+  final String? lastName2;
+  final String? dateOfBirth;
+  final String? phoneNumber;
+  final int? spaceId;
+  final bool? isLegal;
+  final String? counterpartyName;
+  final bool? isActive;
+  final String? createdAt;
+  final String? updatedAt;
+  final String? relation;
+
+  const RelativePerson({
+    this.id,
+    this.userId,
+    this.firstName,
+    this.middleName,
+    this.lastName1,
+    this.lastName2,
+    this.dateOfBirth,
+    this.phoneNumber,
+    this.spaceId,
+    this.isLegal,
+    this.counterpartyName,
+    this.isActive,
+    this.createdAt,
+    this.updatedAt,
+    this.relation,
+  });
+
+  factory RelativePerson.fromJson(Map<String, dynamic> json) {
+    return RelativePerson(
+      id: json['id'],
+      userId: json['userId'],
+      firstName: json['firstName'],
+      middleName: json['middleName'],
+      lastName1: json['lastName1'],
+      lastName2: json['lastName2'],
+      dateOfBirth: json['dateOfBirth'],
+      phoneNumber: json['phoneNumber'],
+      spaceId: json['spaceId'],
+      isLegal: json['isLegal'],
+      counterpartyName: json['counterpartyName'],
+      isActive: json['isActive'],
+      createdAt: json['createdAt'],
+      updatedAt: json['updatedAt'],
+      relation: json['relation'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'userId': userId,
+      'firstName': firstName,
+      'middleName': middleName,
+      'lastName1': lastName1,
+      'lastName2': lastName2,
+      'dateOfBirth': dateOfBirth,
+      'phoneNumber': phoneNumber,
+      'spaceId': spaceId,
+      'isLegal': isLegal,
+      'counterpartyName': counterpartyName,
       'isActive': isActive,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
@@ -167,55 +353,17 @@ class RelatedPersons {
   }
 }
 
-class PersonRelation {
-  final int? id;
-  final int? childPersonId;
-  final int? relativePersonId;
-  final String? relation;
-  final String? createdAt;
-  final String? updatedAt;
-
-  const PersonRelation({
-    this.id,
-    this.childPersonId,
-    this.relativePersonId,
-    this.relation,
-    this.createdAt,
-    this.updatedAt,
-  });
-
-  factory PersonRelation.fromJson(Map<String, dynamic> json) {
-    return PersonRelation(
-      id: json['id'],
-      childPersonId: json['childPersonId'],
-      relativePersonId: json['relativePersonId'],
-      relation: json['relation'],
-      createdAt: json['createdAt'],
-      updatedAt: json['updatedAt'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'childPersonId': childPersonId,
-      'relativePersonId': relativePersonId,
-      'relation': relation,
-      'createdAt': createdAt,
-      'updatedAt': updatedAt,
-    };
-  }
-}
-
-Role stringToRole(String value){
-  switch(value){
-    case "STUDENT":
-      return Role.STUDENT;
-    case "RELATIVE":
-      return Role.RELATIVE;
-    case "PARENT":
-      return Role.RELATIVE;
+Role stringToRole(String value) {
+  switch (value) {
+    case "Student":
+      return Role.Student;
+    case "Relative":
+      return Role.Relative;
+    case "Parent":
+      return Role.Relative;
+    case "Teacher":
+      return Role.Teacher;
     default:
-      return Role.STUDENT;
+      return Role.Student;
   }
 }

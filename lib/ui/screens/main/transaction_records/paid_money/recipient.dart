@@ -154,7 +154,7 @@ class _RecipientState extends State<Recipient> {
             id: person.id,
             firstName: person.firstName,
             lastName: person.lastName1,
-            role: person.role == Role.RELATIVE
+            role: person.role == Role.Relative.name
                 ? "parent"
                 : person.role.name.toLowerCase(),
             isPerson: true,
@@ -165,7 +165,7 @@ class _RecipientState extends State<Recipient> {
             isPerson: true,
             firstName: person.firstName,
             lastName: person.lastName1,
-            role: person.role == Role.RELATIVE
+            role: person.role == Role.Relative.name
                 ? "parent"
                 : person.role.name.toLowerCase(),
           ));

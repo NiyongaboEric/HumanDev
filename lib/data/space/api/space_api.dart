@@ -22,6 +22,7 @@ class SpaceApiImpl implements SpaceApi {
       var interceptor = sl.get<RequestInterceptor>();
       var dio = sl.get<Dio>()..interceptors.add(interceptor);
       final res = await dio.get("/space");
+      logger.i(res.data);
       if (res.statusCode == 200) {
         var response = res.data;
 
@@ -42,7 +43,7 @@ class SpaceApiImpl implements SpaceApi {
     } on DioException catch (error) {
       // Handle Dio errors and other exceptions
       logger.e("An error occurred: ${error.response?.data["message"] ?? "No internet connection"}");
-      throw Exception(error.response?.data["message"] ?? "Network Error");
+      throw Exception(error.response?.data["message"] ?? "No internet connection");
     }
   }
 

@@ -94,7 +94,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   // Handle Get User Data State Change
   void _handleRefreshStateChange(BuildContext context, AuthState state) {
-    var prefs = sl<SharedPreferenceModule>();
+    // var prefs = sl<SharedPreferenceModule>();
     if (logout) {
       return;
     }
@@ -293,14 +293,16 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     return VisibilityDetector(
       key: startLoader,
       onVisibilityChanged: (visibilityInfo) {
-        if (visibilityInfo.visibleFraction > 0.5) {
-          setState(() {
-            isCurrentPage = true;
-          });
-        } else {
-          setState(() {
-            isCurrentPage = false;
-          });
+        if (mounted) {
+          if (visibilityInfo.visibleFraction > 0.5) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          } else {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }          
         }
       },
       child: MultiBlocListener(
@@ -311,9 +313,11 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             // },
             listener: (context, state) {
               // TODO: implement refresh listener
-              if (isCurrentPage) {
-                _handleRefreshStateChange(context, state);
-                _handleLogoutStateChange(context, state);
+              if (mounted) {
+                if (isCurrentPage) {
+                  _handleRefreshStateChange(context, state);
+                  _handleLogoutStateChange(context, state);
+                }
               }
             },
           ),
@@ -323,8 +327,10 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             },
             listener: (context, state) {
               // TODO: implement tuitions listener
-              if (isCurrentPage) {
-                _handleTuitionRequestStateChange(context, state);
+              if (mounted) {
+                if (isCurrentPage) {
+                  _handleTuitionRequestStateChange(context, state);
+                }
               }
             },
           ),
@@ -334,33 +340,34 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             },
             listener: (context, state) {
               // TODO: implement space listener
-              if (isCurrentPage) {
-                _handleSpaceStateChange(context, state);
+              if (mounted) {
+                if (isCurrentPage) {
+                  _handleSpaceStateChange(context, state);
+                }
               }
             },
           ),
           BlocListener<AccountsBloc, AccountsState>(
-            listenWhen: (context, state) {
-              return true;
-            },
-            listener: (context, state) {
-              // TODO: implement accounts listener
+              listenWhen: (context, state) {
+            return true;
+          }, listener: (context, state) {
+            // TODO: implement accounts listener
+            if (mounted) {
               if (isCurrentPage) {
                 _handleAccountStateChange(context, state);
               }
             }
-          ),
-          BlocListener<TagsBloc, TagsState>(
-            listenWhen: (context, state) {
-              return true;
-            },
-            listener: (context, state) {
-              // TODO: implement tags listener
+          }),
+          BlocListener<TagsBloc, TagsState>(listenWhen: (context, state) {
+            return true;
+          }, listener: (context, state) {
+            // TODO: implement tags listener
+            if (mounted) {
               if (isCurrentPage) {
                 _handleTagsStateChange(context, state);
-              }
+              }              
             }
-          )
+          })
         ],
         child: const Scaffold(
           body: Center(
