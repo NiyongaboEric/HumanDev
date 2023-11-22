@@ -846,6 +846,14 @@ class _ParentsState extends State<Parents> {
                       trailing: parentSection == ParentSection.sms ||
                               parentSection == ParentSection.sendSMS
                           ? Checkbox(
+                              side: widget.parentSection ==
+                                      ParentSection.sendSMS
+                                  ? (person.phoneNumber == null ||
+                                          person.phoneNumber!.isEmpty)
+                                      ? BorderSide(
+                                          color: Colors.black.withOpacity(0.2))
+                                      : const BorderSide(color: Colors.black)
+                                  : const BorderSide(color: Colors.black),
                               activeColor:
                                   widget.parentSection == ParentSection.sendSMS
                                       ? SMSRecipientColors.thirdColor
@@ -1068,6 +1076,14 @@ class _ParentsState extends State<Parents> {
                       trailing: parentSection == ParentSection.sms ||
                               parentSection == ParentSection.sendSMS
                           ? Checkbox(
+                              side: widget.parentSection ==
+                                      ParentSection.sendSMS
+                                  ? (relative.phoneNumber == null ||
+                                          relative.phoneNumber!.isEmpty)
+                                      ? BorderSide(
+                                          color: Colors.black.withOpacity(0.2))
+                                      : const BorderSide(color: Colors.black)
+                                  : const BorderSide(color: Colors.black),
                               activeColor:
                                   widget.parentSection == ParentSection.sendSMS
                                       ? SMSRecipientColors.thirdColor
@@ -1310,7 +1326,7 @@ class _ParentsState extends State<Parents> {
                       style: TextStyle(
                         color: SMSRecipientColors.primaryColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 22,
+                        fontSize: 25,
                       ),
                     )
                   : Text(
@@ -1358,7 +1374,7 @@ class _ParentsState extends State<Parents> {
               ],
               bottom: PreferredSize(
                 preferredSize: widget.parentSection == ParentSection.sendSMS
-                    ? const Size(double.infinity, 200)
+                    ? const Size(double.infinity, 160)
                     : Size(
                         double.infinity,
                         widget.parentSection == ParentSection.family ? 150 : 80,
@@ -1429,17 +1445,16 @@ class _ParentsState extends State<Parents> {
                           : Container(),
                       widget.parentSection == ParentSection.sendSMS
                           ? const SizedBox(
-                              height: 20,
+                              height: 15,
                             )
                           : Container(),
                       // Customize parentSelection Send SMS search
                       widget.parentSection == ParentSection.sendSMS
                           ? Container(
                               width: double.infinity,
-                              color: SMSRecipientColors.fourthColor,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 18,
-                                vertical: 15,
+                                vertical: 0,
                               ),
                               child: CustomTextField(
                                 color: SMSRecipientColors.primaryColor,
@@ -1468,7 +1483,7 @@ class _ParentsState extends State<Parents> {
                               ...selectedParentsSendSMS,
                               ...selectedTeachersSendSMS
                             ].isEmpty
-                              ? SMSRecipientColors.primaryColor
+                              ? primaryColorSelection(parentSection).shade200
                               : SMSRecipientColors.thirdColor
                           : parentSection == ParentSection.sms
                               ? selectedParents.isEmpty
