@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/sms_reminder/sms_reminder.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';

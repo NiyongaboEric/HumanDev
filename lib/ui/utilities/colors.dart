@@ -20,6 +20,7 @@ class SecondaryColors {
   static Color secondaryPink = const Color(0xFF4D0C2B);
 
   // Send SMS
+  // SMSRecipientColors
 }
 
 class PrimaryColors {
@@ -38,4 +39,13 @@ class TertiaryColors {
   // static Color tertiaryYellow = const Color(0xFF3B3101);
   // static Color tertiaryBlue = const Color(0xFF002635);
   static Color tertiaryPink = const Color(0xFFFDF4F9);  
+}
+
+
+class SMSRecipientColors {
+  static Color primaryColor = const Color(0xFF031A38);
+  static Color secondaryColor = const Color.fromRGBO(24, 119, 242, 0.2);//const Color(0xFF1877F2);
+  static Color thirdColor = const Color(0XFF18E4F2);
+  static Color fourthColor = const Color(0xFFE5F0FE);
+  static Color fifthColor = const Color(0xFFE4FDFF);
 }

@@ -10,6 +10,9 @@ class CustomTextField extends StatefulWidget {
   final Function(String)? onChanged;
   final TextEditingController controller;
   final TextInputType? inputType;
+  final Color? fillColor;
+  final double? hintTextSize;
+ 
   const CustomTextField({
     super.key,
     this.obscureText,
@@ -19,6 +22,8 @@ class CustomTextField extends StatefulWidget {
     this.inputType,
     this.onChanged,
     required this.color,
+    this.fillColor,
+    this.hintTextSize
   });
 
   @override
@@ -60,7 +65,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: TextStyle(
-              color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+              color: Colors.grey.shade400, fontWeight: FontWeight.normal, fontSize: widget.hintTextSize),
           contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
@@ -84,7 +89,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               color: widget.color.withOpacity(0.5),
             ),),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.6),
+          fillColor:  widget.fillColor ?? Colors.white.withOpacity(0.6),
           suffixIcon: textVisibility != null
               ? IconButton(
                   onPressed: handleTextVisibility,
