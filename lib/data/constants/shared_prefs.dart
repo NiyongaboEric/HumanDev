@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -44,6 +45,22 @@ class SharedPreferenceModule {
     pref.setString("tags", jsonString);
   }
 
+  // Save Groups to Shared Preferences
+  void saveGroups(List<Group> groups) {
+    final jsonString = jsonEncode(
+      groups.map((group) => group.toJson()).toList(),
+    );
+    pref.setString("groups", jsonString);
+  }
+
+  // Save One Group to Shared Preferences and add to groups list
+  void saveGroup(Group group) {
+    var groups = getGroups();
+    groups.add(group);
+    List<Group> newGroupList = groups;
+    saveGroups(newGroupList);
+  }
+
   // Get user data from Shared Preferences
   TokenResponse? getToken() {
     final jsonString = pref.getString("token");
@@ -80,6 +97,17 @@ class SharedPreferenceModule {
     final jsonString = pref.getString("tags");
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List).cast<String>();
+    }
+    return [];
+  }
+
+// Get Groups
+  List<Group> getGroups() {
+    final jsonString = pref.getString("groups");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => Group.fromJson(e))
+          .toList();
     }
     return [];
   }

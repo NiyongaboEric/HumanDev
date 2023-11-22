@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/contact_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/phone_number_field.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_area.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 
+import '../../../../data/constants/shared_prefs.dart';
+import '../../../../data/groups/model/group_model.dart';
 import '../../../utilities/font_sizes.dart';
 
 enum ScreenFunction {
   add,
   edit,
 }
+
+var sl = GetIt.instance;
 
 class PersonDetails extends StatefulWidget {
   final ScreenFunction screenFunction;
@@ -27,16 +37,22 @@ class PersonDetails extends StatefulWidget {
 }
 
 class _PersonDetailsState extends State<PersonDetails> {
+  var prefs = sl<SharedPreferenceModule>();
+
   // TextEditingControllers
   final firstNameController = TextEditingController();
   final middleNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneNumberController = TextEditingController();
+  final notesController = TextEditingController();
   final emailController = TextEditingController();
   final streetController = TextEditingController();
   final cityController = TextEditingController();
   final stateController = TextEditingController();
   final zipController = TextEditingController();
+  final groupController = TextEditingController();
+  final countryController = TextEditingController();
+  // final country = Constants.countries[0];
 
   // Date picker and change date handler
   DateTime selectedDate = DateTime.now();
@@ -46,9 +62,40 @@ class _PersonDetailsState extends State<PersonDetails> {
     });
   }
 
+  // Email List and update handler
+  List<String> emailList = [];
+  _updateEmailList(email) async {
+    if (email == "Add new email") {
+      await _buildDialog(
+        context,
+        email,
+        emailController,
+        onPressed: () {
+          emailList.add(emailController.text);
+        },
+      );
+    }
+  }
+
+  // Group list and add new group
+  List<String> groupList = [];
+  List<String> selectGroupList = [];
+  _updateGroupList(group) async {
+    if (group == "Add new group") {
+      await _buildDialog(
+        context,
+        group,
+        groupController,
+        onPressed: () {
+          groupList.add(groupController.text);
+          selectGroupList.add(groupController.text);
+        },
+      );
+    }
+  }
+
   // Gender option and change handler
   String selectedGender = "Gender";
-  List<String> genders = ["Male", "Female", "Other"];
   void _changeGender(gender) {
     setState(() {
       selectedGender = gender;
@@ -71,6 +118,10 @@ class _PersonDetailsState extends State<PersonDetails> {
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
+    }
+    List<Group> groups = prefs.getGroups();
+    for (var group in groups) {
+      groupList.add(group.name!);
     }
     super.initState();
   }
@@ -111,11 +162,13 @@ class _PersonDetailsState extends State<PersonDetails> {
           _buildGenderDropDown(),
           const SizedBox(height: 20),
           _buildSection("Contacts", Icons.contact_page_rounded, [
-            _buildTextField(phoneNumberController, "Phone number"),
-            const SizedBox(height: 20),
-            _buildTextField(emailController, "Email"),
+            _buildPhoneNumberField(phoneNumberController),
             const SizedBox(height: 20),
             _buildTextField(streetController, "Street"),
+          ]),
+          _buildSection("Address", Icons.home_rounded, [
+            _buildDropDownOptions("Email", emailList, _updateEmailList),
+            // const SizedBox(height: 20),
             const SizedBox(height: 20),
             _buildTextField(cityController, "City"),
             const SizedBox(height: 20),
@@ -123,15 +176,14 @@ class _PersonDetailsState extends State<PersonDetails> {
             const SizedBox(height: 20),
             _buildTextField(zipController, "Zip"),
           ]),
-          _buildSection("Parents", Icons.people_alt_rounded, [
-            _buildAddButton(),
-          ]),
-          _buildSection("Upcoming payments", Icons.attach_money_rounded, [
-            _buildAddButton(),
-          ]),
-          _buildSection("Invoices", Icons.receipt, [
-            _buildAddButton(),
-          ]),
+          _buildSection("Parents", Icons.people_alt_rounded, [],
+              isAddButton: true),
+          _buildSection("Groups", Icons.groups_2_rounded, [],
+              isAddButton: true),
+          _buildTextArea(notesController, "Notes..."),
+          const SizedBox(height: 20),
+          _buildSection("Invoices", Icons.receipt, [], isAddButton: true),
+          _buildSection("Upcoming payments", Icons.attach_money_rounded, []),
           const SizedBox(height: 20),
           Divider(
             color: Colors.pink.shade100,
@@ -168,11 +220,37 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hintText) {
+  Widget _buildTextField(TextEditingController controller, String hintText,
+      {TextInputType? inputType}) {
     return CustomTextField(
       controller: controller,
       color: SecondaryColors.secondaryPink,
       hintText: hintText,
+      inputType: inputType,
+    );
+  }
+
+  Widget _buildTextArea(TextEditingController controller, String hintText) {
+    return Column(
+      children: [
+        Divider(
+          color: Colors.pink.shade100,
+        ),
+        const SizedBox(height: 20),
+        CustomTextArea(
+          hintText: hintText,
+          controller: controller,
+          color: SecondaryColors.secondaryPink,
+          maxLines: 3,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPhoneNumberField(TextEditingController controller) {
+    return CustomPhoneNumberField(
+      controller: controller,
+      color: SecondaryColors.secondaryPink,
     );
   }
 
@@ -190,16 +268,17 @@ class _PersonDetailsState extends State<PersonDetails> {
   Widget _buildGenderDropDown() {
     return CustomDropDownMenu(
       color: SecondaryColors.secondaryPink,
-      options: [
+      options: const [
         "Gender",
-        ...genders,
+        ...Constants.genders,
       ],
       value: selectedGender,
       onChanged: _changeGender,
     );
   }
 
-  Widget _buildSection(String title, IconData icon, List<Widget> children) {
+  Widget _buildSection(String title, IconData icon, List<Widget> children,
+      {bool isAddButton = false}) {
     return Column(
       children: [
         Divider(
@@ -217,6 +296,9 @@ class _PersonDetailsState extends State<PersonDetails> {
                 color: SecondaryColors.secondaryPink,
               ),
             ),
+            const Spacer(),
+            if (isAddButton && title == "Parents") _buildAddButton(),
+            if (isAddButton && title == "Groups") _buildPopupMenu(),
           ],
         ),
         const SizedBox(height: 20),
@@ -229,10 +311,18 @@ class _PersonDetailsState extends State<PersonDetails> {
     return SizedBox(
       height: 80,
       child: Center(
-        child: FloatingActionButton.extended(
-          backgroundColor: Colors.pink.shade100,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.pink.shade100,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(12),
+              ),
+            ),
+            elevation: 5,
+          ),
           onPressed: () {},
-          label: Icon(
+          child: Icon(
             Icons.add,
             color: SecondaryColors.secondaryPink,
           ),
@@ -261,5 +351,119 @@ class _PersonDetailsState extends State<PersonDetails> {
         ],
       ),
     );
+  }
+
+  Widget _buildDropDownOptions(
+    String value,
+    List<String> options,
+    Function(dynamic)? onChanged,
+  ) {
+    return ContactDropDownOptions(
+      value: value,
+      options: ["Email", ...options, "Add new email"],
+      color: Colors.pink,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildPopupMenu() {
+    return PopupMenuButton(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      color: Colors.pink.shade100,
+      child: Container(
+          height: 40,
+          width: 70,
+          decoration: BoxDecoration(
+              color: Colors.pink.shade100,
+              borderRadius: BorderRadius.circular(12),
+              // Shadow
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  offset: Offset(0, 5),
+                  blurRadius: 5,
+                )
+              ]),
+          child: Center(
+            child: Icon(
+              Icons.add,
+              color: SecondaryColors.secondaryPink,
+            ),
+          )),
+      itemBuilder: (context) => [
+        ...groupList.map((group) => PopupMenuItem(
+            child: Text(
+              group,
+              style: TextStyle(
+                color: SecondaryColors.secondaryPink,
+                fontSize: CustomFontSize.medium,
+                fontWeight: FontWeight.normal
+              )),
+            onTap: () {
+              selectGroupList.add(group);
+            })),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.add, color: SecondaryColors.secondaryPink),
+              const SizedBox(width: 10),
+              Text("Add new group",
+                  style: TextStyle(
+                    color: SecondaryColors.secondaryPink,
+                    fontSize: CustomFontSize.medium,
+                    fontWeight: FontWeight.normal
+                  )),
+            ],
+          ),
+          onTap: () => _updateGroupList("Add new group"),
+        ),
+      ],
+    );
+  }
+
+
+  _buildDialog(
+    BuildContext context,
+    String title,
+    TextEditingController controller, {
+    Function()? onPressed,
+  }) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              backgroundColor: Colors.pink.shade100,
+              title: Text(title),
+              content: _buildTextField(
+                controller,
+                title,
+                inputType: TextInputType.emailAddress,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: SecondaryColors.secondaryPink,
+                      fontSize: CustomFontSize.large,
+                    ),
+                  ),
+                ),
+                DefaultBtn(
+                  text: "Save",
+                  onPressed: () {
+                    Navigator.pop(context);
+                    if (onPressed != null) onPressed();
+                  },
+                  textColor: SecondaryColors.secondaryPink,
+                  btnColor: Colors.pink.shade100,
+                )
+              ]);
+        });
   }
 }
