@@ -32,7 +32,7 @@ import 'bloc/person_bloc.dart';
 
 var sl = GetIt.instance;
 
-enum ParentSection { sms, letter, conversation, todo, family, sendSMS }
+enum ParentSection { sms, letter, conversation, todo, contacts, sendSMS, students }
 
 class Parents extends StatefulWidget {
   final ParentSection parentSection;
@@ -172,7 +172,7 @@ class _ParentsState extends State<Parents> {
         return SecondaryColors.secondaryYellow;
       case ParentSection.todo:
         return Colors.brown;
-      case ParentSection.family:
+      case ParentSection.students:
         return SecondaryColors.secondaryPink;
       default:
         return Colors.white;
@@ -189,7 +189,7 @@ class _ParentsState extends State<Parents> {
         return Colors.amber;
       case ParentSection.todo:
         return Colors.brown;
-      case ParentSection.family:
+      case ParentSection.students:
         return Colors.pink;
       default:
         return Colors.blue;
@@ -212,7 +212,7 @@ class _ParentsState extends State<Parents> {
         );
       case ParentSection.todo:
         return const SendSMS();
-      case ParentSection.family:
+      case ParentSection.students:
         return PersonDetails(
           screenFunction: ScreenFunction.edit,
           person: personData,
@@ -551,11 +551,12 @@ class _ParentsState extends State<Parents> {
                     ListTile(
                       onTap: parentSection != ParentSection.sms
                           ? () {
+                            parentSection != ParentSection.students?
                               nextScreen(
                                 context: context,
                                 screen: destinationRoutes(parentSection,
                                     personData: person),
-                              );
+                              ) : Navigator.pop(context, person); ;
                             }
                           : null,
                       // leading: CircleAvatar(
@@ -878,7 +879,7 @@ class _ParentsState extends State<Parents> {
                   },
                   child: Container(),
                 ),
-                widget.parentSection == ParentSection.family
+                widget.parentSection == ParentSection.students
                     ? IconButton(
                         onPressed: () {
                           nextScreen(
@@ -892,13 +893,13 @@ class _ParentsState extends State<Parents> {
               ],
               bottom: PreferredSize(
                 preferredSize: Size(double.infinity,
-                    widget.parentSection == ParentSection.family ? 150 : 80),
+                    widget.parentSection == ParentSection.students ? 150 : 80),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      widget.parentSection == ParentSection.family
+                      widget.parentSection == ParentSection.students
                           ? ToggleButtons(
                               selectedColor: Colors.white,
                               fillColor:
@@ -909,7 +910,7 @@ class _ParentsState extends State<Parents> {
                               children: toggleOptions,
                             )
                           : Container(),
-                      widget.parentSection == ParentSection.family
+                      widget.parentSection == ParentSection.students
                           ? const SizedBox(
                               height: 10,
                             )
