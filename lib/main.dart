@@ -34,7 +34,6 @@ class MyApp extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var pref = sl.get<SharedPreferenceModule>();
-            print(pref.getToken());
             return MultiBlocProvider(
               providers: [
                 BlocProvider(create: (context) => sl<AuthBloc>()),

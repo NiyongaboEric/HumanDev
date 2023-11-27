@@ -22,7 +22,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     Emitter<PersonState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    try {
+    try {  
       final persons = await studentApiImpl.getAllPersons();
       emit(
         state.copyWith(

@@ -406,14 +406,16 @@ class _StudentsState extends State<Students> {
     return VisibilityDetector(
       key: studentData,
       onVisibilityChanged: (visibilityInfo) {
-        if (visibilityInfo.visibleFraction == 1.0) {
-          setState(() {
-            isCurrentPage = true;
-          });
-        } else {
-          setState(() {
-            isCurrentPage = false;
-          });
+        if (mounted) {
+          if (visibilityInfo.visibleFraction == 1.0) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          } else {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }
         }
       },
       child: BlocConsumer<PersonBloc, PersonState>(

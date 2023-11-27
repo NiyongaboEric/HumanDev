@@ -42,7 +42,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
   bool refreshSuccess = false;
   var prefs = sl<SharedPreferences>();
   Key startLoader = const Key("start-loader");
-  bool isCurrentPage = false;
+  bool isCurrentPage = true;
 
   // Get User Data
   void _getSpaces() {
@@ -309,6 +309,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   @override
   Widget build(BuildContext context) {
+
     return VisibilityDetector(
       key: startLoader,
       onVisibilityChanged: (visibilityInfo) {
