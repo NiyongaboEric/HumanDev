@@ -9,6 +9,8 @@ class CustomTextArea extends StatefulWidget {
   final Function(String)? onChanged;
   final TextEditingController controller;
   final TextInputType? inputType;
+  final Color? fillColor;
+
   const CustomTextArea({
     super.key,
     required this.hintText,
@@ -19,6 +21,7 @@ class CustomTextArea extends StatefulWidget {
     required this.color,
     this.onChanged,
     this.maxLines,
+    this.fillColor
   });
 
   @override
@@ -74,7 +77,7 @@ class _CustomTextAreaState extends State<CustomTextArea> {
           ),
         ),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.5),
+        fillColor: widget.fillColor ?? Colors.white.withOpacity(0.5),
       ),
       validator: widget.validator,
     );

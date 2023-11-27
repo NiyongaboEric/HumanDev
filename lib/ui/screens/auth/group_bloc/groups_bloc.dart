@@ -55,15 +55,19 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
       final group = await groupApiImpl.createGroup(event.groupRequest);
       sharedPreferenceModule.saveGroup(group);
       emit(state.copyWith(
-        status: GroupStateStatus.success,
-        groups: [group],
+        status: GroupStateStatus.createSuccess,
+        groupResponse: group,
         isLoading: false,
         successMessage: "Group created successfully",
+        groupRequest: null,
       ));
     } on DioException catch (error) {
       emit(state.copyWith(
         errorMessage:
             error.response?.data['message'] ?? "No internet connection",
+        isLoading: false,
+        status: GroupStateStatus.createError,
+        groupRequest: event.groupRequest,
       ));
     } finally {
       emit(state.copyWith(
@@ -71,7 +75,6 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
         errorMessage: null,
         successMessage: null,
         isLoading: false,
-        groupRequest: null,
       ));
     }
   }

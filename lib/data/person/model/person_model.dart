@@ -1,5 +1,98 @@
-
 import '../../groups/model/group_model.dart';
+
+var schema = {
+  "id": 0,
+  "userId": 0,
+  "email1": "string",
+  "email2": "string",
+  "email3": "string",
+  "tagsSettings": {},
+  "personSettings": {},
+  "VATId": "string",
+  "taxId": "string",
+  "firstName": "string",
+  "middleName": "string",
+  "lastName1": "string",
+  "lastName2": "string",
+  "dateOfBirth": "string",
+  "spaceId": 0,
+  "phoneNumber1": "string",
+  "phoneNumber2": "string",
+  "phoneNumber3": "string",
+  "isActive": true,
+  "isLegal": true,
+  "organizationName": "string",
+  "createdAt": "2023-11-25T04:44:37.891Z",
+  "updatedAt": "2023-11-25T04:44:37.891Z",
+  "isDeactivated": true,
+  "deactivationDate": "2023-11-25T04:44:37.891Z",
+  "personDeactivatedById": 0,
+  "childRelations": [
+    {
+      "id": 0,
+      "userId": 0,
+      "email1": "string",
+      "email2": "string",
+      "email3": "string",
+      "tagsSettings": {},
+      "personSettings": {},
+      "VATId": "string",
+      "taxId": "string",
+      "firstName": "string",
+      "middleName": "string",
+      "lastName1": "string",
+      "lastName2": "string",
+      "dateOfBirth": "string",
+      "spaceId": 0,
+      "phoneNumber1": "string",
+      "phoneNumber2": "string",
+      "phoneNumber3": "string",
+      "isActive": true,
+      "isLegal": true,
+      "organizationName": "string",
+      "createdAt": "2023-11-25T04:44:37.891Z",
+      "updatedAt": "2023-11-25T04:44:37.891Z",
+      "isDeactivated": true,
+      "deactivationDate": "2023-11-25T04:44:37.891Z",
+      "personDeactivatedById": 0,
+      "relation": "PARENT"
+    }
+  ],
+  "relativeRelations": [
+    {
+      "id": 0,
+      "userId": 0,
+      "email1": "string",
+      "email2": "string",
+      "email3": "string",
+      "tagsSettings": {},
+      "personSettings": {},
+      "VATId": "string",
+      "taxId": "string",
+      "firstName": "string",
+      "middleName": "string",
+      "lastName1": "string",
+      "lastName2": "string",
+      "dateOfBirth": "string",
+      "spaceId": 0,
+      "phoneNumber1": "string",
+      "phoneNumber2": "string",
+      "phoneNumber3": "string",
+      "isActive": true,
+      "isLegal": true,
+      "organizationName": "string",
+      "createdAt": "2023-11-25T04:44:37.891Z",
+      "updatedAt": "2023-11-25T04:44:37.891Z",
+      "isDeactivated": true,
+      "deactivationDate": "2023-11-25T04:44:37.891Z",
+      "personDeactivatedById": 0,
+      "relation": "PARENT"
+    }
+  ],
+  "groups": [
+    {"id": 0, "name": "string", "isRole": true, "isActive": true, "spaceId": 0}
+  ]
+};
 
 enum Role {
   Student,
@@ -10,18 +103,30 @@ enum Role {
 class PersonModel {
   final int id;
   final int? userId;
-  final String? firstName;
+  final String? email1;
+  final String? email2;
+  final String? email3;
+  final Map<String, dynamic>? tagsSettings;
+  final Map<String, dynamic>? personSettings;
+  final String? VATId;
+  final String? taxId;
+  final String firstName;
   final String? middleName;
-  final String? lastName1;
+  final String lastName1;
   final String? lastName2;
   final String? dateOfBirth;
   final int? spaceId;
-  final String? phoneNumber;
-  final bool? isActive;
-  final bool? isLegal;
-  final String? counterpartyName;
-  final String? createdAt;
-  final String? updatedAt;
+  final String? phoneNumber1;
+  final String? phoneNumber2;
+  final String? phoneNumber3;
+  final bool isActive;
+  final bool isLegal;
+  final String? organizationName;
+  final String createdAt;
+  final String updatedAt;
+  final bool isDeactivated;
+  final String? deactivationDate;
+  final int? personDeactivatedById;
   final List<ChildRelation>? childRelations;
   final List<RelativePerson>? relativeRelations;
   final List<Group>? groups;
@@ -33,24 +138,36 @@ class PersonModel {
         groups!.first.isRole != null &&
         groups!.first.isRole!) {
       return groups!.first.name!;
-        }
+    }
   }
 
   const PersonModel({
     required this.id,
     this.userId,
-    this.firstName,
+    this.email1,
+    this.email2,
+    this.email3,
+    this.tagsSettings,
+    this.personSettings,
+    this.VATId,
+    this.taxId,
+    required this.firstName,
     this.middleName,
-    this.lastName1,
+    required this.lastName1,
     this.lastName2,
     this.dateOfBirth,
     this.spaceId,
-    this.phoneNumber,
-    this.isActive,
-    this.isLegal,
-    this.counterpartyName,
-    this.createdAt,
-    this.updatedAt,
+    this.phoneNumber1,
+    this.phoneNumber2,
+    this.phoneNumber3,
+    required this.isActive,
+    required this.isLegal,
+    this.organizationName,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isDeactivated,
+    this.deactivationDate,
+    this.personDeactivatedById,
     this.childRelations,
     this.relativeRelations,
     this.groups,
@@ -60,30 +177,40 @@ class PersonModel {
     return PersonModel(
       id: json['id'],
       userId: json['userId'],
+      email1: json['email1'],
+      email2: json['email2'],
+      email3: json['email3'],
+      tagsSettings: json['tagsSettings'],
+      personSettings: json['personSettings'],
+      VATId: json['VATId'],
+      taxId: json['taxId'],
       firstName: json['firstName'],
       middleName: json['middleName'],
       lastName1: json['lastName1'],
       lastName2: json['lastName2'],
       dateOfBirth: json['dateOfBirth'],
       spaceId: json['spaceId'],
-      phoneNumber: json['phoneNumber'],
+      phoneNumber1: json['phoneNumber1'],
+      phoneNumber2: json['phoneNumber2'],
+      phoneNumber3: json['phoneNumber3'],
       isActive: json['isActive'],
       isLegal: json['isLegal'],
-      counterpartyName: json['counterpartyName'],
+      organizationName: json['organizationName'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      isDeactivated: json['isDeactivated'],
+      deactivationDate: json['deactivationDate'],
+      personDeactivatedById: json['personDeactivatedById'],
       childRelations: json['childRelations'] != null
-          ? (json['childRelations'] as List)
-              .map((i) => ChildRelation.fromJson(i))
-              .toList()
+          ? List<ChildRelation>.from(
+              json['childRelations'].map((x) => ChildRelation.fromJson(x)))
           : null,
       relativeRelations: json['relativeRelations'] != null
-          ? (json['relativeRelations'] as List)
-              .map((i) => RelativePerson.fromJson(i))
-              .toList()
+          ? List<RelativePerson>.from(
+              json['relativeRelations'].map((x) => RelativePerson.fromJson(x)))
           : null,
       groups: json['groups'] != null
-          ? (json['groups'] as List).map((i) => Group.fromJson(i)).toList()
+          ? List<Group>.from(json['groups'].map((x) => Group.fromJson(x)))
           : null,
     );
   }
@@ -92,26 +219,40 @@ class PersonModel {
     return {
       'id': id,
       'userId': userId,
+      'email1': email1,
+      'email2': email2,
+      'email3': email3,
+      'tagsSettings': tagsSettings,
+      'personSettings': personSettings,
+      'VATId': VATId,
+      'taxId': taxId,
       'firstName': firstName,
       'middleName': middleName,
       'lastName1': lastName1,
       'lastName2': lastName2,
       'dateOfBirth': dateOfBirth,
       'spaceId': spaceId,
-      'phoneNumber': phoneNumber,
+      'phoneNumber1': phoneNumber1,
+      'phoneNumber2': phoneNumber2,
+      'phoneNumber3': phoneNumber3,
       'isActive': isActive,
       'isLegal': isLegal,
-      'counterpartyName': counterpartyName,
+      'organizationName': organizationName,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      'childRelations': childRelations,
-      'relativeRelations': relativeRelations,
-      'groups': groups,
+      'isDeactivated': isDeactivated,
+      'deactivationDate': deactivationDate,
+      'personDeactivatedById': personDeactivatedById,
+      'childRelations': childRelations != null
+          ? childRelations!.map((x) => x.toJson()).toList()
+          : null,
+      'relativeRelations': relativeRelations != null
+          ? relativeRelations!.map((x) => x.toJson()).toList()
+          : null,
+      'groups': groups != null ? groups!.map((x) => x.toJson()).toList() : null,
     };
   }
 }
-
-
 
 class ChildRelation {
   final int id;
@@ -188,6 +329,7 @@ class ChildRelation {
     };
   }
 }
+
 class RelativePerson {
   final int? id;
   final int? userId;

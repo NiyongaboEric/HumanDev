@@ -4,11 +4,14 @@ enum GroupStateStatus {
   initial,
   success,
   error,
+  createSuccess,
+  createError
 }
 
 class GroupsState {
   final GroupStateStatus status;
   final GroupRequest? groupRequest;
+  final Group? groupResponse;
   final List<Group>? groups;
   final bool isLoading;
   final String? successMessage;
@@ -17,6 +20,7 @@ class GroupsState {
   const GroupsState({
     this.status = GroupStateStatus.initial,
     this.groupRequest,
+    this.groupResponse,
     this.groups,
     this.isLoading = false,
     this.successMessage,
@@ -26,6 +30,7 @@ class GroupsState {
   GroupsState copyWith({
     GroupStateStatus? status,
     GroupRequest? groupRequest,
+    Group? groupResponse,
     List<Group>? groups,
     bool? isLoading,
     String? successMessage,
@@ -34,6 +39,7 @@ class GroupsState {
     return GroupsState(
       status: status ?? this.status,
       groupRequest: groupRequest ?? this.groupRequest,
+      groupResponse: groupResponse ?? this.groupResponse,
       groups: groups ?? this.groups,
       isLoading: isLoading ?? this.isLoading,
       successMessage: successMessage ?? this.successMessage,

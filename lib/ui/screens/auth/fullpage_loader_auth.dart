@@ -327,9 +327,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       child: MultiBlocListener(
         listeners: [
           BlocListener<AuthBloc, AuthState>(
-            // listenWhen: (context, state) {
-            //   return true;
-            // },
+            listenWhen: (context, state) {
+              return true;
+            },
             listener: (context, state) {
               // TODO: implement refresh listener
               if (mounted) {

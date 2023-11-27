@@ -2,7 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
-import 'package:seymo_pay_mobile_application/data/person/model/person_request.dart';
+
+import '../../../../../data/person/model/person_request.dart';
 
 part 'person_event.dart';
 part 'person_state.dart';

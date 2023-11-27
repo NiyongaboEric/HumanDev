@@ -353,7 +353,7 @@ class _StudentsState extends State<Students> {
       }
     }
     if (groupValue != null) {
-      List<dynamic >groupData = json.decode(groupValue);
+      List<dynamic> groupData = json.decode(groupValue);
       try {
         List<Group> groupList = groupData.map((data) {
           return Group.fromJson(data);
@@ -361,9 +361,9 @@ class _StudentsState extends State<Students> {
         logger.d(groupList);
         // Add ones with only student name
         for (var group in groupList) {
-          if(group.name == "Student"){
+          if (group.name == "Student") {
             groups.add(group.name!);
-          }          
+          }
         }
       } catch (e) {
         logger.f(groupData);
@@ -631,10 +631,15 @@ class _StudentsState extends State<Students> {
               }
             },
             child: Container()),
-            if(widget.option == StudentOption.studentContact)
-            IconButton(onPressed: (){
-              nextScreen(context: context, screen: const PersonDetails(screenFunction: ScreenFunction.add));
-            }, icon: const Icon(Icons.add))
+        if (widget.option == StudentOption.studentContact)
+          IconButton(
+              onPressed: () {
+                nextScreen(
+                    context: context,
+                    screen: const PersonDetails(
+                        screenFunction: ScreenFunction.add));
+              },
+              icon: const Icon(Icons.add))
       ],
       backgroundColor: primaryColorSelection(widget.option).shade100,
       bottom: PreferredSize(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/groups.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
@@ -79,20 +81,19 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   // Group list and add new group
-  List<String> groupList = [];
-  List<String> selectGroupList = [];
-  _updateGroupList(group) async {
-    if (group == "Add new group") {
-      await _buildDialog(
-        context,
-        group,
-        groupController,
-        onPressed: () {
-          groupList.add(groupController.text);
-          selectGroupList.add(groupController.text);
-        },
-      );
-    }
+  List<Group> groupList = [];
+  List<Group> selectGroupList = [];
+  _updateGroupList() async {
+    Group groupData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const GroupsScreen(contactSelection: ContactSelection.students),
+      ),
+    );
+    groupList.add(groupData);
+    selectGroupList.add(groupData);
+    setState(() {});
   }
 
   // Country option and change handler
@@ -105,15 +106,21 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   // Parent List and update handler
   List<String> parentList = [];
-  _updateParentList() async {
+  _addToParentList() async {
     PersonModel parentData = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Parents(parentSection: ParentSection.students),
       ),
     );
-    parentList.add("${parentData.firstName!} ${parentData.lastName1!}");
-    }
+    parentList.add("${parentData.firstName} ${parentData.lastName1}");
+    setState(() {});
+  }
+
+  _removeFromParentList(String parentName) {
+    parentList.remove(parentName);
+    setState(() {});
+  }
 
   // Gender option and change handler
   String selectedGender = "Gender";
@@ -123,26 +130,41 @@ class _PersonDetailsState extends State<PersonDetails> {
     });
   }
 
+  // Phone Number List Options ad handler
+  List<String> phoneNumbers = [];
+  _addPhoneNumber(String number) {
+    phoneNumbers.add(number);
+  }
+  _removePhoneNumber(String number) {
+    phoneNumbers.remove(number);
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     if (widget.person != null) {
-      firstNameController.text = widget.person!.firstName ?? "";
+      firstNameController.text = widget.person!.firstName;
       middleNameController.text = widget.person!.middleName ?? "";
-      lastNameController.text = widget.person!.lastName1 ?? "";
-      phoneNumberController.text = widget.person!.phoneNumber ?? "";
-      // emailController.text = widget.person!.email;
-      // streetController.text = widget.person!.street;
-      // cityController.text = widget.person!.city;
-      // stateController.text = widget.person!.state;
-      // zipController.text = widget.person!.zip;
+      lastNameController.text = widget.person!.lastName1;
+      var personNumbers = [
+        widget.person!.phoneNumber1,
+        widget.person!.phoneNumber2,
+        widget.person!.phoneNumber3,
+      ];
+      logger.d(personNumbers);
+      for (var number in personNumbers) {
+        if (number != null && number.isNotEmpty) {
+          phoneNumbers.add(number);
+        }
+      }
+      
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
     }
     List<Group> groups = prefs.getGroups();
     for (var group in groups) {
-      groupList.add(group.name!);
+      groupList.add(group);
     }
     super.initState();
   }
@@ -167,7 +189,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       backgroundColor: Colors.pink.shade50,
       appBar: _buildAppBar(),
       body: ListView(
-        padding: EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
           const SizedBox(height: 20),
           _buildCircleAvatar(),
@@ -183,13 +205,30 @@ class _PersonDetailsState extends State<PersonDetails> {
           _buildGenderDropDown(),
           const SizedBox(height: 20),
           _buildSection("Contacts", Icons.contact_page_rounded, [
+            ...phoneNumbers.map((number) => ListTile(
+              title: Text(
+                number,
+                style: TextStyle(
+                  color: SecondaryColors.secondaryPink,
+                  fontSize: CustomFontSize.large,
+                ),
+              ),
+              trailing: IconButton(
+                onPressed: () {
+                  _removePhoneNumber(number);
+                },
+                icon: Icon(
+                  Icons.clear_rounded,
+                  color: SecondaryColors.secondaryPink,
+                ),
+              ),
+            )),
             _buildPhoneNumberField(phoneNumberController),
-            const SizedBox(height: 20),
-            _buildTextField(streetController, "Street"),
+            const SizedBox(height: 10),
+            _buildDropDownOptions("Email", emailList, _updateEmailList,),
           ]),
           _buildSection("Address", Icons.home_rounded, [
-            _buildDropDownOptions("Email", emailList, _updateEmailList),
-            // const SizedBox(height: 20),
+            _buildTextField(streetController, "Street"),
             const SizedBox(height: 20),
             _buildTextField(cityController, "City"),
             const SizedBox(height: 20),
@@ -197,18 +236,23 @@ class _PersonDetailsState extends State<PersonDetails> {
             const SizedBox(height: 20),
             _buildTextField(zipController, "Zip"),
           ]),
-          _buildSection("Parents", Icons.people_alt_rounded, [],
-              isAddButton: true, btnAction: _updateParentList),
+          _buildSection(
+              "Parents",
+              Icons.people_alt_rounded,
+              parentList.map((parent) => _buildParentListTile(parent)).toList(),
+              isAddButton: true,
+              btnAction: _addToParentList,),
           _buildSection(
               "Groups",
               Icons.groups_2_rounded,
               [
                 _buildGroupChip(),
               ],
-              isAddButton: true),
+              isAddButton: true,
+              btnAction: _updateGroupList,),
           _buildTextArea(notesController, "Notes..."),
           const SizedBox(height: 20),
-          _buildSection("Invoices", Icons.receipt, [], isAddButton: true),
+          _buildSection("Invoices", Icons.receipt, []),
           _buildSection("Upcoming payments", Icons.attach_money_rounded, []),
           const SizedBox(height: 20),
           Divider(
@@ -323,8 +367,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               ),
             ),
             const Spacer(),
-            if (isAddButton && title == "Parents") _buildAddButton(onPressed: btnAction),
-            if (isAddButton && title == "Groups") _buildPopupMenu(),
+            if (isAddButton) _buildAddButton(onPressed: btnAction),
           ],
         ),
         const SizedBox(height: 20),
@@ -392,62 +435,6 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPopupMenu() {
-    return PopupMenuButton(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      color: Colors.pink.shade100,
-      child: Container(
-          height: 40,
-          width: 70,
-          decoration: BoxDecoration(
-              color: Colors.pink.shade100,
-              borderRadius: BorderRadius.circular(12),
-              // Shadow
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  offset: Offset(0, 5),
-                  blurRadius: 5,
-                )
-              ]),
-          child: Center(
-            child: Icon(
-              Icons.add,
-              color: SecondaryColors.secondaryPink,
-            ),
-          )),
-      itemBuilder: (context) => [
-        ...groupList.map((group) => PopupMenuItem(
-            child: Text(group,
-                style: TextStyle(
-                    color: SecondaryColors.secondaryPink,
-                    fontSize: CustomFontSize.medium,
-                    fontWeight: FontWeight.normal)),
-            onTap: () {
-              setState(() {
-                selectGroupList.add(group);
-              });
-            })),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.add, color: SecondaryColors.secondaryPink),
-              const SizedBox(width: 10),
-              Text("Add new group",
-                  style: TextStyle(
-                      color: SecondaryColors.secondaryPink,
-                      fontSize: CustomFontSize.medium,
-                      fontWeight: FontWeight.normal)),
-            ],
-          ),
-          onTap: () => _updateGroupList("Add new group"),
-        ),
-      ],
-    );
-  }
-
   Widget _buildGroupChip() {
     return SizedBox(
       width: double.infinity,
@@ -457,7 +444,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         children: [
           ...selectGroupList.map((group) => Chip(
                 label: Text(
-                  group,
+                  group.name!,
                   style: TextStyle(
                     color: SecondaryColors.secondaryPink,
                     fontSize: CustomFontSize.medium,
@@ -477,22 +464,42 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildParentListTile() {
-    return ListTile(
-      title: Text(
-        "Parent",
-        style: TextStyle(
-          color: SecondaryColors.secondaryPink,
-          fontSize: CustomFontSize.large,
+  Widget _buildParentListTile(String parentName) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+              color: Colors.pink.shade100,
+              borderRadius: BorderRadius.circular(12),
+              // Shadow
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  offset: Offset(0, 5),
+                  blurRadius: 5,
+                )
+              ]),
+          child: ListTile(
+            title: Text(
+              parentName,
+              style: TextStyle(
+                color: SecondaryColors.secondaryPink,
+                fontSize: CustomFontSize.large,
+              ),
+            ),
+            trailing: IconButton(
+              onPressed: () {
+                _removeFromParentList(parentName);
+              },
+              icon: Icon(
+                Icons.clear_rounded,
+                color: SecondaryColors.secondaryPink,
+              ),
+            ),
+          ),
         ),
-      ),
-      trailing: IconButton(
-        onPressed: () {},
-        icon: Icon(
-          Icons.clear_rounded,
-          color: SecondaryColors.secondaryPink,
-        ),
-      ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 

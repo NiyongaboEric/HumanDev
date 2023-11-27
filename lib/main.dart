@@ -17,7 +17,7 @@ import 'utilities/dependency_injection.dart';
 
 final sl = GetIt.instance;
 
-void main() async {
+void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await init();
   runApp(const MyApp());
