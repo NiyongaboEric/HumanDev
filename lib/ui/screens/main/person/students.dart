@@ -22,6 +22,7 @@ import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../../../data/groups/model/group_model.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/custom_colors.dart';
 import '../../../utilities/font_sizes.dart';
@@ -59,13 +60,8 @@ class _StudentsState extends State<Students> {
   List<PersonModel> searchResults = [];
   List<PersonModel> students = [];
   List<PersonModel> selectedStudents = [];
-  List<String> groups = [
-    "All groups",
-    "Group 1",
-    "Group 2",
-    "Group 3",
-    "Group 4",
-  ];
+  // Groups
+  List<String> groups = [];
   String selectedGroup = "All groups";
   bool showResults = false;
   String errorMsg = "";
@@ -149,6 +145,15 @@ class _StudentsState extends State<Students> {
       });
       // Handle Success
       for (var person in state.persons) {
+        // Add Group names to groups list
+        // if (person.groups != null) {
+        //   for (var group in person.groups!) {
+        //     if (!groups.contains(group.name)) {
+        //       groups.add(group.name!);
+        //     }
+        //   }
+        // }
+
         if (person.role == Role.Student.name) {
           if (!students.contains(person)) {
             students.add(person);
@@ -332,9 +337,10 @@ class _StudentsState extends State<Students> {
     _connectivity.onConnectivityChanged.listen((result) {
       _connectivityResult = result;
     });
-    String? value = preferences.getString("students");
-    if (value != null) {
-      List<dynamic> studentData = json.decode(value);
+    String? studentValue = preferences.getString("students");
+    String? groupValue = preferences.getString("groups");
+    if (studentValue != null) {
+      List<dynamic> studentData = json.decode(studentValue);
       try {
         List<PersonModel> studentList = studentData.map((data) {
           return PersonModel.fromJson(data);
@@ -343,6 +349,24 @@ class _StudentsState extends State<Students> {
         students.addAll(studentList);
       } catch (e) {
         logger.f(studentData);
+        logger.w(e);
+      }
+    }
+    if (groupValue != null) {
+      List<dynamic> groupData = json.decode(groupValue);
+      try {
+        List<Group> groupList = groupData.map((data) {
+          return Group.fromJson(data);
+        }).toList();
+        logger.d(groupList);
+        // Add ones with only student name
+        for (var group in groupList) {
+          if (group.name == "Student") {
+            groups.add(group.name!);
+          }
+        }
+      } catch (e) {
+        logger.f(groupData);
         logger.w(e);
       }
     }
@@ -382,14 +406,16 @@ class _StudentsState extends State<Students> {
     return VisibilityDetector(
       key: studentData,
       onVisibilityChanged: (visibilityInfo) {
-        if (visibilityInfo.visibleFraction == 1.0) {
-          setState(() {
-            isCurrentPage = true;
-          });
-        } else {
-          setState(() {
-            isCurrentPage = false;
-          });
+        if (mounted) {
+          if (visibilityInfo.visibleFraction == 1.0) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          } else {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }
         }
       },
       child: BlocConsumer<PersonBloc, PersonState>(
@@ -606,7 +632,16 @@ class _StudentsState extends State<Students> {
                 _handleJournalStateChange(context, state);
               }
             },
-            child: Container())
+            child: Container()),
+        if (widget.option == StudentOption.studentContact)
+          IconButton(
+              onPressed: () {
+                nextScreen(
+                    context: context,
+                    screen: const PersonDetails(
+                        screenFunction: ScreenFunction.add));
+              },
+              icon: const Icon(Icons.add))
       ],
       backgroundColor: primaryColorSelection(widget.option).shade100,
       bottom: PreferredSize(
@@ -620,7 +655,11 @@ class _StudentsState extends State<Students> {
               widget.option == StudentOption.studentContact
                   ? CustomDropDownMenu(
                       color: _secondaryColorSelection(widget.option),
-                      options: ["Select group", ...groups],
+                      options: [
+                        "Select group",
+                        "All groups",
+                        ...groups,
+                      ],
                       value: selectedGroup,
                       onChanged: _updateGroups,
                     )

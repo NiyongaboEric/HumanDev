@@ -298,7 +298,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 14),
                         child: Text(
-                          selectedCurrency,                          
+                          selectedCurrency,
                           style: TextStyle(
                             fontSize: CustomFontSize.extraLarge,
                             // underline text

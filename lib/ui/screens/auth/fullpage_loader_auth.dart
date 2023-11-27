@@ -8,6 +8,7 @@ import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/group_bloc/groups_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
@@ -41,7 +42,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
   bool refreshSuccess = false;
   var prefs = sl<SharedPreferences>();
   Key startLoader = const Key("start-loader");
-  bool isCurrentPage = false;
+  bool isCurrentPage = true;
 
   // Get User Data
   void _getSpaces() {
@@ -61,6 +62,11 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
   // Logout
   void _logout() {
     context.read<AuthBloc>().add(const AuthEventLogout());
+  }
+
+  // Get Groups
+  void _getGroups() {
+    context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
   saveOfflineToDB() {
@@ -170,16 +176,6 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       var prefs = sl<SharedPreferenceModule>();
       prefs.clear();
       nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
-      // GFToast.showToast(
-      //   state.logoutFailure,
-      //   context,
-      //   toastBorderRadius: 8.0,
-      //   toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0
-      // ? GFToastPosition.TOP
-      // : GFToastPosition.BOTTOM,
-      //   backgroundColor: CustomColor.red,
-      //   toastDuration: 6,
-      // );
     }
   }
 
@@ -258,9 +254,32 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
   // Handle Tags State Change
   void _handleTagsStateChange(BuildContext context, TagsState state) {
     if (state.status == TagsStateStatus.success) {
-      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      _getGroups();
     }
     if (state.status == TagsStateStatus.error) {
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      } else {
+        GFToast.showToast(
+          state.errorMessage,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+  }
+
+  // Handle Groups State Change
+  void _handleGroupsStateChange(BuildContext context, GroupsState state) {
+    if (state.status == GroupStateStatus.success) {
+      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+    }
+    if (state.status == GroupStateStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
           state.errorMessage == "Exception: Unauthorized") {
         _refreshTokens();
@@ -290,6 +309,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   @override
   Widget build(BuildContext context) {
+
     return VisibilityDetector(
       key: startLoader,
       onVisibilityChanged: (visibilityInfo) {
@@ -308,9 +328,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       child: MultiBlocListener(
         listeners: [
           BlocListener<AuthBloc, AuthState>(
-            // listenWhen: (context, state) {
-            //   return true;
-            // },
+            listenWhen: (context, state) {
+              return true;
+            },
             listener: (context, state) {
               // TODO: implement refresh listener
               if (mounted) {
@@ -365,6 +385,16 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             if (mounted) {
               if (isCurrentPage) {
                 _handleTagsStateChange(context, state);
+              }
+            }
+          }),
+          BlocListener<GroupsBloc, GroupsState>(listenWhen: (context, state) {
+            return true;
+          }, listener: (context, state) {
+            // TODO: implement groups listener
+            if (mounted) {
+              if (isCurrentPage) {
+                _handleGroupsStateChange(context, state);
               }
             }
           })

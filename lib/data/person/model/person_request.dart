@@ -1,4 +1,3 @@
-
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
 class PersonRequest {

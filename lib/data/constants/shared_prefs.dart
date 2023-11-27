@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../person/model/person_model.dart';
 import '../space/model/space_model.dart';
 
 class SharedPreferenceModule {
@@ -44,6 +46,64 @@ class SharedPreferenceModule {
     pref.setString("tags", jsonString);
   }
 
+  // Save Groups to Shared Preferences
+  void saveGroups(List<Group> groups) {
+    final jsonString = jsonEncode(
+      groups.map((group) => group.toJson()).toList(),
+    );
+    pref.setString("groups", jsonString);
+  }
+
+  // Save One Group to Shared Preferences and add to groups list
+  void saveGroup(Group group) {
+    var groups = getGroups();
+    groups.add(group);
+    List<Group> newGroupList = groups;
+    saveGroups(newGroupList);
+  }
+
+  // Save All Persons to Shared Preferences
+  void savePersons(List<PersonModel> persons) {
+    final jsonString = jsonEncode(
+      persons.map((person) => person.toJson()).toList(),
+    );
+    pref.setString("persons", jsonString);
+  }
+
+  // Save Teachers to Shared Preferences
+  void saveTeachers(List<PersonModel> teachers) {
+    final jsonString = jsonEncode(
+      teachers.map((teacher) => teacher.toJson()).toList(),
+    );
+    pref.setString("teachers", jsonString);
+  }
+
+  // Save Students to Shared Preferences
+  void saveStudents(List<PersonModel> students) {
+    final jsonString = jsonEncode(
+      students.map((student) => student.toJson()).toList(),
+    );
+    pref.setString("students", jsonString);
+  }
+
+  // Save Parents to Shared Preferences
+  void saveParents(List<PersonModel> parents) {
+    final jsonString = jsonEncode(
+      parents.map((parent) => parent.toJson()).toList(),
+    );
+    pref.setString("parents", jsonString);
+  }
+
+  // Save Organizations to Shared Preferences
+  void saveOrganizations(List<PersonModel> organizations) {
+    final jsonString = jsonEncode(
+      organizations.map((organization) => organization.toJson()).toList(),
+    );
+    pref.setString("organizations", jsonString);
+  }
+
+// Retrieve From LocalStorage/SharedPreferences
+
   // Get user data from Shared Preferences
   TokenResponse? getToken() {
     final jsonString = pref.getString("token");
@@ -80,6 +140,72 @@ class SharedPreferenceModule {
     final jsonString = pref.getString("tags");
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List).cast<String>();
+    }
+    return [];
+  }
+
+// Get Groups
+  List<Group> getGroups() {
+    final jsonString = pref.getString("groups");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => Group.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Person Data
+  List<PersonModel> getPersons() {
+    final jsonString = pref.getString("persons");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Teachers
+  List<PersonModel> getTeachers() {
+    final jsonString = pref.getString("teachers");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Students
+  List<PersonModel> getStudents() {
+    final jsonString = pref.getString("students");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Parents
+  List<PersonModel> getParents() {
+    final jsonString = pref.getString("parents");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Organizations
+  List<PersonModel> getOrganizations() {
+    final jsonString = pref.getString("organizations");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
     }
     return [];
   }

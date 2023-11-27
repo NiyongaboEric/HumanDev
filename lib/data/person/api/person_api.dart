@@ -14,7 +14,7 @@ var sl = GetIt.instance;
 
 abstract class PersonApi {
   // Create person
-  Future<PersonModel> createPerson(PersonRequest personRequest);
+  Future<PersonModel> createPerson(PersonRequest PersonRequest);
   // Get All Persons
   Future<List<PersonModel>> getAllPersons();
   // Get One Person
@@ -25,7 +25,7 @@ abstract class PersonApi {
 
 class PersonApiImpl implements PersonApi {
   @override
-  Future<PersonModel> createPerson(PersonRequest personRequest) async {
+  Future<PersonModel> createPerson(PersonRequest PersonRequest) async {
     try {
       // TODO: implement createStudent
       var interceptor = sl.get<RequestInterceptor>();
@@ -33,7 +33,7 @@ class PersonApiImpl implements PersonApi {
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
       final res = await dio.post("/space/${space.id}/person",
-          data: personRequest.toJson());
+          data: PersonRequest.toJson());
       if (res.statusCode == 201) {
         return PersonModel.fromJson(res.data);
       } else {
