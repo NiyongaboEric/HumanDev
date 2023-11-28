@@ -977,7 +977,7 @@ class _ParentsState extends State<Parents> {
   }
 
   Function()? getOnTapFunction(PersonModel person) =>
-      (widget.parentSection != ParentSection.sms ||
+      (widget.parentSection != ParentSection.sms &&
               widget.parentSection != ParentSection.sendSMS)
           ? () {
               widget.parentSection == ParentSection.students
@@ -997,7 +997,10 @@ class _ParentsState extends State<Parents> {
           Text(
             fullName.length > 24 ? '${fullName.substring(0, 11)}...' : fullName,
             style: TextStyle(
-                color: secondaryColorSelection(widget.parentSection),
+              color:
+              widget.parentSection == ParentSection.sendSMS 
+                ? SMSRecipientColors.primaryColor 
+                : secondaryColorSelection(widget.parentSection),
                 fontSize: CustomFontSize.medium),
           ),
           const SizedBox(width: 10),
@@ -1047,6 +1050,15 @@ class _ParentsState extends State<Parents> {
       (widget.parentSection == ParentSection.sms ||
               widget.parentSection == ParentSection.sendSMS)
           ? Checkbox(
+            side: widget.parentSection == ParentSection.sendSMS
+              ? (
+                  person.phoneNumber1 != null && person.phoneNumber1!.isNotEmpty ||
+                  person.phoneNumber2 != null && person.phoneNumber2!.isNotEmpty ||
+                  person.phoneNumber3 != null && person.phoneNumber3!.isNotEmpty
+                )
+                  ? const BorderSide(color: Colors.black)
+                  : BorderSide(color: Colors.black.withOpacity(0.2))
+              : const BorderSide(color: Colors.black),
               activeColor: getActiveColor(),
               value: getCheckboxValue(person),
               onChanged: (value) => onCheckboxChanged(person, value),
