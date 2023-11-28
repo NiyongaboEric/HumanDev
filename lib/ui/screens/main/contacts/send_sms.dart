@@ -295,10 +295,9 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FloatingActionButton.extended(
-                    backgroundColor:
-                        widget.parentSection == ParentSection.sendSMS
-                            ? const Color(0xFF1877F2)
-                            : Colors.orange.shade100,
+                  backgroundColor: state.reminderRequest == null || messageController.text.isEmpty
+                    ? Colors.blue.shade200
+                    : const Color(0xFF1877F2),
                     onPressed: !state.isLoading
                         ? () {
                             // TODO: implement logReminder
