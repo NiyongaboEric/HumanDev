@@ -152,7 +152,7 @@ List<HomeSection> homeSections(BuildContext context) {
         nextScreen(
             context: context,
             screen: const Parents(
-              parentSection: ParentSection.family,
+              parentSection: ParentSection.contacts,
             ));
       },
     ),

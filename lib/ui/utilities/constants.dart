@@ -34,6 +34,9 @@ class Constants {
   // Payment Payment Methods
   static const paymentMethods = ['Cash', 'MOMO', "Bank", 'Others'];
 
-
+  // Currency Options
   static const currencyOptions = ["GHS", "USD", "NGN", "EUR", "INR", "Add "];
+
+  // Gender Options
+  static const genders = ["Male", "Female", "Other"];
 }

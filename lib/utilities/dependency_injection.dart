@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/account/api/account_api.dart';
 import 'package:seymo_pay_mobile_application/data/constants/dio_config.dart';
+import 'package:seymo_pay_mobile_application/data/groups/api/group_api.dart';
 import 'package:seymo_pay_mobile_application/data/journal/api/tuition_fees_api.dart';
 import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/api/reminder_api.dart';
@@ -16,6 +17,7 @@ import '../data/constants/request_interceptor.dart';
 import '../data/constants/shared_prefs.dart';
 import '../ui/screens/auth/accounts_bloc/accounts_bloc.dart';
 import '../ui/screens/auth/auth_bloc/auth_bloc.dart';
+import '../ui/screens/auth/group_bloc/groups_bloc.dart';
 import '../ui/screens/auth/tags_bloc/tags_bloc.dart';
 import '../ui/screens/main/person/bloc/person_bloc.dart';
 import '../ui/screens/main/reminder/blocs/reminder_bloc.dart';
@@ -48,6 +50,7 @@ Future<void> init() async {
   sl.registerSingleton<JournalApiImpl>(JournalApiImpl());
   sl.registerSingleton<AccountApiImpl>(AccountApiImpl());
   sl.registerSingleton<TagApiImpl>(TagApiImpl());
+  sl.registerSingleton<GroupApiImpl>(GroupApiImpl());
   sl.registerSingleton<SpaceApiImpl>(SpaceApiImpl());
   sl.registerSingleton<ReminderApiImpl>(ReminderApiImpl());
 
@@ -58,6 +61,7 @@ Future<void> init() async {
   sl.registerFactory<JournalBloc>(() => JournalBloc(sl<JournalApiImpl>()));
   sl.registerFactory<AccountsBloc>(() => AccountsBloc(sl<AccountApiImpl>(), sl<SharedPreferenceModule>()));
   sl.registerFactory<TagsBloc>(() => TagsBloc(sl<TagApiImpl>(), sl<SharedPreferenceModule>()));
+  sl.registerFactory<GroupsBloc>(() => GroupsBloc(sl<SharedPreferenceModule>(), sl<GroupApiImpl>()));
   sl.registerFactory<SpaceBloc>(
       () => SpaceBloc(sl<SharedPreferenceModule>(), sl<SpaceApiImpl>()));
   sl.registerFactory<ReminderBloc>(() => ReminderBloc(sl<ReminderApiImpl>()));
