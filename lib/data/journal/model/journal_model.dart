@@ -51,7 +51,7 @@ class JournalModel {
       currency: json['currency'],
       reason: json['reason'],
       description: json['description'],
-      tags: json['tags'] != null ? json['tags'].cast<String>() : null,
+      tags: json['tags'] != null ? json['tags'] : null,
       recipientId: json['recipientId'],
       recipientFirstName: json['recipientFirstName'],
       recipientLastName: json['recipientLastName'],

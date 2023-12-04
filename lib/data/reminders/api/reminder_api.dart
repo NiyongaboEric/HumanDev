@@ -12,12 +12,12 @@ var sl = GetIt.instance;
 
 
 abstract class ReminderApi {
-  Future<ReminderModel> createReminder(ReminderRequest reminderRequest);
+  Future<ReminderModel> createReminder(List<ReminderRequest> reminderRequests);
 }
 
 class ReminderApiImpl implements ReminderApi {
   @override
-  Future<ReminderModel> createReminder(ReminderRequest reminderRequest) async {
+  Future<ReminderModel> createReminder(List<ReminderRequest> reminderRequests) async {
     // TODO: implement createReminder
     try {
       var interceptor = sl.get<RequestInterceptor>();
@@ -25,7 +25,7 @@ class ReminderApiImpl implements ReminderApi {
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
       final res = await dio.post("/space/${space.id}/reminder",
-          data: reminderRequest.toJson());
+          data: reminderRequests.map((e) => e.toJson()).toList());
       logger.d(res.data);
       if (res.statusCode == 201) {
         return ReminderModel.fromJson(res.data[0]);

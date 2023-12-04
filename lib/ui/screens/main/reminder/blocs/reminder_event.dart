@@ -12,9 +12,9 @@ class GetAllReminderEvent extends ReminderEvent {
 }
 
 class AddNewReminderEvent extends ReminderEvent {
-  final ReminderRequest reminderRequest;
+  final List<ReminderRequest> reminderRequests;
 
-  const AddNewReminderEvent(this.reminderRequest);
+  const AddNewReminderEvent(this.reminderRequests);
 }
 
 class UpdateReminderEvent extends ReminderEvent {
@@ -30,11 +30,11 @@ class DeleteReminderEvent extends ReminderEvent {
 }
 
 class SaveDataReminderState extends ReminderEvent {
-  final ReminderRequest? reminderRequest;
+  final List<ReminderRequest>? reminderRequests;
   final List<String>? recipients;
 
   const SaveDataReminderState(
-    this.reminderRequest,
+    this.reminderRequests,
     this.recipients,);
 }
 

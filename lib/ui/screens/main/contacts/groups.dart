@@ -108,6 +108,44 @@ class _GroupsScreenState extends State<GroupsScreen> {
     nextScreenAndRemoveAll(context: context, screen: LoginScreen());
   }
 
+
+  // Primary Color Selection
+  Color _primaryColorSelection() {
+    if (widget.contactSelection == ContactSelection.students) {
+      return PrimaryColors.primaryPink;
+    } else {
+      return PrimaryColors.primaryLightGreen;
+    }
+  }
+
+  // Secondary Color Selection
+  Color _secondaryColorSelection() {
+    if (widget.contactSelection == ContactSelection.students) {
+      return SecondaryColors.secondaryPink;
+    } else {
+      return SecondaryColors.secondaryLightGreen;
+    }
+  }
+
+  // Background Color Selection
+  Color _backgroundColorSelection() {
+    if (widget.contactSelection == ContactSelection.students) {
+      return BackgroundColors.bgPink;
+    } else {
+      return BackgroundColors.bgLightGreen;
+    }
+  }
+
+  // Tertiary Color Selection
+  Color _tertiaryColorSelection() {
+    if (widget.contactSelection == ContactSelection.students) {
+      return TertiaryColors.tertiaryPink;
+    } else {
+      return TertiaryColors.tertiaryLightGreen;
+    }
+  }
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -126,7 +164,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
       _handleGroupsStateChange(context, state);
     }, builder: (context, state) {
       return Scaffold(
-        backgroundColor: primaryColorSelection(widget.contactSelection),
+        backgroundColor: _backgroundColorSelection(),
         appBar: _buildAppBar(),
         body: _buildListView(),
       );
@@ -135,8 +173,8 @@ class _GroupsScreenState extends State<GroupsScreen> {
 
   AppBar _buildAppBar() {
     return AppBar(
-        iconTheme: IconThemeData(color: SecondaryColors.secondaryPink),
-        backgroundColor: Colors.pink.shade100,
+        iconTheme: IconThemeData(color: _secondaryColorSelection()),
+        backgroundColor: _primaryColorSelection(),
         title: const Text("Groups"),
         centerTitle: true,
         actions: [
@@ -196,7 +234,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
       title: Text(
         group.name!,
         style: TextStyle(
-          color: secondaryColorSelection(widget.contactSelection),
+          color: _secondaryColorSelection(),
           fontSize: CustomFontSize.medium,
         ),
       ),

@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/account/api/account_api.dart';
 import 'package:seymo_pay_mobile_application/data/constants/dio_config.dart';
 import 'package:seymo_pay_mobile_application/data/groups/api/group_api.dart';
-import 'package:seymo_pay_mobile_application/data/journal/api/tuition_fees_api.dart';
+import 'package:seymo_pay_mobile_application/data/journal/api/journal_api.dart';
 import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/api/reminder_api.dart';
 import 'package:seymo_pay_mobile_application/data/space/api/space_api.dart';

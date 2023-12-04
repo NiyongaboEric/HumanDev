@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
 class ReminderTags extends StatefulWidget {
-  final List<String> tags;
-  final List<String> selectedTags;
+  final List<TagModel> tags;
+  final List<TagModel> selectedTags;
   final Color defaultColor;
   final Color btnColor;
   final Color textColor;
   final Color unselectedTagBg;
   final Color unselectedTextColor;
-  final Function(String) addTag;
-  final Function(String) removeTag;
+  final Function(TagModel) addTag;
+  final Function(TagModel) removeTag;
   const ReminderTags({
     super.key,
     required this.tags,
@@ -31,19 +33,19 @@ class ReminderTags extends StatefulWidget {
 class _ReminderTagsState extends State<ReminderTags> {
   @override
   Widget build(BuildContext context) {
-    List<String> tags = List.from(widget.tags);
+    List<TagModel> tags = List.from(widget.tags);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: tags.asMap().entries.map(
         (entry) {
-          String tag = entry.value;
+          TagModel tag = entry.value;
           return ChoiceChip(
             showCheckmark: false,
             selectedColor: widget.btnColor,
             backgroundColor: widget.defaultColor,
             label: Text(
-              tag,
+              tag.name!,
               style: TextStyle(
                 fontSize: CustomFontSize.medium,
                 color: widget.textColor,

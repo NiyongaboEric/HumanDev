@@ -23,15 +23,18 @@ enum ScreenFunction {
   edit,
 }
 
+enum ContactVariant { student, others }
+
 var sl = GetIt.instance;
 
 class PersonDetails extends StatefulWidget {
   final ScreenFunction screenFunction;
+  final ContactVariant contactVariant;
   final PersonModel? person;
-
   const PersonDetails({
     Key? key,
     required this.screenFunction,
+    required this.contactVariant,
     this.person,
   }) : super(key: key);
 
@@ -88,7 +91,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       context,
       MaterialPageRoute(
         builder: (context) =>
-            const GroupsScreen(contactSelection: ContactSelection.students),
+            GroupsScreen(contactSelection: widget.contactVariant == ContactVariant.student ? ContactSelection.students : ContactSelection.allContacts),
       ),
     );
     groupList.add(groupData);
@@ -135,8 +138,45 @@ class _PersonDetailsState extends State<PersonDetails> {
   _addPhoneNumber(String number) {
     phoneNumbers.add(number);
   }
+
   _removePhoneNumber(String number) {
     phoneNumbers.remove(number);
+  }
+
+  // Primary Color Selection
+  Color _primaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return PrimaryColors.primaryPink;
+    } else {
+      return PrimaryColors.primaryLightGreen;
+    }
+  }
+
+  // Secondary Color Selection
+  Color _secondaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return SecondaryColors.secondaryPink;
+    } else {
+      return SecondaryColors.secondaryLightGreen;
+    }
+  }
+
+  // Background Color Selection
+  Color _backgroundColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return BackgroundColors.bgPink;
+    } else {
+      return BackgroundColors.bgLightGreen;
+    }
+  }
+
+  // Tertiary Color Selection
+  Color _tertiaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return TertiaryColors.tertiaryPink;
+    } else {
+      return TertiaryColors.tertiaryLightGreen;
+    }
   }
 
   @override
@@ -157,7 +197,7 @@ class _PersonDetailsState extends State<PersonDetails> {
           phoneNumbers.add(number);
         }
       }
-      
+
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
@@ -186,7 +226,7 @@ class _PersonDetailsState extends State<PersonDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.pink.shade50,
+      backgroundColor: _backgroundColorSelection(),
       appBar: _buildAppBar(),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -206,26 +246,41 @@ class _PersonDetailsState extends State<PersonDetails> {
           const SizedBox(height: 20),
           _buildSection("Contacts", Icons.contact_page_rounded, [
             ...phoneNumbers.map((number) => ListTile(
-              title: Text(
-                number,
-                style: TextStyle(
-                  color: SecondaryColors.secondaryPink,
-                  fontSize: CustomFontSize.large,
-                ),
-              ),
-              trailing: IconButton(
-                onPressed: () {
-                  _removePhoneNumber(number);
-                },
-                icon: Icon(
-                  Icons.clear_rounded,
-                  color: SecondaryColors.secondaryPink,
-                ),
-              ),
-            )),
+                  title: Text(
+                    number,
+                    style: TextStyle(
+                      color: _secondaryColorSelection(),
+                      fontSize: CustomFontSize.large,
+                    ),
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      _removePhoneNumber(number);
+                    },
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: _secondaryColorSelection(),
+                    ),
+                  ),
+                )),
             _buildPhoneNumberField(phoneNumberController),
-            const SizedBox(height: 10),
-            _buildDropDownOptions("Email", emailList, _updateEmailList,),
+            // DefaultBtn(
+            //   text: "Add number",
+            //   onPressed: () {
+            //     if (phoneNumberController.text.isNotEmpty) {
+            //       _addPhoneNumber(phoneNumberController.text);
+            //       phoneNumberController.clear();                  
+            //     }
+            //   },
+            //   textColor: _secondaryColorSelection(),
+            //   btnColor: _primaryColorSelection(),
+            // ),
+            // const SizedBox(height: 30),
+            _buildDropDownOptions(
+              "Email",
+              emailList,
+              _updateEmailList,
+            ),
           ]),
           _buildSection("Address", Icons.home_rounded, [
             _buildTextField(streetController, "Street"),
@@ -236,27 +291,23 @@ class _PersonDetailsState extends State<PersonDetails> {
             const SizedBox(height: 20),
             _buildTextField(zipController, "Zip"),
           ]),
+          _buildPersonRelativeSection(),
           _buildSection(
-              "Parents",
-              Icons.people_alt_rounded,
-              parentList.map((parent) => _buildParentListTile(parent)).toList(),
-              isAddButton: true,
-              btnAction: _addToParentList,),
-          _buildSection(
-              "Groups",
-              Icons.groups_2_rounded,
-              [
-                _buildGroupChip(),
-              ],
-              isAddButton: true,
-              btnAction: _updateGroupList,),
+            "Groups",
+            Icons.groups_2_rounded,
+            [
+              _buildGroupChip(),
+            ],
+            isAddButton: true,
+            btnAction: _updateGroupList,
+          ),
           _buildTextArea(notesController, "Notes..."),
           const SizedBox(height: 20),
           _buildSection("Invoices", Icons.receipt, []),
           _buildSection("Upcoming payments", Icons.attach_money_rounded, []),
           const SizedBox(height: 20),
           Divider(
-            color: Colors.pink.shade100,
+            color: _primaryColorSelection(),
           ),
           _buildSaveButton(),
         ],
@@ -266,13 +317,9 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      iconTheme: IconThemeData(color: SecondaryColors.secondaryPink),
-      backgroundColor: Colors.pink.shade100,
-      title: Text(
-        widget.screenFunction == ScreenFunction.add
-            ? "Add contact"
-            : "Edit contact",
-      ),
+      iconTheme: IconThemeData(color: _secondaryColorSelection()),
+      backgroundColor: _primaryColorSelection(),
+      title: _buildAppBarTitle(widget.screenFunction, widget.contactVariant),
       actions: [
         IconButton(
           onPressed: () {},
@@ -282,10 +329,31 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
+  Text _buildAppBarTitle(
+      ScreenFunction screenFunction, ContactVariant contactVariant) {
+    if (screenFunction == ScreenFunction.add) {
+      if (contactVariant == ContactVariant.student) {
+        return Text("Add student",
+            style: TextStyle(color: _secondaryColorSelection()));
+      } else {
+        return Text("Add contact",
+            style: TextStyle(color: _secondaryColorSelection()));
+      }
+    } else {
+      if (contactVariant == ContactVariant.student) {
+        return Text("Edit student",
+            style: TextStyle(color: _secondaryColorSelection()));
+      } else {
+        return Text("Edit contact",
+            style: TextStyle(color: _secondaryColorSelection()));
+      }
+    }
+  }
+
   Widget _buildCircleAvatar() {
     return CircleAvatar(
       radius: 25,
-      backgroundColor: Colors.pink.shade100,
+      backgroundColor: _primaryColorSelection(),
       child: Icon(Icons.person_add_rounded),
     );
   }
@@ -294,7 +362,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       {TextInputType? inputType}) {
     return CustomTextField(
       controller: controller,
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
       hintText: hintText,
       inputType: inputType,
     );
@@ -304,13 +372,13 @@ class _PersonDetailsState extends State<PersonDetails> {
     return Column(
       children: [
         Divider(
-          color: Colors.pink.shade100,
+          color: _primaryColorSelection(),
         ),
         const SizedBox(height: 20),
         CustomTextArea(
           hintText: hintText,
           controller: controller,
-          color: SecondaryColors.secondaryPink,
+          color: _secondaryColorSelection(),
           maxLines: 3,
         ),
       ],
@@ -320,24 +388,41 @@ class _PersonDetailsState extends State<PersonDetails> {
   Widget _buildPhoneNumberField(TextEditingController controller) {
     return CustomPhoneNumberField(
       controller: controller,
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
     );
   }
 
   Widget _buildDatePicker() {
+    // convert tertiary Color to Material Color
+    var tertiaryColor = MaterialColor(
+      _tertiaryColorSelection().value,
+      <int, Color>{
+        50: _tertiaryColorSelection(),
+        100: _tertiaryColorSelection(),
+        200: _tertiaryColorSelection(),
+        300: _tertiaryColorSelection(),
+        400: _tertiaryColorSelection(),
+        500: _tertiaryColorSelection(),
+        600: _tertiaryColorSelection(),
+        700: _tertiaryColorSelection(),
+        800: _tertiaryColorSelection(),
+        900: _tertiaryColorSelection(),
+      },
+    );
+
     return DatePicker(
       pickerTimeLime: PickerTimeLime.past,
       bgColor: Colors.white.withOpacity(0.3),
       date: selectedDate,
       onSelect: _changeDate,
-      pickerColor: Colors.pink,
-      borderColor: SecondaryColors.secondaryPink,
+      pickerColor: tertiaryColor,
+      borderColor: _secondaryColorSelection(),
     );
   }
 
   Widget _buildGenderDropDown() {
     return CustomDropDownMenu(
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
       options: const [
         "Gender",
         ...Constants.genders,
@@ -352,18 +437,18 @@ class _PersonDetailsState extends State<PersonDetails> {
     return Column(
       children: [
         Divider(
-          color: Colors.pink.shade100,
+          color: _primaryColorSelection(),
         ),
         const SizedBox(height: 20),
         Row(
           children: [
-            Icon(icon, color: SecondaryColors.secondaryPink),
+            Icon(icon, color: _secondaryColorSelection()),
             const SizedBox(width: 20),
             Text(
               title,
               style: TextStyle(
                 fontSize: CustomFontSize.large,
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
               ),
             ),
             const Spacer(),
@@ -382,7 +467,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       child: Center(
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink.shade100,
+            backgroundColor: _primaryColorSelection(),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(12),
@@ -393,7 +478,7 @@ class _PersonDetailsState extends State<PersonDetails> {
           onPressed: onPressed,
           child: Icon(
             Icons.add,
-            color: SecondaryColors.secondaryPink,
+            color: _secondaryColorSelection(),
           ),
         ),
       ),
@@ -407,12 +492,12 @@ class _PersonDetailsState extends State<PersonDetails> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
-            backgroundColor: Colors.pink.shade100,
+            backgroundColor: _primaryColorSelection(),
             onPressed: () {},
             label: Text(
               "Save",
               style: TextStyle(
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
                 fontSize: CustomFontSize.large,
               ),
             ),
@@ -430,7 +515,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return ContactDropDownOptions(
       value: value,
       options: ["Email", ...options, "Add new email"],
-      color: Colors.pink,
+      color: _secondaryColorSelection(),
       onChanged: onChanged,
     );
   }
@@ -446,13 +531,13 @@ class _PersonDetailsState extends State<PersonDetails> {
                 label: Text(
                   group.name!,
                   style: TextStyle(
-                    color: SecondaryColors.secondaryPink,
+                    color: _secondaryColorSelection(),
                     fontSize: CustomFontSize.medium,
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-                backgroundColor: Colors.pink.shade100,
-                deleteIconColor: SecondaryColors.secondaryPink,
+                backgroundColor: _primaryColorSelection(),
+                deleteIconColor: _secondaryColorSelection(),
                 onDeleted: () {
                   setState(() {
                     selectGroupList.remove(group);
@@ -469,7 +554,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       children: [
         Container(
           decoration: BoxDecoration(
-              color: Colors.pink.shade100,
+              color: _primaryColorSelection(),
               borderRadius: BorderRadius.circular(12),
               // Shadow
               boxShadow: [
@@ -483,7 +568,7 @@ class _PersonDetailsState extends State<PersonDetails> {
             title: Text(
               parentName,
               style: TextStyle(
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
                 fontSize: CustomFontSize.large,
               ),
             ),
@@ -493,7 +578,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               },
               icon: Icon(
                 Icons.clear_rounded,
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
               ),
             ),
           ),
@@ -501,6 +586,20 @@ class _PersonDetailsState extends State<PersonDetails> {
         const SizedBox(height: 10),
       ],
     );
+  }
+
+  Widget _buildPersonRelativeSection() {
+    if (widget.contactVariant == ContactVariant.student || widget.person != null && widget.person!.role == "Student") {
+      return _buildSection(
+        "Parents",
+        Icons.people_alt_rounded,
+        parentList.map((parent) => _buildParentListTile(parent)).toList(),
+        isAddButton: true,
+        btnAction: _addToParentList,
+      );
+    } else {
+      return Container();
+    }
   }
 
   _buildDialog(
@@ -513,7 +612,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         context: context,
         builder: (context) {
           return AlertDialog(
-              backgroundColor: Colors.pink.shade100,
+              backgroundColor: _primaryColorSelection(),
               title: Text(title),
               content: _buildTextField(
                 controller,
@@ -528,7 +627,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                   child: Text(
                     "Cancel",
                     style: TextStyle(
-                      color: SecondaryColors.secondaryPink,
+                      color: _secondaryColorSelection(),
                       fontSize: CustomFontSize.large,
                     ),
                   ),
@@ -539,8 +638,8 @@ class _PersonDetailsState extends State<PersonDetails> {
                     Navigator.pop(context);
                     if (onPressed != null) onPressed();
                   },
-                  textColor: SecondaryColors.secondaryPink,
-                  btnColor: Colors.pink.shade100,
+                  textColor: _secondaryColorSelection(),
+                  btnColor: _primaryColorSelection(),
                 )
               ]);
         });

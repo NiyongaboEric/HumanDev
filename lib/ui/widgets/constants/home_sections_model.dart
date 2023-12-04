@@ -168,7 +168,7 @@ List<HomeSection> homeSections(BuildContext context) {
       onPressed: () {
         nextScreen(
           context: context,
-          screen:  const Parents(
+          screen: const Parents(
             parentSection: ParentSection.sendSMS,
           ),
         );

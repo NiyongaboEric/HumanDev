@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
+import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -136,10 +137,12 @@ class SharedPreferenceModule {
   }
 
 // Get Tags
-  List<String> getTags() {
+  List<TagModel> getTags() {
     final jsonString = pref.getString("tags");
     if (jsonString != null) {
-      return (jsonDecode(jsonString) as List).cast<String>();
+      return (jsonDecode(jsonString) as List)
+          .map((e) => TagModel.fromJson(e))
+          .toList();
     }
     return [];
   }

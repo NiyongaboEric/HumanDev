@@ -11,16 +11,28 @@ class GetAllJournalEvent extends JournalEvent {
   const GetAllJournalEvent();
 }
 
-class AddNewJournalEvent extends JournalEvent {
-  final JournalRequest journalRequest;
+class AddNewReceivedMoneyJournalEvent extends JournalEvent {
+  final List<ReceivedMoneyJournalRequest> journalRequests;
 
-  const AddNewJournalEvent(this.journalRequest);
+  const AddNewReceivedMoneyJournalEvent(this.journalRequests);
 }
 
-class UpdateJournalEvent extends JournalEvent {
-  final JournalRequest journalRequest;
+class UpdateReceivedJournalEvent extends JournalEvent {
+  final ReceivedMoneyJournalRequest journalRequest;
 
-  const UpdateJournalEvent(this.journalRequest);
+  const UpdateReceivedJournalEvent(this.journalRequest);
+}
+
+class AddNewPaidMoneyJournalEvent extends JournalEvent {
+  final List<PaidMoneyJournalRequest> journalRequests;
+
+  const AddNewPaidMoneyJournalEvent(this.journalRequests);
+}
+
+class UpdatePaidMoneyJournalEvent extends JournalEvent {
+  final PaidMoneyJournalRequest journalRequest;
+
+  const UpdatePaidMoneyJournalEvent(this.journalRequest);
 }
 
 class DeleteJournalEvent extends JournalEvent {

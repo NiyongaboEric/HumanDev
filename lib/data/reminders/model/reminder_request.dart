@@ -1,12 +1,29 @@
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
+
+const schema = {
+  "type": "LETTER",
+  "note": "Note for this reminder. Text...",
+  "message": "Message...",
+  "scheduledTime": "2023-12-03T11:40:16.134Z",
+  "tags": [
+    {"id": 0, "name": "string"}
+  ],
+  "studentPersonId": 0,
+  "relativePersonId": 0,
+  "personId": 0
+};
+
+enum ReminderType { LETTER, SENT_SMS, CALL, F2F, OTHER }
 
 class ReminderRequest {
-  final String type;
+  final ReminderType type;
   final String? note;
   final String? message;
   final String? scheduledTime;
-  final List<Tags>? tags;
-  final List<int> attendeePersonIds;
-  final bool expandRelations;
+  final List<TagModel>? tags;
+  final int? studentPersonId;
+  final int? relativePersonId;
+  final int? personId;
 
   const ReminderRequest({
     required this.type,
@@ -14,45 +31,72 @@ class ReminderRequest {
     this.message,
     this.scheduledTime,
     this.tags,
-    required this.attendeePersonIds,
-    required this.expandRelations,
+    this.studentPersonId,
+    this.relativePersonId,
+    this.personId,
   });
 
   Map<String, dynamic> toJson() {
+    if (type == ReminderType.SENT_SMS) {
+      return {
+        'type': reminderEnumToString(type),
+        'message': message,
+        'scheduledTime': scheduledTime,
+        'tags': tags,
+        'studentPersonId': studentPersonId,
+        'relativePersonId': relativePersonId,
+      };
+    }
     return {
-      'type': type,
+      'type': reminderEnumToString(type),
       'note': note,
-      'message': message,
-      'scheduledTime': scheduledTime,
       'tags': tags,
-      'attendeePersonIds': attendeePersonIds,
-      'expandRelations': expandRelations,
+      'personId': personId,
     };
   }
 
   factory ReminderRequest.fromJson(Map<String, dynamic> json) {
     return ReminderRequest(
-      type: json['type'],
+      type: reminderStringToEnum(json['type']),
       note: json['note'],
       message: json['message'],
       scheduledTime: json['scheduledTime'],
       tags: json['tags'],
-      attendeePersonIds: json['attendeePersonIds'],
-      expandRelations: json['expandRelations'],
+      studentPersonId: json['studentPersonId'],
+      relativePersonId: json['relativePersonId'],
+      personId: json['personId'],
     );
   }
 }
 
-class Tags {
-  final String name;
-
-  Tags({required this.name});
-
-  factory Tags.fromJson(Map<String, dynamic> json) {
-    return Tags(name: json['name']);
+String reminderEnumToString(ReminderType type) {
+  switch (type) {
+    case ReminderType.LETTER:
+      return "LETTER";
+    case ReminderType.SENT_SMS:
+      return "SENT_SMS";
+    case ReminderType.CALL:
+      return "CALL";
+    case ReminderType.F2F:
+      return "F2F";
+    case ReminderType.OTHER:
+      return "OTHER";
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {'name': name};
+ReminderType reminderStringToEnum(String type) {
+  switch (type) {
+    case "LETTER":
+      return ReminderType.LETTER;
+    case "SENT_SMS":
+      return ReminderType.SENT_SMS;
+    case "CALL":
+      return ReminderType.CALL;
+    case "F2F":
+      return ReminderType.F2F;
+    case "OTHER":
+      return ReminderType.OTHER;
+    default:
+      return ReminderType.SENT_SMS;
   }
 }

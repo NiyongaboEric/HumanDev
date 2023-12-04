@@ -41,21 +41,30 @@ class _SendSMSState extends State<SendSMS> {
   }
 
   // Log Reminder
-  void _logReminder(ReminderRequest reminderRequest) {
+  void _logReminder(List<ReminderRequest> reminderRequests) {
+    var reminderRequestList = reminderRequests
+        .map((e) => ReminderRequest(
+              type: e.type,
+              note: e.note,
+              message: messageController.text,
+              scheduledTime: isSelected[1]
+                  ? DateTime(
+                          date.year,
+                          date.month,
+                          date.day,
+                          time.hour,
+                          time.minute,
+                        )
+                      .toIso8601String()
+                  : null,
+              tags: e.tags,
+              studentPersonId: e.studentPersonId,
+              relativePersonId: e.relativePersonId,
+              personId: e.personId,
+            ))
+        .toList();
     context.read<ReminderBloc>().add(
-          AddNewReminderEvent(ReminderRequest(
-            type: reminderRequest.type,
-            attendeePersonIds: reminderRequest.attendeePersonIds,
-            message: messageController.text.isNotEmpty
-                ? messageController.text
-                : null,
-            scheduledTime: isSelected[1]
-                ? DateTime(
-                        date.year, date.month, date.day, time.hour, time.minute)
-                    .toString()
-                : DateTime.now().toString(),
-            expandRelations: false,
-          )),
+          AddNewReminderEvent(reminderRequestList),
         );
   }
 
@@ -142,7 +151,7 @@ class _SendSMSState extends State<SendSMS> {
             actions: [
               IconButton(
                   onPressed: () {
-                    if (state.reminderRequest != null) {
+                    if (state.reminderRequests != null) {
                       if (messageController.text.isEmpty) {
                         GFToast.showToast(
                           "Please enter a message",
@@ -156,7 +165,7 @@ class _SendSMSState extends State<SendSMS> {
                           backgroundColor: Colors.red,
                         );
                       } else {
-                        _logReminder(state.reminderRequest!);
+                        _logReminder(state.reminderRequests!);
                       }
                     }
                   },
@@ -267,7 +276,7 @@ class _SendSMSState extends State<SendSMS> {
                     onPressed: !state.isLoading
                         ? () {
                             // TODO: implement logReminder
-                            if (state.reminderRequest != null) {
+                            if (state.reminderRequests != null) {
                               if (messageController.text.isEmpty) {
                                 GFToast.showToast(
                                   "Please enter a message",
@@ -283,7 +292,7 @@ class _SendSMSState extends State<SendSMS> {
                                   backgroundColor: Colors.red,
                                 );
                               } else {
-                                _logReminder(state.reminderRequest!);
+                                _logReminder(state.reminderRequests!);
                               }
                             }
                             // if (messageController.text.isEmpty) {

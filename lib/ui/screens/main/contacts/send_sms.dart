@@ -189,7 +189,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
             actions: [
               IconButton(
                   onPressed: () {
-                    if (state.reminderRequest != null) {
+                    if (state.reminderRequests != null) {
                       if (messageController.text.isEmpty) {
                         _showMyDialog("Please type your message first!");
                       } else {
@@ -302,7 +302,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                     onPressed: !state.isLoading
                         ? () {
                             // TODO: implement logReminder
-                            if (state.reminderRequest != null) {
+                            if (state.reminderRequests != null) {
                               if (messageController.text.isEmpty) {
                                 _showMyDialog("Please type your message first!");
                               } else {

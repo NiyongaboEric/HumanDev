@@ -22,7 +22,7 @@ class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
     emit(state.copyWith(isLoading: true));
     try {
       final reminder =
-          await reminderApiImpl.createReminder(event.reminderRequest);
+          await reminderApiImpl.createReminder(event.reminderRequests);
       emit(state.copyWith(
         reminders: [reminder],
         isLoading: false,
@@ -49,7 +49,7 @@ class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
   _saveData(SaveDataReminderState event, Emitter<ReminderState> emit) {
     try {
       emit(state.copyWith(
-        reminderRequest: event.reminderRequest,
+        reminderRequests: event.reminderRequests,
         recipients: event.recipients,
         status: ReminderStateStatus.success,
       ));
@@ -71,7 +71,7 @@ class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
   _clearData(ClearDataReminderState event, Emitter<ReminderState> emit) async {
     try {
       emit(state.copyWith(
-        reminderRequest: null,
+        reminderRequests: null,
         status: ReminderStateStatus.initial,
         errorMessage: null,
       ));

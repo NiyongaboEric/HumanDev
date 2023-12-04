@@ -15,8 +15,10 @@ abstract class JournalApi {
   Future<List<JournalModel>> getAllJournals();
   // Get One Journal
   Future<JournalModel> getOneJournal(String journalID);
-  // Create Journal
-  Future<List<JournalModel>> createJournal(JournalRequest journalRequest);
+  // Create Received Money Journal
+  Future<List<JournalModel>> createReceivedMoneyJournal(List<ReceivedMoneyJournalRequest> journalRequests);
+  // Create Payed Money Journal
+  Future<List<JournalModel>> createPaidMoneyJournal(List<PaidMoneyJournalRequest> journalRequests);
   // Update Journal
   // Future<JournalModel> updateJournal(JournalRequest journalRequest);
   // Delete Journal
@@ -70,16 +72,53 @@ class JournalApiImpl implements JournalApi {
   }
 
   @override
-  Future<List<JournalModel>> createJournal(
-      JournalRequest tuitionFeesRequest) async {
+  Future<List<JournalModel>> createReceivedMoneyJournal(
+      List<ReceivedMoneyJournalRequest> tuitionFeesRequests) async {
     try {
       // TODO: implement createTuitionFees
       var interceptor = sl.get<RequestInterceptor>();
       var dio = sl.get<Dio>()..interceptors.add(interceptor);
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
-      final res = await dio.post("/space/${space.id}/journal",
-          data: tuitionFeesRequest.toJson());
+      logger.i(tuitionFeesRequests.map((e) => e.toJson()));
+      final res = await dio.post("/space/${space.id}/journal/received-money",
+          data: tuitionFeesRequests.map((e) => e.toJson()).toList());
+      if (res.statusCode == 201) {
+        var response = res.data;
+        if (response is Map &&
+            !response.containsKey('statusCode') &&
+            response['statusCode'] != null) {
+          throw Exception(response['message']);
+        }
+        List responseData = response;
+        List<JournalModel> tuitionFees =
+            responseData.map((data) => JournalModel.fromJson(data)).toList();
+        return tuitionFees;
+      }
+      logger.d(res.data);
+      throw Exception(res.data["message"]);
+    } on DioException catch (error) {
+      // Handle Dio errors and other exceptions
+      logger.e("An error occurred: $error");
+      if (error.response != null) {
+        throw Exception(
+            error.response?.data["message"] ?? "No Internet Connection");
+      }
+      throw Exception("Error From DIO BACKEND");
+    }
+  }
+
+  @override
+  Future<List<JournalModel>> createPaidMoneyJournal(
+      List<PaidMoneyJournalRequest> tuitionFeesRequests) async {
+    try {
+      // TODO: implement createTuitionFees
+      var interceptor = sl.get<RequestInterceptor>();
+      var dio = sl.get<Dio>()..interceptors.add(interceptor);
+      var prefs = sl<SharedPreferenceModule>();
+      Space? space = prefs.getSpaces().first;
+      final res = await dio.post("/space/${space.id}/journal/paid-money",
+          data: tuitionFeesRequests.map((e) => e.toJson()).toList());
       if (res.statusCode == 201) {
         var response = res.data;
         if (response is Map &&

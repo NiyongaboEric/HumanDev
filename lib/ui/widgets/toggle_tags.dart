@@ -1,19 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 
 import '../screens/main/reminder/reminder_types/conversation/log_conversation.dart';
 import '../utilities/font_sizes.dart';
 
 class ToggleTags extends StatefulWidget {
   final List<ToggleTagComponents> tags;
-  final List<String> selectedTags;
+  final List<TagModel> selectedTags;
   final Color defaultColor;
   final Color btnColor;
   final Color textColor;
   final Color unselectedTagBg;
   final Color unselectedTextColor;
-  final Function(String) addTag;
-  final Function(String) removeTag;
+  final Function(TagModel) addTag;
+  final Function(TagModel) removeTag;
   const ToggleTags({
     super.key,
     required this.tags,
@@ -50,7 +51,7 @@ class _ToggleTagsState extends State<ToggleTags> {
                     selectedColor: widget.btnColor,
                     backgroundColor: widget.defaultColor,
                     label: Text(
-                      tag.positive,
+                      tag.positive.name!,
                       style: TextStyle(
                         fontSize: CustomFontSize.medium,
                         color: widget.textColor,
@@ -75,7 +76,7 @@ class _ToggleTagsState extends State<ToggleTags> {
                     backgroundColor: widget.defaultColor,
                     showCheckmark: false,
                     label: Text(
-                      tag.negative,
+                      tag.negative.name!,
                       style: TextStyle(
                         fontSize: CustomFontSize.medium,
                         color: widget.textColor,
