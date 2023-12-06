@@ -1,14 +1,3 @@
-/// To do
-///
-/// This is a Send SMS features
-///
-/// In the mean time block remainder is used
-/// It can be found here at lib\ui\screens\main\reminder\reminder_types\sms_reminder\send_sms.dart
-///
-/// Tomorrow
-/// Implement Send SMS block
-/// Once API is ready we consider use code to build it properly
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -114,7 +103,6 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
           backgroundColor: SMSRecipientColors.fourthColor,
           contentTextStyle:
               TextStyle(color: SMSRecipientColors.primaryColor, fontSize: 18),
-          // surfaceTintColor: SMSRecipientColors.primaryColor,
           title: Text(
             'Warning',
             style: TextStyle(color: SMSRecipientColors.primaryColor),
