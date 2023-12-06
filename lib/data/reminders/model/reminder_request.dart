@@ -8,6 +8,8 @@ class ReminderRequest {
   final List<int> attendeePersonIds;
   final bool expandRelations;
 
+  final List<Map<String, String>>? recipientsNameWithNumbers;
+
   const ReminderRequest({
     required this.type,
     this.note,
@@ -16,6 +18,7 @@ class ReminderRequest {
     this.tags,
     required this.attendeePersonIds,
     required this.expandRelations,
+    this.recipientsNameWithNumbers
   });
 
   Map<String, dynamic> toJson() {
@@ -27,6 +30,7 @@ class ReminderRequest {
       'tags': tags,
       'attendeePersonIds': attendeePersonIds,
       'expandRelations': expandRelations,
+      'recipientsNameWithNumbers': recipientsNameWithNumbers
     };
   }
 
@@ -39,6 +43,7 @@ class ReminderRequest {
       tags: json['tags'],
       attendeePersonIds: json['attendeePersonIds'],
       expandRelations: json['expandRelations'],
+      recipientsNameWithNumbers: json['recipientsNameWithNumbers']
     );
   }
 }
