@@ -1,29 +1,24 @@
-/// To do
-/// 
-/// This is a Send SMS features 
-/// 
-/// In the mean time block remainder is used
-/// It can be found here at lib\ui\screens\main\reminder\reminder_types\sms_reminder\send_sms.dart
-/// 
-/// Tomorrow 
-/// Implement Send SMS block
-/// Once API is ready we consider use code to build it properly
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:getwidget/getwidget.dart';
+
+import 'package:getwidget/getwidget.dart';  
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/sms/bloc/sms_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/blocs/reminder_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/sms_reminder/send_sms.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/sms_reminder/sms_reminder.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_area.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/time_picker.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 
 class StudentsParentsTeachersSendSMS extends StatefulWidget {
   const StudentsParentsTeachersSendSMS({super.key, this.parentSection});
@@ -53,49 +48,42 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
     });
   }
 
-  // Log Reminder
+  void _logReminder(ReminderRequest reminderRequest) async {
+    String message = messageController.text;
+    String recipientsAsString = "";
 
-  // Handle Reminder Change State
-  void _handleReminderStateChange(BuildContext context, ReminderState state) {
-    if (state.status == ReminderStateStatus.success) {
-      GFToast.showToast(
-        "Reminder ${isSelected[0] ? "successfully sent" : "will be sent on ${date.toString().split(" ")[0]}"} to \n${state.recipients!.length > 3 ? "${state.recipients!.getRange(0, 3).map((e) => e).join(", ")}..." : state.recipients!.map((e) => e).join(", ")}",
-        context,
-        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-            ? GFToastPosition.TOP
-            : GFToastPosition.BOTTOM,
-        toastBorderRadius: 12.0,
-        toastDuration: 5,
-        backgroundColor: Colors.green.shade700,
-      );
-      nextScreenAndRemoveAll(context: context, screen: const HomePage());
-    }
-    if (state.status == ReminderStateStatus.error) {
-      logger.d(state.errorMessage ?? "Error");
-      GFToast.showToast(
-        state.errorMessage ?? "Error",
-        context,
-        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-            ? GFToastPosition.TOP
-            : GFToastPosition.BOTTOM,
-        toastBorderRadius: 12.0,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-      );
-    }
-  }
+  	reminderRequest.recipientsNameWithNumbers?.forEach((element) {
+      var number = element.values.join().split('+')[1];
+      recipientsAsString += '$number;';
+    });
 
-  void _handleSendSMS(ReminderState state) {
-    GFToast.showToast(
-      "SMS ${isSelected[0] ? "successfully sent" : "will be sent on ${date.toString().split(" ")[0]}"} to \n${state.recipients!.length > 3 ? "${state.recipients!.getRange(0, 3).map((e) => e).join(", ")}..." : state.recipients!.map((e) => e).join(", ")}",
-      context,
-      toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-          ? GFToastPosition.TOP
-          : GFToastPosition.BOTTOM,
-      toastBorderRadius: 12.0,
-      toastDuration: 5,
-      backgroundColor: Colors.green.shade700,
+    String? encodeQueryParameters(Map<String, String> params) {
+      return params.entries
+        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+    }
+
+    Uri smsUri = Uri(
+      scheme: 'sms',
+      path: recipientsAsString,
+      query: encodeQueryParameters(<String, String>{
+        'body': message
+      }),
     );
+
+    try {
+      if (await canLaunchUrl(smsUri)) {
+        await launchUrl(smsUri);
+      }
+      
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Some error occured'),
+        ),
+      );
+    }
+
     nextScreenAndRemoveAll(context: context, screen: const HomePage());
   }
 
@@ -107,34 +95,42 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
   }
 
   Future<void> _showMyDialog(String? textDialog) async {
-  return showDialog<void>(
-    context: context,
-    barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: SMSRecipientColors.fourthColor,
-        contentTextStyle: TextStyle(color: SMSRecipientColors.primaryColor, fontSize: 18),
-        // surfaceTintColor: SMSRecipientColors.primaryColor,
-        title: Text('Warning', style: TextStyle(color: SMSRecipientColors.primaryColor), ),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              Text("$textDialog", style: TextStyle(color: SMSRecipientColors.primaryColor),),
-            ],
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: SMSRecipientColors.fourthColor,
+          contentTextStyle:
+              TextStyle(color: SMSRecipientColors.primaryColor, fontSize: 18),
+          title: Text(
+            'Warning',
+            style: TextStyle(color: SMSRecipientColors.primaryColor),
           ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('Ok', style: TextStyle(color: SMSRecipientColors.primaryColor, fontSize: 18)),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(
+                  "$textDialog",
+                  style: TextStyle(color: SMSRecipientColors.primaryColor),
+                ),
+              ],
+            ),
           ),
-        ],
-      );
-    },
-  );
-}
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok',
+                  style: TextStyle(
+                      color: SMSRecipientColors.primaryColor, fontSize: 18)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,10 +159,10 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
       ),
     ];
 
-    return BlocConsumer<ReminderBloc, ReminderState>(
+    return BlocConsumer<SMSBloc, SMSState>(
       listener: (context, state) {
         // TODO: implement listener
-        _handleReminderStateChange(context, state);
+        // _handleSendSMSChange(context, state);
       },
       builder: (context, state) {
         return Scaffold(
@@ -193,7 +189,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                       if (messageController.text.isEmpty) {
                         _showMyDialog("Please type your message first!");
                       } else {
-                        _handleSendSMS(state);
+                        _logReminder(state.reminderRequest!);
                       }
                     }
                   },
@@ -211,7 +207,9 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                         ? SMSRecipientColors.primaryColor
                         : SecondaryColors.secondaryOrange,
                   )),
-                const SizedBox(height: 10,),
+              const SizedBox(
+                height: 10,
+              ),
               Text(
                 state.recipients?.join(", ") ?? "",
                 maxLines: expandRecipients ? 100 : 3,
@@ -295,17 +293,20 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FloatingActionButton.extended(
-                  backgroundColor: state.reminderRequest == null || messageController.text.isEmpty
-                    ? Colors.blue.shade200
-                    : const Color(0xFF1877F2),
+                    backgroundColor: state.reminderRequest == null ||
+                            messageController.text.isEmpty
+                        ? Colors.blue.shade200
+                        : const Color(0xFF1877F2),
                     onPressed: !state.isLoading
                         ? () {
                             // TODO: implement logReminder
                             if (state.reminderRequest != null) {
                               if (messageController.text.isEmpty) {
-                                _showMyDialog("Please type your message first!");
+                                _showMyDialog(
+                                    "Please type your message first!");
                               } else {
-                                _handleSendSMS(state);
+                                // _handleSendSMS(state);
+                                _logReminder(state.reminderRequest!);
                               }
                             }
                           }

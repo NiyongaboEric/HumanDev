@@ -29,6 +29,7 @@ import '../../auth/login.dart';
 import '../reminder/blocs/reminder_bloc.dart';
 import '../reminder/reminder_types/sms_reminder/send_sms.dart';
 import 'bloc/person_bloc.dart';
+import '../../../screens/main/contacts/sms/bloc/sms_bloc.dart';
 
 var sl = GetIt.instance;
 
@@ -459,10 +460,21 @@ class _ParentsState extends State<Parents> {
   }
 
   saveDataSendSMS() {
+
+    List<Map<String, String>> recipientsWithNameAndNumbers = [
+      ...selectedAllPeopleSendSMS,
+      ...selectedStudentsSendSMS,
+      ...selectedParentsSendSMS,
+      ...selectedTeachersSendSMS
+    ]
+    .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
+    .toList();
+
     ReminderRequest reminderRequest = ReminderRequest(
       type: reminderType(widget.parentSection),
       attendeePersonIds: selectedParents.map((parent) => parent.id).toList(),
       expandRelations: false,
+      recipientsNameWithNumbers: recipientsWithNameAndNumbers
     );
 
     List<String> recipients = [
@@ -471,12 +483,15 @@ class _ParentsState extends State<Parents> {
       ...selectedParentsSendSMS,
       ...selectedTeachersSendSMS
     ].map((e) => "${e.firstName} ${e.lastName1}").toList();
-    context.read<ReminderBloc>().add(
-          SaveDataReminderState(
-            reminderRequest,
-            recipients,
-          ),
-        );
+
+    context
+      .read<SMSBloc>()
+      .add(
+        SaveDataSendSMSState(
+          reminderRequest,
+          recipients
+        ),
+      );
   }
 
   void navigate(BuildContext context) {
@@ -497,13 +512,6 @@ class _ParentsState extends State<Parents> {
     for (var element in selectedParents) {
       if (element.phoneNumber == null) {
         logger.d(element.id);
-        // Find
-        // var studentsWithoutNumber = students.where((student) {
-        //   return student.relatedPersons?.every((relatedPerson) =>
-        //           relatedPerson.id == element.id) ??
-        //       false;
-        // }).toList();
-        // result.addAll(studentsWithoutNumber);
       }
     }
 
@@ -561,6 +569,17 @@ class _ParentsState extends State<Parents> {
     }
 
     if (state.status == ReminderStateStatus.error) {
+      logger.d(state.errorMessage ?? "Error");
+    }
+  }
+
+  // Handle SMS State Change
+  _handleSMSStateChange(BuildContext context, SMSState state) {
+    if (state.status == SMSStateStatus.success) {
+      navigate(context);
+    }
+
+    if (state.status == SMSStateStatus.error) {
       logger.d(state.errorMessage ?? "Error");
     }
   }
@@ -1218,6 +1237,7 @@ class _ParentsState extends State<Parents> {
     return [
       _buildAuthBlocListener(),
       _buildReminderBlocListener(),
+      _buildSMSBlocListener(),
       _buildAddButton(),
     ];
   }
@@ -1239,6 +1259,17 @@ class _ParentsState extends State<Parents> {
       listener: (context, state) {
         if (isCurrentPage) {
           _handleReminderStateChange(context, state);
+        }
+      },
+      child: Container(),
+    );
+  }
+
+  Widget _buildSMSBlocListener() {
+    return BlocListener<SMSBloc, SMSState>(
+      listener: (context, state) {
+        if (isCurrentPage) {
+          _handleSMSStateChange(context, state);
         }
       },
       child: Container(),
