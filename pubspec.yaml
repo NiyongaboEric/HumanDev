@@ -59,6 +59,7 @@ dependencies:
   visibility_detector: ^0.4.0+2
   intl: ^0.18.1
   flutter_svg: ^2.0.9
+  syncfusion_flutter_datagrid: ^23.2.6
 
 dev_dependencies:
   flutter_test:

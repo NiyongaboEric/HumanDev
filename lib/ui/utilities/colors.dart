@@ -24,6 +24,9 @@ class SecondaryColors {
 
   // Contacts
   static Color secondaryLightGreen = const Color(0xFF1C2D09);
+
+  // Invoice
+  static Color secondaryPurple = const Color(0xFF1F0048);
 }
 
 class PrimaryColors {
@@ -35,6 +38,7 @@ class PrimaryColors {
   static Color primaryPink = const Color(0xFFF09EC5);
   static Color primaryDarkBlue = const Color(0XFF18E4F2);
   static Color primaryLightGreen = const Color(0xFFD5F0B5);
+  static Color primaryPurple = const Color(0xFFEADAFF);
 }
 // const Color(0xFFD5F0B5)
 
@@ -47,6 +51,7 @@ class TertiaryColors {
   static Color tertiaryPink = const Color(0xFFFDF4F9);
   static Color tertiaryDarkBlue = const Color(0XFF18E4F2);
   static Color tertiaryLightGreen = const Color(0xFF2ECC28);
+  static Color tertiaryPurple = const Color(0xFF9B4EFF);
 }
 
 class BackgroundColors {
@@ -58,6 +63,7 @@ class BackgroundColors {
   static Color bgPink = const Color(0xFFFCE8F2);
   static Color bgDarkBlue = const Color(0xFF031A38);
   static Color bgLightGreen = const Color(0xFFF1FAE6);
+  static Color bgPurple = const Color(0xFFFAF7FF);
 }
 
 class SMSRecipientColors {

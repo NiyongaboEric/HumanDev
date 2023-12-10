@@ -69,7 +69,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
           ? recipientLastNameController.text
           : null,
       role: stringToRole(role.toUpperCase()),
-      counterpartyName: companyNameController.text.isNotEmpty
+      organizationName: companyNameController.text.isNotEmpty
           ? companyNameController.text
           : null,
       isLegal: isSelected[1],

@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_request.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/groups.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/contact_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
@@ -17,6 +22,7 @@ import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart
 import '../../../../data/constants/shared_prefs.dart';
 import '../../../../data/groups/model/group_model.dart';
 import '../../../utilities/font_sizes.dart';
+import '../person/bloc/person_bloc.dart';
 
 enum ScreenFunction {
   add,
@@ -31,11 +37,13 @@ class PersonDetails extends StatefulWidget {
   final ScreenFunction screenFunction;
   final ContactVariant contactVariant;
   final PersonModel? person;
+  final String? role;
   const PersonDetails({
     Key? key,
     required this.screenFunction,
     required this.contactVariant,
     this.person,
+    this.role,
   }) : super(key: key);
 
   @override
@@ -86,16 +94,20 @@ class _PersonDetailsState extends State<PersonDetails> {
   // Group list and add new group
   List<Group> groupList = [];
   List<Group> selectGroupList = [];
+  List<Group> disconnectedGroupList = [];
   _updateGroupList() async {
     Group groupData = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            GroupsScreen(contactSelection: widget.contactVariant == ContactVariant.student ? ContactSelection.students : ContactSelection.allContacts),
+        builder: (context) => GroupsScreen(
+            contactSelection: widget.contactVariant == ContactVariant.student
+                ? ContactSelection.students
+                : ContactSelection.allContacts),
       ),
     );
     groupList.add(groupData);
     selectGroupList.add(groupData);
+    disconnectedGroupList.remove(groupData);
     setState(() {});
   }
 
@@ -143,6 +155,56 @@ class _PersonDetailsState extends State<PersonDetails> {
     phoneNumbers.remove(number);
   }
 
+  saveData() {
+    if (widget.screenFunction == ScreenFunction.add) {
+      context.read<PersonBloc>().add(
+            AddPersonEvent(PersonRequest(
+              firstName: firstNameController.text,
+              middleName: middleNameController.text,
+              lastName1: lastNameController.text,
+              dateOfBirth: selectedDate.toString(),
+              role: widget.contactVariant == ContactVariant.student
+                  ? Role.Student
+                  : stringToRole(widget.role!),
+              phoneNumber: phoneNumberController.text,
+              isLegal: false,
+            )),
+          );
+    } else {
+      try {
+        context.read<PersonBloc>().add(
+              UpdatePersonEvent(UpdatePersonRequest(
+                id: widget.person!.id,
+                firstName: firstNameController.text,
+                middleName: middleNameController.text,
+                lastName1: lastNameController.text,
+                // email1: emailList[0],
+                // email2: emailList[1],
+                // email3: emailList[2],
+                dateOfBirth: selectedDate.toString(),
+                // connectGroupIds: selectGroupList.map((e) => e.id!).toList(),
+                // personSettings: widget.person!.personSettings,
+                // groups: widget.person!.groups,
+                // VATId: widget.person!.VATId,
+                // tagsSettings: widget.person!.tagsSettings,
+                // spaceId: widget.person!.spaceId,
+                // childRelations: widget.person!.childRelations,
+                // relativeRelations: widget.person!.relativeRelations,
+                // deactivationDate: widget.person!.deactivationDate,
+                // isActive: widget.person!.isActive,
+                // createdAt: widget.person!.createdAt,
+                // updatedAt: widget.person!.updatedAt,
+                isDeactivated: widget.person!.isDeactivated,
+                isLegal: false,
+              )),
+            );
+      logger.d(selectGroupList[0].name);
+      } catch (e) {
+        logger.e(e);
+      }
+    }
+  }
+
   // Primary Color Selection
   Color _primaryColorSelection() {
     if (widget.contactVariant == ContactVariant.student) {
@@ -179,6 +241,33 @@ class _PersonDetailsState extends State<PersonDetails> {
     }
   }
 
+  // Handle Person State Change
+  void _onPersonStateChange(PersonState state) {
+    if (state.status == PersonStatus.success) {
+      previousScreen(context: context);
+      Navigator.pop(context);
+    } else if (state.status == PersonStatus.error) {
+      if (state.errorMessage!.contains("Unauthorized")) {
+      } else {}
+    }
+  }
+
+  // Handle Refresh State Change
+  void _onRefreshStateChange(AuthState state) {
+    if (state.status == AuthStateStatus.authenticated) {
+      saveData();
+    } else if (state.status == AuthStateStatus.unauthenticated) {
+      // logout
+      _onLogoutStateChange();
+    }
+  }
+
+  // Handle Logout State Change
+  void _onLogoutStateChange() {
+    prefs.clear();
+    nextScreenAndRemoveAll(context: context, screen: LoginScreen());
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -191,7 +280,8 @@ class _PersonDetailsState extends State<PersonDetails> {
         widget.person!.phoneNumber2,
         widget.person!.phoneNumber3,
       ];
-      logger.d(personNumbers);
+      selectGroupList.addAll(widget.person!.groups!);
+      logger.d(selectGroupList[0].name);
       for (var number in personNumbers) {
         if (number != null && number.isNotEmpty) {
           phoneNumbers.add(number);
@@ -225,93 +315,101 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _backgroundColorSelection(),
-      appBar: _buildAppBar(),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        children: [
-          const SizedBox(height: 20),
-          _buildCircleAvatar(),
-          const SizedBox(height: 20),
-          _buildTextField(firstNameController, "First name"),
-          const SizedBox(height: 20),
-          _buildTextField(middleNameController, "Middle name"),
-          const SizedBox(height: 20),
-          _buildTextField(lastNameController, "Last name"),
-          const SizedBox(height: 20),
-          _buildDatePicker(),
-          const SizedBox(height: 20),
-          _buildGenderDropDown(),
-          const SizedBox(height: 20),
-          _buildSection("Contacts", Icons.contact_page_rounded, [
-            ...phoneNumbers.map((number) => ListTile(
-                  title: Text(
-                    number,
-                    style: TextStyle(
-                      color: _secondaryColorSelection(),
-                      fontSize: CustomFontSize.large,
-                    ),
-                  ),
-                  trailing: IconButton(
-                    onPressed: () {
-                      _removePhoneNumber(number);
-                    },
-                    icon: Icon(
-                      Icons.clear_rounded,
-                      color: _secondaryColorSelection(),
-                    ),
-                  ),
-                )),
-            _buildPhoneNumberField(phoneNumberController),
-            // DefaultBtn(
-            //   text: "Add number",
-            //   onPressed: () {
-            //     if (phoneNumberController.text.isNotEmpty) {
-            //       _addPhoneNumber(phoneNumberController.text);
-            //       phoneNumberController.clear();                  
-            //     }
-            //   },
-            //   textColor: _secondaryColorSelection(),
-            //   btnColor: _primaryColorSelection(),
-            // ),
-            // const SizedBox(height: 30),
-            _buildDropDownOptions(
-              "Email",
-              emailList,
-              _updateEmailList,
-            ),
-          ]),
-          _buildSection("Address", Icons.home_rounded, [
-            _buildTextField(streetController, "Street"),
-            const SizedBox(height: 20),
-            _buildTextField(cityController, "City"),
-            const SizedBox(height: 20),
-            _buildTextField(stateController, "State"),
-            const SizedBox(height: 20),
-            _buildTextField(zipController, "Zip"),
-          ]),
-          _buildPersonRelativeSection(),
-          _buildSection(
-            "Groups",
-            Icons.groups_2_rounded,
-            [
-              _buildGroupChip(),
+    return BlocConsumer<PersonBloc, PersonState>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: _backgroundColorSelection(),
+          appBar: _buildAppBar(),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              const SizedBox(height: 20),
+              _buildCircleAvatar(),
+              const SizedBox(height: 20),
+              _buildTextField(firstNameController, "First name"),
+              const SizedBox(height: 20),
+              _buildTextField(middleNameController, "Middle name"),
+              const SizedBox(height: 20),
+              _buildTextField(lastNameController, "Last name"),
+              const SizedBox(height: 20),
+              _buildDatePicker(),
+              const SizedBox(height: 20),
+              _buildGenderDropDown(),
+              const SizedBox(height: 20),
+              _buildSection("Contacts", Icons.contact_page_rounded, [
+                ...phoneNumbers.map((number) => ListTile(
+                      title: Text(
+                        number,
+                        style: TextStyle(
+                          color: _secondaryColorSelection(),
+                          fontSize: CustomFontSize.large,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        onPressed: () {
+                          _removePhoneNumber(number);
+                        },
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          color: _secondaryColorSelection(),
+                        ),
+                      ),
+                    )),
+                _buildPhoneNumberField(phoneNumberController),
+                // DefaultBtn(
+                //   text: "Add number",
+                //   onPressed: () {
+                //     if (phoneNumberController.text.isNotEmpty) {
+                //       _addPhoneNumber(phoneNumberController.text);
+                //       phoneNumberController.clear();
+                //     }
+                //   },
+                //   textColor: _secondaryColorSelection(),
+                //   btnColor: _primaryColorSelection(),
+                // ),
+                // const SizedBox(height: 30),
+                _buildDropDownOptions(
+                  "Email",
+                  emailList,
+                  _updateEmailList,
+                ),
+              ]),
+              _buildSection("Address", Icons.home_rounded, [
+                _buildTextField(streetController, "Street"),
+                const SizedBox(height: 20),
+                _buildTextField(cityController, "City"),
+                const SizedBox(height: 20),
+                _buildTextField(stateController, "State"),
+                const SizedBox(height: 20),
+                _buildTextField(zipController, "Zip"),
+              ]),
+              _buildPersonRelativeSection(),
+              _buildSection(
+                "Groups",
+                Icons.groups_2_rounded,
+                [
+                  _buildGroupChip(),
+                ],
+                isAddButton: true,
+                btnAction: _updateGroupList,
+              ),
+              _buildTextArea(notesController, "Notes..."),
+              const SizedBox(height: 20),
+              _buildSection("Invoices", Icons.receipt, []),
+              _buildSection(
+                  "Upcoming payments", Icons.attach_money_rounded, []),
+              const SizedBox(height: 20),
+              Divider(
+                color: _primaryColorSelection(),
+              ),
+              _buildSaveButton(saveData, loading: state.isLoading),
             ],
-            isAddButton: true,
-            btnAction: _updateGroupList,
           ),
-          _buildTextArea(notesController, "Notes..."),
-          const SizedBox(height: 20),
-          _buildSection("Invoices", Icons.receipt, []),
-          _buildSection("Upcoming payments", Icons.attach_money_rounded, []),
-          const SizedBox(height: 20),
-          Divider(
-            color: _primaryColorSelection(),
-          ),
-          _buildSaveButton(),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -485,7 +583,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(Function()? onPressed, {bool loading = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 22),
       child: Row(
@@ -493,14 +591,18 @@ class _PersonDetailsState extends State<PersonDetails> {
         children: [
           FloatingActionButton.extended(
             backgroundColor: _primaryColorSelection(),
-            onPressed: () {},
-            label: Text(
-              "Save",
-              style: TextStyle(
-                color: _secondaryColorSelection(),
-                fontSize: CustomFontSize.large,
-              ),
-            ),
+            onPressed: loading ? null : onPressed,
+            label: !loading
+                ? Text(
+                    "Save",
+                    style: TextStyle(
+                      color: _secondaryColorSelection(),
+                      fontSize: CustomFontSize.large,
+                    ),
+                  )
+                : CircularProgressIndicator(
+                    color: _secondaryColorSelection(),
+                  ),
           ),
         ],
       ),
@@ -541,6 +643,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                 onDeleted: () {
                   setState(() {
                     selectGroupList.remove(group);
+                    disconnectedGroupList.add(group);
                   });
                 },
               )),
@@ -589,7 +692,8 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   Widget _buildPersonRelativeSection() {
-    if (widget.contactVariant == ContactVariant.student || widget.person != null && widget.person!.role == "Student") {
+    if (widget.contactVariant == ContactVariant.student ||
+        widget.person != null && widget.person!.role == "Student") {
       return _buildSection(
         "Parents",
         Icons.people_alt_rounded,

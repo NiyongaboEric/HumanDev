@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/students.dart';
 
 import '../../screens/main/person/parent.dart';
@@ -107,18 +109,18 @@ List<HomeSection> homeSections(BuildContext context) {
             ));
       },
     ),
-    HomeButton(
-      title: "To-Do",
-      color: const Color(0xFFF9977E),
-      icon: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Image.asset(
-          "assets/icons/todo.png",
-          color: Colors.white,
-        ),
-      ),
-      onPressed: () {},
-    )
+    // HomeButton(
+    //   title: "To-Do",
+    //   color: const Color(0xFFF9977E),
+    //   icon: Padding(
+    //     padding: const EdgeInsets.all(20),
+    //     child: Image.asset(
+    //       "assets/icons/todo.png",
+    //       color: Colors.white,
+    //     ),
+    //   ),
+    //   onPressed: () {},
+    // )
   ];
 
   List<HomeButton> contacts = [
@@ -199,6 +201,47 @@ List<HomeSection> homeSections(BuildContext context) {
     )
   ];
 
+  List<HomeButton> invoices = [
+    HomeButton(
+      title: "Invoice List",
+      color: const Color(0xFF9747FF),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/invoice_list.svg",
+          color: Colors.white,
+        ),
+      ),
+      onPressed: () {
+        nextScreen(context: context, screen: const InvoiceList());
+      },
+    ),
+    HomeButton(
+      title: "Student Invoice",
+      color: const Color(0xFF9747FF),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/student_invoice.svg",
+          color: Colors.white,
+        ),
+      ),
+      onPressed: () {},
+    ),
+    HomeButton(
+      title: "Third Party Invoice",
+      color: const Color(0xFF9747FF),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/third_party_invoice.svg",
+          color: Colors.white,
+        ),
+      ),
+      onPressed: () {},
+    ),
+  ];
+
   return [
     HomeSection(
       title: "Log transactions",
@@ -215,9 +258,14 @@ List<HomeSection> homeSections(BuildContext context) {
       buttons: contacts,
       textColor: const Color(0xFF1877F2),
     ),
+    // HomeSection(
+    //   title: "Reports",
+    //   buttons: reports,
+    //   textColor: const Color(0xFF9747FF),
+    // ),
     HomeSection(
-      title: "Reports",
-      buttons: reports,
+      title: "Invoices",
+      buttons: invoices,
       textColor: const Color(0xFF9747FF),
     ),
   ];

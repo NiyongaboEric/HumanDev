@@ -540,11 +540,26 @@ class _ParentsState extends State<Parents> {
       return ReminderRequest(
         type: reminderType(widget.parentSection),
         relativePersonId: parent.id,
+        studentPersonId: students
+            .firstWhere(
+              (student) => student.childRelations!.any(
+                (relative) => relative.id == parent.id,
+              ),
+            )
+            .id,
+        fullName: "${parent.firstName} ${parent.lastName1}",
+        phoneNumber: parent.phoneNumber1,
       );
     }).toList();
 
+    reminderRequests.forEach((element) {
+      logger.d(element.fullName);
+      logger.d(element.phoneNumber);
+    });
+
     List<String> recipients =
         selectedParents.map((e) => "${e.firstName} ${e.lastName1}").toList();
+
     context.read<ReminderBloc>().add(
           SaveDataReminderState(
             reminderRequests,
@@ -1012,7 +1027,7 @@ class _ParentsState extends State<Parents> {
     return BoxDecoration(
       color: widget.parentSection == ParentSection.sendSMS
           ? SMSRecipientColors.thirdColor
-          : tertiaryColorSelection(widget.parentSection),
+          : primaryColorSelection(widget.parentSection),
       borderRadius: BorderRadius.circular(100),
     );
   }
@@ -1119,20 +1134,13 @@ class _ParentsState extends State<Parents> {
       );
 
   Widget _buildNullNumberImage(PersonModel person) {
-    // ((person.phoneNumber1 == null &&
-    //             person.phoneNumber2 == null &&
-    //             person.phoneNumber3 == null) &&
-    //         (widget.parentSection == ParentSection.sendSMS ||
-    //             widget.parentSection == ParentSection.sms))
-    //     ? Image.asset("assets/icons/null_number.png",
-    //         width: 20, height: 20, color: Colors.red)
-    //     : Container();
     if (widget.parentSection == ParentSection.sms) {
       if (person.childRelations == null ||
           person.childRelations!.isEmpty ||
           person.childRelations!.any((element) =>
-              element.phoneNumber1 == null && element.phoneNumber1!.isEmpty || element.phoneNumber2 == null &&
-                  element.phoneNumber2!.isEmpty || element.phoneNumber3 == null && element.phoneNumber3!.isEmpty)) {
+              element.phoneNumber1 == null && element.phoneNumber1!.isEmpty ||
+              element.phoneNumber2 == null && element.phoneNumber2!.isEmpty ||
+              element.phoneNumber3 == null && element.phoneNumber3!.isEmpty)) {
         return Image.asset("assets/icons/null_number.png",
             width: 20, height: 20, color: Colors.red);
       } else {
@@ -1172,8 +1180,11 @@ class _ParentsState extends State<Parents> {
               person.childRelations!.isEmpty ||
               person.childRelations!.any((element) =>
                   element.phoneNumber1 != null &&
-                  element.phoneNumber1!.isNotEmpty || element.phoneNumber2 != null &&
-                      element.phoneNumber2!.isNotEmpty || element.phoneNumber3 != null && element.phoneNumber3!.isNotEmpty))
+                      element.phoneNumber1!.isNotEmpty ||
+                  element.phoneNumber2 != null &&
+                      element.phoneNumber2!.isNotEmpty ||
+                  element.phoneNumber3 != null &&
+                      element.phoneNumber3!.isNotEmpty))
           ? const SizedBox()
           : Image.asset("assets/icons/null_number.png",
               width: 25, height: 25, color: Colors.red);
@@ -1223,24 +1234,51 @@ class _ParentsState extends State<Parents> {
 
   void handleCheckboxChangedForSMS(PersonModel person, bool? value) {
     if (person.childRelations != null) {
-      value!
-          ? person.childRelations!
-              .where((relatedPerson) =>
-                  relatedPerson.phoneNumber1 != null &&
-                  relatedPerson.phoneNumber1!.isNotEmpty || relatedPerson.phoneNumber2 != null &&
-                      relatedPerson.phoneNumber2!.isNotEmpty || relatedPerson.phoneNumber3 != null && relatedPerson.phoneNumber3!.isNotEmpty)
-              .forEach(addParent)
-          : person.childRelations!
-              .where((relatedPerson) =>
-                  relatedPerson.phoneNumber1 != null &&
-                  relatedPerson.phoneNumber1!.isNotEmpty || relatedPerson.phoneNumber2 != null &&
-                      relatedPerson.phoneNumber2!.isNotEmpty || relatedPerson.phoneNumber3 != null && relatedPerson.phoneNumber3!.isNotEmpty)
-              .forEach(removeParent);
-    }
-    if (person.childRelations != null &&
+      if (value!) {
+        // Iterate over child relations and add parents
         person.childRelations!
-            .every((element) => element.phoneNumber1 == null && element.phoneNumber1!.isEmpty || element.phoneNumber2 == null &&
-                element.phoneNumber2!.isEmpty || element.phoneNumber3 == null && element.phoneNumber3!.isEmpty)) {
+            .where((relatedPerson) =>
+                relatedPerson.phoneNumber1 != null &&
+                    relatedPerson.phoneNumber1!.isNotEmpty ||
+                relatedPerson.phoneNumber2 != null &&
+                    relatedPerson.phoneNumber2!.isNotEmpty ||
+                relatedPerson.phoneNumber3 != null &&
+                    relatedPerson.phoneNumber3!.isNotEmpty)
+            .forEach(addParent);
+
+        // Add Student if parent is selected
+        selectedParents.forEach((element) {
+          if (person.childRelations!.contains(element)) {
+            addStudent(person);
+          }
+        });
+      } else {
+        // Iterate over child relations and remove parents
+        person.childRelations!
+            .where((relatedPerson) =>
+                relatedPerson.phoneNumber1 != null &&
+                    relatedPerson.phoneNumber1!.isNotEmpty ||
+                relatedPerson.phoneNumber2 != null &&
+                    relatedPerson.phoneNumber2!.isNotEmpty ||
+                relatedPerson.phoneNumber3 != null &&
+                    relatedPerson.phoneNumber3!.isNotEmpty)
+            .forEach(removeParent);
+
+        // Remove Student if parent is unselected
+        selectedParents.forEach((element) {
+          if (!person.childRelations!.contains(element)) {
+            removeStudent(person);
+          }
+        });
+      }
+    }
+
+    // Check if no phone number found for parent
+    if (person.childRelations == null ||
+        person.childRelations!.every((element) =>
+            element.phoneNumber1 == null &&
+            element.phoneNumber2 == null &&
+            element.phoneNumber3 == null)) {
       GFToast.showToast(
         "No phone number found for parent",
         context,
@@ -1424,7 +1462,7 @@ class _ParentsState extends State<Parents> {
               ),
             );
           },
-          icon: const Icon(Icons.add_rounded),
+          icon: const Icon(Icons.add_rounded, size: 30,),
         );
       case ParentSection.contacts:
         return IconButton(
@@ -1473,6 +1511,8 @@ class _ParentsState extends State<Parents> {
           _buildParentSelectionSendSMS(toggleOptionsSendSMS),
           _buildSizedBox(),
           _buildCustomizeParentSelectionSendSMSSearch(),
+          // Select All Button
+          // _buildSelectAllButton(),
         ],
       ),
     );
@@ -1540,4 +1580,67 @@ class _ParentsState extends State<Parents> {
           )
         : Container();
   }
+
+  // Widget _selectALlButton(){
+    // return widget.parentSection == ParentSection.sendSMS
+    //     ? GFButton(
+    //         onPressed: () {
+    //           setState(() {
+    //             personSelectionSendSMS = [true, false, false, false];
+    //             selectedAllPeopleSendSMS = [...allPeople];
+    //             selectedStudentsSendSMS = [...students];
+    //             selectedParentsSendSMS = [...parents];
+    //             selectedTeachersSendSMS = [...teachers];
+    //           });
+    //         },
+    //         text: "Select all",
+    //         textStyle: TextStyle(
+    //           fontSize: CustomFontSize.small,
+    //           color: SMSRecipientColors.primaryColor,
+    //         ),
+    //         color: SMSRecipientColors.fifthColor,
+    //         size: GFSize.LARGE,
+    //         shape: GFButtonShape.pills,
+    //         type: GFButtonType.outline,
+    //         fullWidthButton: true,
+    //         icon: Icon(
+    //           Icons.check_circle_outline_rounded,
+    //           color: SMSRecipientColors.primaryColor,
+    //         ),
+    //         position: GFPosition.end,
+    //       )
+    //     : Container();
+
+    // Select All Radio Button
+    // return widget.parentSection == ParentSection.sendSMS
+    //     ? Row(
+    //         mainAxisAlignment: MainAxisAlignment.end,
+    //         children: [
+    //           Text(
+    //             "Select all",
+    //             style: TextStyle(
+    //               fontSize: CustomFontSize.small,
+    //               color: SMSRecipientColors.primaryColor,
+    //             ),
+    //           ),
+    //           Radio(
+    //             value: true,
+    //             groupValue: selectAll,
+    //             onChanged: (value) {
+    //               setState(() {
+    //                 selectAll = value as bool;
+    //                 personSelectionSendSMS = [true, false, false, false];
+    //                 selectedAllPeopleSendSMS = [...allPeople];
+    //                 selectedStudentsSendSMS = [...students];
+    //                 selectedParentsSendSMS = [...parents];
+    //                 selectedTeachersSendSMS = [...teachers];
+    //               });
+    //             },
+    //             activeColor: SMSRecipientColors.primaryColor,
+    //           ),
+    //         ],
+    //       )
+    //     : Container();
+  // }
+
 }

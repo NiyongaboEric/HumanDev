@@ -14,18 +14,21 @@ var sl = GetIt.instance;
 
 abstract class PersonApi {
   // Create person
-  Future<PersonModel> createPerson(PersonRequest PersonRequest);
+  Future<PersonModel> createPerson(PersonRequest personRequest);
   // Get All Persons
   Future<List<PersonModel>> getAllPersons();
   // Get One Person
   Future<PersonModel> getOnePerson(String studentID);
   // Get relatives
   Future<List<PersonModel>> getRelatives(String studentID);
+  // Update Person
+  Future<PersonModel> updatePerson(UpdatePersonRequest person);
+  // Delete Person
 }
 
 class PersonApiImpl implements PersonApi {
   @override
-  Future<PersonModel> createPerson(PersonRequest PersonRequest) async {
+  Future<PersonModel> createPerson(PersonRequest personRequest) async {
     try {
       // TODO: implement createStudent
       var interceptor = sl.get<RequestInterceptor>();
@@ -33,7 +36,7 @@ class PersonApiImpl implements PersonApi {
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
       final res = await dio.post("/space/${space.id}/person",
-          data: PersonRequest.toJson());
+          data: personRequest.toJson());
       if (res.statusCode == 201) {
         return PersonModel.fromJson(res.data);
       } else {
@@ -133,6 +136,30 @@ class PersonApiImpl implements PersonApi {
       // Handle Dio errors and other exceptions
       logger.e("An error occurred: ${error.response!.data["message"]}");
       throw Exception(error);
+    }
+  }
+
+  @override
+  Future<PersonModel> updatePerson(UpdatePersonRequest person) async {
+    try {
+      // TODO: implement updatePerson
+      var interceptor = sl.get<RequestInterceptor>();
+      var dio = sl.get<Dio>()..interceptors.add(interceptor);
+      var prefs = sl<SharedPreferenceModule>();
+      var space = prefs.getSpaces().first;
+      final res = await dio.patch("/space/${space.id}/person/${person.id}",
+          data: person.toJson());
+      if (res.statusCode == 200) {
+        return PersonModel.fromJson(res.data);
+      } else {
+        throw Exception(res.data["message"]);
+      }
+    } on DioException catch (error) {
+      // Handle Dio errors and other exceptions
+      logger.e(
+          "An error occurred: ${error.response?.data["message"] ?? "No internet connectivity"}");
+      throw Exception(
+          error.response?.data["message"] ?? "No internet connectivity");
     }
   }
 }

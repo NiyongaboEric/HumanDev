@@ -15,10 +15,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/auth/api/auth_api.dart';
 import '../data/constants/request_interceptor.dart';
 import '../data/constants/shared_prefs.dart';
+import '../data/invoice/api/invoice_api.dart';
 import '../ui/screens/auth/accounts_bloc/accounts_bloc.dart';
 import '../ui/screens/auth/auth_bloc/auth_bloc.dart';
 import '../ui/screens/auth/group_bloc/groups_bloc.dart';
 import '../ui/screens/auth/tags_bloc/tags_bloc.dart';
+import '../ui/screens/main/invoice/bloc/invoice_bloc.dart';
 import '../ui/screens/main/person/bloc/person_bloc.dart';
 import '../ui/screens/main/reminder/blocs/reminder_bloc.dart';
 
@@ -53,7 +55,8 @@ Future<void> init() async {
   sl.registerSingleton<GroupApiImpl>(GroupApiImpl());
   sl.registerSingleton<SpaceApiImpl>(SpaceApiImpl());
   sl.registerSingleton<ReminderApiImpl>(ReminderApiImpl());
-
+  sl.registerSingleton<InvoiceApiImpl>(InvoiceApiImpl());
+  
   // Blocs
   sl.registerFactory<AuthBloc>(
       () => AuthBloc(sl<SharedPreferenceModule>(), sl<AuthApiImpl>()));
@@ -65,4 +68,5 @@ Future<void> init() async {
   sl.registerFactory<SpaceBloc>(
       () => SpaceBloc(sl<SharedPreferenceModule>(), sl<SpaceApiImpl>()));
   sl.registerFactory<ReminderBloc>(() => ReminderBloc(sl<ReminderApiImpl>()));
+  sl.registerFactory<InvoiceBloc>(() => InvoiceBloc(sl<SharedPreferenceModule>(), sl<InvoiceApiImpl>()));
 }

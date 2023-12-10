@@ -54,6 +54,13 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
   }
 
   // Log Reminder
+  void _logReminder(List<ReminderRequest> reminderRequests){
+    reminderRequests.forEach((element) {
+      // Call urlLauncher = logger
+      logger.d(element.fullName);
+      logger.d(element.phoneNumber);
+    });
+  }
 
   // Handle Reminder Change State
   void _handleReminderStateChange(BuildContext context, ReminderState state) {

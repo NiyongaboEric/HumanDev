@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:intl/intl.dart';
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 
 import '../../data/constants/shared_prefs.dart';
@@ -65,4 +66,13 @@ class Constants {
     "Teacher",
     "Supplier",
   ];
+
+
+  // METHODS
+
+  // Date Format Parser
+  static String dateFormatParser(String date) {
+    DateTime dateTime = DateTime.parse(date);
+    return DateFormat('dd MMM yy').format(dateTime);
+  }
 }

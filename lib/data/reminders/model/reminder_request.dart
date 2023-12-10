@@ -1,22 +1,12 @@
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 
-const schema = {
-  "type": "LETTER",
-  "note": "Note for this reminder. Text...",
-  "message": "Message...",
-  "scheduledTime": "2023-12-03T11:40:16.134Z",
-  "tags": [
-    {"id": 0, "name": "string"}
-  ],
-  "studentPersonId": 0,
-  "relativePersonId": 0,
-  "personId": 0
-};
 
 enum ReminderType { LETTER, SENT_SMS, CALL, F2F, OTHER }
 
 class ReminderRequest {
   final ReminderType type;
+  final String? fullName;
+  final String? phoneNumber;
   final String? note;
   final String? message;
   final String? scheduledTime;
@@ -27,6 +17,8 @@ class ReminderRequest {
 
   const ReminderRequest({
     required this.type,
+    this.fullName,
+    this.phoneNumber,
     this.note,
     this.message,
     this.scheduledTime,
@@ -40,6 +32,8 @@ class ReminderRequest {
     if (type == ReminderType.SENT_SMS) {
       return {
         'type': reminderEnumToString(type),
+        'fullName': fullName,
+        'phoneNumber': phoneNumber,
         'message': message,
         'scheduledTime': scheduledTime,
         'tags': tags,
@@ -58,6 +52,8 @@ class ReminderRequest {
   factory ReminderRequest.fromJson(Map<String, dynamic> json) {
     return ReminderRequest(
       type: reminderStringToEnum(json['type']),
+      fullName: json['fullName'],
+      phoneNumber: json['phoneNumber'],
       note: json['note'],
       message: json['message'],
       scheduledTime: json['scheduledTime'],

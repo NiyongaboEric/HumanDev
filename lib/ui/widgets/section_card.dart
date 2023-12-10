@@ -32,20 +32,19 @@ class SectionCard extends StatelessWidget {
                   height: 100,
                   width: 100,
                   decoration: BoxDecoration(
-                    color: bgColor,
-                    // border: Border.all(color: CustomColor.grey),
-                    borderRadius: BorderRadius.circular(20),
-                    // Shadow
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.5),
-                        spreadRadius: 0,
-                        blurRadius: 5,
-                        offset:
-                            const Offset(0, 6), // changes position of shadow
-                      )
-                    ]
-                  ),
+                      color: bgColor,
+                      // border: Border.all(color: CustomColor.grey),
+                      borderRadius: BorderRadius.circular(20),
+                      // Shadow
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 0,
+                          blurRadius: 5,
+                          offset:
+                              const Offset(0, 6), // changes position of shadow
+                        )
+                      ]),
                   child: icon,
                 ),
               ],
@@ -53,6 +52,7 @@ class SectionCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(title,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: CustomFontSize.small,
                 color: textColor ?? CustomColor.primaryLight,

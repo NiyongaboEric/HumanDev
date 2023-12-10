@@ -56,7 +56,7 @@ class _SendSMSState extends State<SendSMS> {
                           time.minute,
                         )
                       .toIso8601String()
-                  : null,
+                  : DateTime.now().toIso8601String(),
               tags: e.tags,
               studentPersonId: e.studentPersonId,
               relativePersonId: e.relativePersonId,

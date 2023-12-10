@@ -630,6 +630,9 @@ class _StudentsState extends State<Students> {
 
   AppBar _buildAppBar(AlphabetListViewOptions options) {
     return AppBar(
+      iconTheme: IconThemeData(
+        color: _secondaryColorSelection(widget.option),
+      ),
       title: Text(_appBarTitle(widget.option),
           style: TextStyle(
             color: _secondaryColorSelection(widget.option),
@@ -661,7 +664,7 @@ class _StudentsState extends State<Students> {
                       contactVariant: ContactVariant.student,
                         screenFunction: ScreenFunction.add));
               },
-              icon: const Icon(Icons.add))
+              icon: const Icon(Icons.add_rounded, size: 28,))
       ],
       backgroundColor: primaryColorSelection(widget.option).shade100,
       bottom: PreferredSize(

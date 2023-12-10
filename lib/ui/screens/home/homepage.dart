@@ -435,7 +435,7 @@ class _HomePageState extends State<HomePage> {
     required Color textColor,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8D6),
         borderRadius: BorderRadius.circular(16),
@@ -464,10 +464,11 @@ class _HomePageState extends State<HomePage> {
           GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 200,
-              childAspectRatio: 8 / 7.5,
-              crossAxisSpacing: 0,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisExtent: 170,
+              // childAspectRatio: 8 / 7.5,
+              crossAxisSpacing: 15,
               mainAxisSpacing: 15,
             ),
             itemCount: sections.length,
