@@ -7,6 +7,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_aut
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/sms/bloc/sms_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
                 BlocProvider(create: (context) => sl<ReminderBloc>()),
                 BlocProvider(create: (context) => sl<TagsBloc>()),
                 BlocProvider(create: (context) => sl<GroupsBloc>()),
+                BlocProvider(create: (context) => SMSBloc()),
                 BlocProvider(create: (context) => sl<InvoiceBloc>(),)
               ],
               child: MaterialApp(

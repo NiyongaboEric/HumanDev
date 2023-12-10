@@ -32,6 +32,7 @@ import '../../auth/login.dart';
 import '../reminder/blocs/reminder_bloc.dart';
 import '../reminder/reminder_types/sms_reminder/send_sms.dart';
 import 'bloc/person_bloc.dart';
+import '../../../screens/main/contacts/sms/bloc/sms_bloc.dart';
 
 var sl = GetIt.instance;
 
@@ -569,13 +570,22 @@ class _ParentsState extends State<Parents> {
   }
 
   saveDataSendSMS() {
-    List<ReminderRequest> reminderRequests = selectedParents.map((parent) {
-      return ReminderRequest(
-        type: reminderType(widget.parentSection),
-        relativePersonId: parent.id,
-        // attendeePersonIds: parent.id,
-      );
-    }).toList();
+
+    List<Map<String, String>> recipientsWithNameAndNumbers = [
+      ...selectedAllPeopleSendSMS,
+      ...selectedStudentsSendSMS,
+      ...selectedParentsSendSMS,
+      ...selectedTeachersSendSMS
+    ]
+    .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
+    .toList();
+
+    ReminderRequest reminderRequest = ReminderRequest(
+      type: reminderType(widget.parentSection),
+      // attendeePersonIds: selectedParents.map((parent) => parent.id).toList(),
+      // expandRelations: false,
+      recipientsNameWithNumbers: recipientsWithNameAndNumbers
+    );
 
     List<String> recipients = [
       ...selectedAllPeopleSendSMS,
@@ -583,12 +593,15 @@ class _ParentsState extends State<Parents> {
       ...selectedParentsSendSMS,
       ...selectedTeachersSendSMS
     ].map((e) => "${e.firstName} ${e.lastName1}").toList();
-    context.read<ReminderBloc>().add(
-          SaveDataReminderState(
-            reminderRequests,
-            recipients,
-          ),
-        );
+
+    context
+      .read<SMSBloc>()
+      .add(
+        SaveDataSendSMSState(
+          reminderRequest,
+          recipients
+        ),
+      );
   }
 
   void navigate(BuildContext context) {
@@ -673,6 +686,17 @@ class _ParentsState extends State<Parents> {
     }
 
     if (state.status == ReminderStateStatus.error) {
+      logger.d(state.errorMessage ?? "Error");
+    }
+  }
+
+  // Handle SMS State Change
+  _handleSMSStateChange(BuildContext context, SMSState state) {
+    if (state.status == SMSStateStatus.success) {
+      navigate(context);
+    }
+
+    if (state.status == SMSStateStatus.error) {
       logger.d(state.errorMessage ?? "Error");
     }
   }
@@ -842,7 +866,7 @@ class _ParentsState extends State<Parents> {
                               ...selectedParentsSendSMS,
                               ...selectedTeachersSendSMS
                             ].isEmpty
-                              ? SMSRecipientColors.primaryColor
+                              ? primaryColorSelection(parentSection)
                               : SMSRecipientColors.thirdColor
                           : parentSection == ParentSection.sms
                               ? selectedParents.isEmpty
@@ -1104,7 +1128,7 @@ class _ParentsState extends State<Parents> {
   }
 
   Function()? getOnTapFunction(PersonModel person) =>
-      (widget.parentSection != ParentSection.sms ||
+      (widget.parentSection != ParentSection.sms &&
               widget.parentSection != ParentSection.sendSMS)
           ? () {
               widget.parentSection == ParentSection.students
@@ -1124,7 +1148,10 @@ class _ParentsState extends State<Parents> {
           Text(
             fullName.length > 24 ? '${fullName.substring(0, 11)}...' : fullName,
             style: TextStyle(
-                color: secondaryColorSelection(widget.parentSection),
+              color:
+              widget.parentSection == ParentSection.sendSMS 
+                ? SMSRecipientColors.primaryColor 
+                : secondaryColorSelection(widget.parentSection),
                 fontSize: CustomFontSize.medium),
           ),
           const SizedBox(width: 10),
@@ -1193,6 +1220,15 @@ class _ParentsState extends State<Parents> {
       (widget.parentSection == ParentSection.sms ||
               widget.parentSection == ParentSection.sendSMS)
           ? Checkbox(
+            side: widget.parentSection == ParentSection.sendSMS
+              ? (
+                  person.phoneNumber1 != null && person.phoneNumber1!.isNotEmpty ||
+                  person.phoneNumber2 != null && person.phoneNumber2!.isNotEmpty ||
+                  person.phoneNumber3 != null && person.phoneNumber3!.isNotEmpty
+                )
+                  ? const BorderSide(color: Colors.black)
+                  : BorderSide(color: Colors.black.withOpacity(0.2))
+              : const BorderSide(color: Colors.black),
               activeColor: getActiveColor(),
               value: getCheckboxValue(person),
               onChanged: (value) => onCheckboxChanged(person, value),
@@ -1422,7 +1458,8 @@ class _ParentsState extends State<Parents> {
     return [
       _buildAuthBlocListener(),
       _buildReminderBlocListener(),
-      _buildAddButton(parentSection),
+      _buildSMSBlocListener(),
+      _buildAddButton(),
     ];
   }
 
@@ -1449,34 +1486,29 @@ class _ParentsState extends State<Parents> {
     );
   }
 
-  Widget _buildAddButton(ParentSection parentSection) {
-    switch (parentSection) {
-      case ParentSection.students:
-        return IconButton(
-          onPressed: () {
-            nextScreen(
-              context: context,
-              screen: const PersonDetails(
-                screenFunction: ScreenFunction.add,
-                contactVariant: ContactVariant.student,
-              ),
-            );
-          },
-          icon: const Icon(Icons.add_rounded, size: 30,),
-        );
-      case ParentSection.contacts:
-        return IconButton(
-          onPressed: () {
-            nextScreen(
-              context: context,
-              screen: const ContactType(),
-            );
-          },
-          icon: const Icon(Icons.add_rounded),
-        );
-      default:
-        return Container();
-    }
+  Widget _buildSMSBlocListener() {
+    return BlocListener<SMSBloc, SMSState>(
+      listener: (context, state) {
+        if (isCurrentPage) {
+          _handleSMSStateChange(context, state);
+        }
+      },
+      child: Container(),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return widget.parentSection == ParentSection.students
+        ? IconButton(
+            onPressed: () {
+              nextScreen(
+                context: context,
+                screen: const PersonDetails(screenFunction: ScreenFunction.add, contactVariant: ContactVariant.student,),
+              );
+            },
+            icon: const Icon(Icons.add_rounded),
+          )
+        : Container();
   }
 
   PreferredSizeWidget _buildAppBarBottom(

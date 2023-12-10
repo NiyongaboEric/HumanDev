@@ -1,6 +1,5 @@
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 
-
 enum ReminderType { LETTER, SENT_SMS, CALL, F2F, OTHER }
 
 class ReminderRequest {
@@ -11,6 +10,7 @@ class ReminderRequest {
   final String? message;
   final String? scheduledTime;
   final List<TagModel>? tags;
+  final List<Map<String, String>>? recipientsNameWithNumbers;
   final int? studentPersonId;
   final int? relativePersonId;
   final int? personId;
@@ -23,6 +23,7 @@ class ReminderRequest {
     this.message,
     this.scheduledTime,
     this.tags,
+    this.recipientsNameWithNumbers,
     this.studentPersonId,
     this.relativePersonId,
     this.personId,
@@ -45,6 +46,7 @@ class ReminderRequest {
       'type': reminderEnumToString(type),
       'note': note,
       'tags': tags,
+      'recipientsNameWithNumbers': recipientsNameWithNumbers,
       'personId': personId,
     };
   }
@@ -58,6 +60,7 @@ class ReminderRequest {
       message: json['message'],
       scheduledTime: json['scheduledTime'],
       tags: json['tags'],
+      recipientsNameWithNumbers: json['recipientsNameWithNumbers'],
       studentPersonId: json['studentPersonId'],
       relativePersonId: json['relativePersonId'],
       personId: json['personId'],
