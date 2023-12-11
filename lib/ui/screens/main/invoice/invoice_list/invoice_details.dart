@@ -1,10 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/select_fee.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
-import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 
@@ -14,8 +11,7 @@ enum InvoiceType { EDIT, CREATE }
 
 class InvoiceDetails extends StatefulWidget {
   final InvoiceType invoiceType;
-  final InvoiceModel invoiceData;
-  const InvoiceDetails({super.key, required this.invoiceType, required this.invoiceData});
+  const InvoiceDetails({super.key, required this.invoiceType});
 
   @override
   State<InvoiceDetails> createState() => _InvoiceDetailsState();
@@ -44,10 +40,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
           _buildDatePicker(),
           SizedBox(height: 60),
           _buildInvoiceItems(),
-          // SizedBox(height: 60),
-          _buildPaymentSchedule(),
           SizedBox(height: 60),
-          _actionButtons(),
+          _buildPaymentSchedule(),
         ],
       ),
     );
@@ -199,24 +193,17 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
             ),
             const Spacer(),
             FloatingActionButton.extended(
-              onPressed: () {
-                nextScreen(context: context, screen: SelectFee());
-              },
+              onPressed: () {},
               label: Text("Add a standard item",
                   style: TextStyle(
                     color: TertiaryColors.tertiaryPurple,
                     fontSize: CustomFontSize.small,
                   )),
-              backgroundColor: PrimaryColors.primaryPurple,
-            ),
+              backgroundColor: PrimaryColors.primaryPurple,),
           ],
         ),
         SizedBox(height: 20),
-        InvoiceTable(
-          invoiceTableType: InvoiceTableType.ITEMS,
-          itemItems: widget.invoiceData.invoiceItems,
-          paymentSchedules: widget.invoiceData.paymentSchedules,
-        ),
+        InvoiceTable(invoiceTableType: InvoiceTableType.ITEMS,),
       ],
     );
   }
@@ -234,29 +221,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
           ),
         ),
         SizedBox(height: 20),
-        InvoiceTable(
-          invoiceTableType: InvoiceTableType.PAYMENT_SCHEDULE,
-        ),
-      ],
-    );
-  }
-
-  Widget _actionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        DefaultBtn(
-          onPressed: () {},
-          text: "Save as draft",
-          btnColor: PrimaryColors.primaryPurple,
-          textColor: SecondaryColors.secondaryPurple,
-        ),
-        DefaultBtn(
-          onPressed: () {},
-          text: "Send invoice",
-          btnColor: SecondaryColors.secondaryPurple,
-          textColor: PrimaryColors.primaryPurple,
-        ),
+        InvoiceTable(invoiceTableType: InvoiceTableType.PAYMENT_SCHEDULE,),
       ],
     );
   }
