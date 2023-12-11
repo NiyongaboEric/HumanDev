@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/invoice/item_data_source.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/invoice/payment_schedule_data_source.dart';
@@ -8,7 +10,9 @@ enum InvoiceTableType { ITEMS, PAYMENT_SCHEDULE }
 
 class InvoiceTable extends StatefulWidget {
   final InvoiceTableType invoiceTableType;
-  const InvoiceTable({super.key, required this.invoiceTableType});
+  final List<InvoiceItemModel>? itemItems;
+  final List<PaymentScheduleModel>? paymentSchedules;
+  const InvoiceTable({super.key, required this.invoiceTableType, this.itemItems, this.paymentSchedules});
 
   @override
   State<InvoiceTable> createState() => _InvoiceTableState();
@@ -52,19 +56,19 @@ class _InvoiceTableState extends State<InvoiceTable> {
     return [
       PaymentScheduleTable(
         id: 1,
-        date: DateTime.now(),
+        date: DateTime.now().toIso8601String(),
         due: 100,
         paid: 100,
       ),
       PaymentScheduleTable(
         id: 2,
-        date: DateTime.now(),
+        date: DateTime.now().toIso8601String(),
         due: 200,
         paid: 200,
       ),
       PaymentScheduleTable(
         id: 3,
-        date: DateTime.now(),
+        date: DateTime.now().toIso8601String(),
         due: 300,
         paid: 300,
       ),
@@ -142,7 +146,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
         columnName: 'due',
         label: Container(
           color: PrimaryColors.primaryPurple,
-          padding: const EdgeInsets.all(0.0),
+          // padding: const EdgeInsets.all(0.0),
           alignment: Alignment.center,
           child: const Text(
             'Due',
@@ -154,7 +158,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
         columnName: 'paid',
         label: Container(
           color: PrimaryColors.primaryPurple,
-          padding: const EdgeInsets.all(8.0),
+          // padding: const EdgeInsets.all(8.0),
           alignment: Alignment.center,
           child: const Text(
             'Paid',
@@ -171,6 +175,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
     items = getItems();
     itemColumns = getItemsGridColumn();
     paymentSchedule = getPaymentSchedule();
+    paymentScheduleColumns = getPaymentScheduleGridColumn();
     itemsDataSource = ItemsDataSource(items);
     paymentScheduleDataSource = PaymentScheduleDataSource(paymentSchedule);
     super.initState();
@@ -179,11 +184,17 @@ class _InvoiceTableState extends State<InvoiceTable> {
   @override
   Widget build(BuildContext context) {
     return SfDataGrid(
-      source: widget.invoiceTableType == InvoiceTableType.ITEMS ? itemsDataSource : paymentScheduleDataSource,
-      columns: widget.invoiceTableType == InvoiceTableType.ITEMS ? itemColumns : paymentScheduleColumns,
+      verticalScrollPhysics: const NeverScrollableScrollPhysics(),
+      footerHeight: 0,
+      columnWidthMode: ColumnWidthMode.fill,
+      source: widget.invoiceTableType == InvoiceTableType.ITEMS
+          ? itemsDataSource
+          : paymentScheduleDataSource,
+      columns: widget.invoiceTableType == InvoiceTableType.ITEMS
+          ? itemColumns
+          : paymentScheduleColumns,
       gridLinesVisibility: GridLinesVisibility.both,
       headerGridLinesVisibility: GridLinesVisibility.both,
     );
   }
 }
-

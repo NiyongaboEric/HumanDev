@@ -167,7 +167,9 @@ class _InvoiceListState extends State<InvoiceList> {
                                   nextScreen(
                                     context: context,
                                     screen: InvoiceDetails(
-                                        invoiceType: InvoiceType.EDIT),
+                                      invoiceType: InvoiceType.EDIT,
+                                      invoiceData: element,
+                                    ),
                                   );
                                 }
                               },
