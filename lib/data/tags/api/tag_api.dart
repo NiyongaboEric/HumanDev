@@ -24,6 +24,7 @@ class TagApiImpl implements TagApi {
     var interceptor = sl.get<RequestInterceptor>();
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
+    logger.d(space);
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
     final res = await dio.get("/space/${space.id}/tag");
     if (res.statusCode == 200) {

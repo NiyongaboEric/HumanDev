@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
+import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../invoice/model/invoice_model.dart';
 import '../person/model/person_model.dart';
 import '../space/model/space_model.dart';
 
@@ -44,6 +46,14 @@ class SharedPreferenceModule {
       tags.map((tag) => tag.toJson()).toList(),
     );
     pref.setString("tags", jsonString);
+  }
+
+  // Save Invoice to Shared Preferences
+  void saveInvoice(List<InvoiceModel> invoiceList){
+    final jsonString = jsonEncode(
+      invoiceList.map((invoice) => invoice.toJson()).toList(),
+    );
+    pref.setString("invoice", jsonString);
   }
 
   // Save Groups to Shared Preferences
@@ -136,10 +146,12 @@ class SharedPreferenceModule {
   }
 
 // Get Tags
-  List<String> getTags() {
+  List<TagModel> getTags() {
     final jsonString = pref.getString("tags");
     if (jsonString != null) {
-      return (jsonDecode(jsonString) as List).cast<String>();
+      return (jsonDecode(jsonString) as List)
+          .map((e) => TagModel.fromJson(e))
+          .toList();
     }
     return [];
   }
@@ -205,6 +217,17 @@ class SharedPreferenceModule {
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List)
           .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Invoice
+  List<InvoiceModel> getInvoice() {
+    final jsonString = pref.getString("invoice");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => InvoiceModel.fromJson(e))
           .toList();
     }
     return [];

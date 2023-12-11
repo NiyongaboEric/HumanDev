@@ -233,6 +233,7 @@ class _PaymentState extends State<Payment> {
       _handleJournalStateChange(context, state);
     }, builder: (context, state) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.red.shade50,
         appBar: AppBar(
           backgroundColor: Colors.red.shade100,
@@ -242,13 +243,7 @@ class _PaymentState extends State<Payment> {
               )),
           centerTitle: true,
         ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: FloatingActionButton.extended(
+        floatingActionButton: FloatingActionButton.extended(
                 backgroundColor: Colors.red.shade200,
                 onPressed: () {
                   navigate(context, state);
@@ -265,9 +260,6 @@ class _PaymentState extends State<Payment> {
                   ),
                 ),
               ),
-            )
-          ],
-        ),
         body: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           children: [

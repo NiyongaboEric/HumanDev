@@ -1,6 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:seymo_pay_mobile_application/data/journal/api/tuition_fees_api.dart';
+import 'package:seymo_pay_mobile_application/data/journal/api/journal_api.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
 
@@ -11,7 +11,8 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
   final JournalApiImpl journalApiImpl;
   JournalBloc(this.journalApiImpl) : super(const JournalState()) {
     on<GetAllJournalEvent>(_getAllJournals);
-    on<AddNewJournalEvent>(_addNewJournal);
+    on<AddNewReceivedMoneyJournalEvent>(_addNewReceivedMoneyJournal);
+    on<AddNewPaidMoneyJournalEvent>(_addNewPaidMoneyJournal);
     // on<UpdateJournalEvent>(_updateJournal);
     on<DeleteJournalEvent>(_deleteJournal);
     on<SaveDataJournalState>(_saveData);
@@ -37,12 +38,42 @@ class JournalBloc extends Bloc<JournalEvent, JournalState> {
     }
   }
 
-  Future _addNewJournal(
-      AddNewJournalEvent event, Emitter<JournalState> emit) async {
+  Future _addNewReceivedMoneyJournal(
+      AddNewReceivedMoneyJournalEvent event, Emitter<JournalState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
       final journals =
-          await journalApiImpl.createJournal(event.journalRequest);
+          await journalApiImpl.createReceivedMoneyJournal(event.journalRequests);
+      emit(state.copyWith(
+        journals: journals,
+        successMessage: "Record successfully saved",
+        isLoading: false,
+        status: JournalStatus.success,
+      ));
+      emit(state.copyWith(
+        isLoading: false,
+        status: JournalStatus.initial,
+        successMessage: null,
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        errorMessage: error.toString(),
+        isLoading: false,
+        status: JournalStatus.error,
+      ));
+      emit(state.copyWith(
+        errorMessage: null,
+        status: JournalStatus.initial,
+      ));
+    }
+  }
+
+  Future _addNewPaidMoneyJournal(
+      AddNewPaidMoneyJournalEvent event, Emitter<JournalState> emit) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final journals =
+          await journalApiImpl.createPaidMoneyJournal(event.journalRequests);
       emit(state.copyWith(
         journals: journals,
         successMessage: "Record successfully saved",

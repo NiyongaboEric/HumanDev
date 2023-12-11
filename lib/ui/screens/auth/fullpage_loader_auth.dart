@@ -71,18 +71,18 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   saveOfflineToDB() {
     // Tuition Fees
-    var tuitionObject = prefs.getString("offlineTuitionFee");
-    if (tuitionObject != null) {
-      List<OfflineModel> offlineTuitionFee = json.decode(tuitionObject);
-      for (var element in offlineTuitionFee) {
-        JournalRequest journalRequest = element.data;
-        context.read<JournalBloc>().add(
-              AddNewJournalEvent(
-                journalRequest,
-              ),
-            );
-      }
-    }
+    // var tuitionObject = prefs.getString("offlineTuitionFee");
+    // if (tuitionObject != null) {
+    //   List<OfflineModel> offlineTuitionFee = json.decode(tuitionObject);
+    //   for (var element in offlineTuitionFee) {
+    //     JournalRequest journalRequest = element.data;
+    //     context.read<JournalBloc>().add(
+    //           AddNewJournalEvent(
+    //             journalRequest,
+    //           ),
+    //         );
+    //   }
+    // }
   }
 
   // Refresh Tokens

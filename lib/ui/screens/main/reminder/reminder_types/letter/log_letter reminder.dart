@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -25,47 +26,34 @@ class LogLetterReminder extends StatefulWidget {
 
 class _LogLetterReminderState extends State<LogLetterReminder> {
   DateTime date = DateTime.now();
-  final List<String> financials = [
-    "Financial situation of parents",
-    "New payment schedule"
-  ];
-  final List<String> warnings = [
-    "Exam",
-    "Police",
-    "Suspension",
-    "Sacking",
-    "Other",
-  ];
-  final List<String> kids = [
-    "Learning Progress",
-    "Attendance",
-    "Health",
-    "Behaviour",
-    "Other"
-  ];
-  final List<String> selectedFinancials = [];
-  final List<String> selectedWarnings = [];
-  final List<String> selectedKids = [];
+  final List<TagModel> financials = [];
+  final List<TagModel> warnings = [];
+  final List<TagModel> kids = [];
+  final List<TagModel> selectedFinancials = [];
+  final List<TagModel> selectedWarnings = [];
+  final List<TagModel> selectedKids = [];
 
   final TextEditingController noteController = TextEditingController();
 
   // Log Reminder
   void _logReminder() {
     // TODO: implement logReminder
+    var reminderRequests = [
+      ReminderRequest(
+        type: ReminderType.LETTER,
+        note: noteController.text,
+        personId: widget.parent.id,
+        scheduledTime: date.toIso8601String(),
+        tags: [
+          ...selectedFinancials,
+          ...selectedWarnings,
+          ...selectedKids,
+        ],
+      ),
+    ];
     BlocProvider.of<ReminderBloc>(context).add(
       AddNewReminderEvent(
-        ReminderRequest(
-          type: "F2F",
-          note: noteController.text,
-          attendeePersonIds: [widget.parent.id],
-          scheduledTime: date.toIso8601String(),
-          tags: [
-            ...selectedFinancials.map((tag) => Tags(name: tag)),
-            ...selectedWarnings.map((tag) => Tags(name: tag)),
-            ...selectedKids.map((tag) => Tags(name: tag)),
-          ],
-          expandRelations: true,
-        ),
+        reminderRequests
       ),
     );
   }
@@ -107,7 +95,7 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
     });
   }
 
-  Widget buildTagSection(List<String> tags, List<String> selectedTags,
+  Widget buildTagSection(List<TagModel> tags, List<TagModel> selectedTags,
       String sectionTitle, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +125,7 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
           unselectedTextColor: SecondaryColors.secondaryBlue.withOpacity(0.5),
           addTag: (value) {
             setState(() {
-              selectedTags.add(value);
+              selectedTags.add(value as TagModel);
             });
           },
           removeTag: (value) {
@@ -148,6 +136,46 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
         ),
       ],
     );
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState12
+        var tagValues = prefs.getTags();
+    if (tagValues.isEmpty) {
+      var paidMoneyTags =
+          tagValues.where((element) => element.isReminderTag == true);
+      setState(() {
+        // Add non-existing values to tags
+        for (var tag in paidMoneyTags) {
+          if (tag != null) {
+            // if (tag.name!.startsWith("Location")) {
+            //   var locationTag = tag.name!.split(":");
+            //   logger.d(locationTag[0]);
+            //   location.add(tag);
+            // }
+            if (tag.name!.startsWith("Financial")) {
+              var financialTag = tag.name!.split(":");
+              if (financialTag.length > 1) {
+                financials.add(tag);
+              }
+            }
+            if (tag.name!.startsWith("Warning")) {
+              var warningTag = tag.name!.split(":");
+              warnings.add(tag);
+            }
+            if (tag.name!.startsWith("Kid")) {
+              var kidTag = tag.name!.split(":");
+              kids.add(tag);
+            }
+            if (tag.name!.startsWith("Atmosphere")) {
+              var atmosphereTag = tag.name!.split(":");
+            }
+          }
+        }
+      });
+    }
+    super.initState();
   }
 
   @override

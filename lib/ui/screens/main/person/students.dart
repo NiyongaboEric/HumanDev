@@ -188,16 +188,26 @@ class _StudentsState extends State<Students> {
   void createJournalRecord() {
     // TODO: implement createJournalRecord
     context.read<JournalBloc>().add(
-          AddNewJournalEvent(
-            JournalRequest(
-              creditAccountId: 1,
-              debitAccountId: 1,
-              amount: 85,
-              reason: "Feeding Fees",
-              paymentType: PaymentType.RECEIVED_MONEY,
-              sendSMS: false,
-              personIds: selectedStudents.map((e) => e.id).toList(),
-            ),
+          AddNewReceivedMoneyJournalEvent(
+            selectedStudents.map((student) {
+              return ReceivedMoneyJournalRequest(
+                creditAccountId: 1,
+                debitAccountId: 1,
+                subaccountPersonId: 1,
+                amount: 85,
+                reason: "Feeding Fees",
+                sendSMS: false,
+                studentPersonId: student.id,
+              );
+            }).toList(),
+            // ReceivedMoneyJournalRequest(
+            //   creditAccountId: 1,
+            //   debitAccountId: 1,
+            //   amount: 85,
+            //   reason: "Feeding Fees",
+            //   sendSMS: false,
+            //   personIds: selectedStudents.map((e) => e.id).toList(),
+            // ),
           ),
         );
   }
@@ -206,7 +216,7 @@ class _StudentsState extends State<Students> {
   saveOffline() {
     var prefs = sl<SharedPreferences>();
     List<OfflineModel> offlineTuitionFee = [];
-    List<JournalRequest> feedingFeesRequest = [];
+    List<ReceivedMoneyJournalRequest> feedingFeesRequest = [];
     String? value = prefs.getString("offlineFeedingFee");
     if (value != null) {
       List<dynamic> decodedValue = json.decode(value);
@@ -214,15 +224,23 @@ class _StudentsState extends State<Students> {
           decodedValue.map((model) => OfflineModel.fromJson(model)).toList());
     }
     feedingFeesRequest.add(
-      JournalRequest(
+      ReceivedMoneyJournalRequest(
         creditAccountId: 1,
         debitAccountId: 1,
+        subaccountPersonId: 1,
         amount: 85,
         reason: "Feeding Fees",
-        paymentType: PaymentType.RECEIVED_MONEY,
         sendSMS: false,
-        personIds: selectedStudents.map((e) => e.id).toList(),
+        studentPersonId: 1,
       ),
+      // ReceivedMoneyJournalRequest(
+      //   creditAccountId: 1,
+      //   debitAccountId: 1,
+      //   amount: 85,
+      //   reason: "Feeding Fees",
+      //   sendSMS: false,
+      //   personIds: selectedStudents.map((e) => e.id).toList(),
+      // ),
     );
     offlineTuitionFee.add(
       OfflineModel(
@@ -517,6 +535,7 @@ class _StudentsState extends State<Students> {
           context: context,
           screen: PersonDetails(
             screenFunction: ScreenFunction.edit,
+            contactVariant: ContactVariant.student,
             person: student,
           ),
         );
@@ -611,6 +630,9 @@ class _StudentsState extends State<Students> {
 
   AppBar _buildAppBar(AlphabetListViewOptions options) {
     return AppBar(
+      iconTheme: IconThemeData(
+        color: _secondaryColorSelection(widget.option),
+      ),
       title: Text(_appBarTitle(widget.option),
           style: TextStyle(
             color: _secondaryColorSelection(widget.option),
@@ -639,9 +661,10 @@ class _StudentsState extends State<Students> {
                 nextScreen(
                     context: context,
                     screen: const PersonDetails(
+                      contactVariant: ContactVariant.student,
                         screenFunction: ScreenFunction.add));
               },
-              icon: const Icon(Icons.add))
+              icon: const Icon(Icons.add_rounded, size: 28,))
       ],
       backgroundColor: primaryColorSelection(widget.option).shade100,
       bottom: PreferredSize(

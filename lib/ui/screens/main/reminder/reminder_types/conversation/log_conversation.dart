@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -29,44 +30,44 @@ class LogConversation extends StatefulWidget {
 }
 
 class _LogConversationState extends State<LogConversation> {
-  var prefs = sl<SharedPreferences>();
+  var prefs = sl<SharedPreferenceModule>();
   DateTime date = DateTime.now();
-  final List<String> location = [];
-  final List<String> financials = [];
-  final List<String> warnings = [];
-  final List<String> kids = [];
+  final List<TagModel> location = [];
+  final List<TagModel> financials = [];
+  final List<TagModel> warnings = [];
+  final List<TagModel> kids = [];
   final List<ToggleTagComponents> atmosphere = [
-    ToggleTagComponents(positive: "Friendly", negative: "Hostile"),
-    ToggleTagComponents(positive: "Owning it", negative: "Excuses")
+    // ToggleTagComponents(positive: "Friendly", negative: "Hostile"),
+    // ToggleTagComponents(positive: "Owning it", negative: "Excuses"),
   ];
-  final List<String> selectedLocation = [];
-  final List<String> selectedFinancials = [];
-  final List<String> selectedWarnings = [];
-  final List<String> selectedKids = [];
-  final List<String> selectedAtmosphere = [];
+  final List<TagModel> selectedLocation = [];
+  final List<TagModel> selectedFinancials = [];
+  final List<TagModel> selectedWarnings = [];
+  final List<TagModel> selectedKids = [];
+  final List<TagModel> selectedAtmosphere = [];
 
   final TextEditingController noteController = TextEditingController();
 
   // Log Reminder
   void _logReminder() {
     // TODO: implement logReminder
+    var reminderRequests = [
+      ReminderRequest(
+        type: ReminderType.F2F,
+        note: noteController.text,
+        tags: [
+          ...selectedLocation,
+          ...selectedFinancials,
+          ...selectedWarnings,
+          ...selectedKids,
+          ...selectedAtmosphere,
+        ],
+        personId: widget.parent.id,
+      )
+    ];
+
     BlocProvider.of<ReminderBloc>(context).add(
-      AddNewReminderEvent(
-        ReminderRequest(
-          type: "F2F",
-          note: noteController.text,
-          attendeePersonIds: [widget.parent.id],
-          scheduledTime: date.toIso8601String(),
-          tags: [
-            ...selectedLocation.map((tag) => Tags(name: tag)),
-            ...selectedFinancials.map((tag) => Tags(name: tag)),
-            ...selectedWarnings.map((tag) => Tags(name: tag)),
-            ...selectedKids.map((tag) => Tags(name: tag)),
-            ...selectedAtmosphere.map((tag) => Tags(name: tag)),
-          ],
-          expandRelations: true,
-        ),
-      ),
+      AddNewReminderEvent(reminderRequests),
     );
   }
 
@@ -107,7 +108,7 @@ class _LogConversationState extends State<LogConversation> {
     });
   }
 
-  Widget buildTagSection(List<String> tags, List<String> selectedTags,
+  Widget buildTagSection(List<TagModel> tags, List<TagModel> selectedTags,
       String sectionTitle, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +137,7 @@ class _LogConversationState extends State<LogConversation> {
           unselectedTextColor: SecondaryColors.secondaryYellow.withOpacity(0.5),
           addTag: (value) {
             setState(() {
-              selectedTags.add(value);
+              selectedTags.add(value as TagModel);
             });
           },
           removeTag: (value) {
@@ -150,7 +151,7 @@ class _LogConversationState extends State<LogConversation> {
   }
 
   Widget buildToggleTagSection(List<ToggleTagComponents> toggleTags,
-      String sectionTitle, IconData icon, List<String> selectedTags) {
+      String sectionTitle, IconData icon, List<TagModel> selectedTags) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,40 +197,36 @@ class _LogConversationState extends State<LogConversation> {
   void initState() {
     // TODO: implement initState
     // Get Tags form Shared Preferences
-    var value = prefs.getString("tags");
-    if (value != null) {
-      List<dynamic> decodedTags = json.decode(value);
-      List<TagModel> tagModel =
-          decodedTags.map((tag) => TagModel.fromJson(tag)).toList();
+    var tagValues = prefs.getTags();
+    logger.d(tagValues.map((e) => e.isReminderTag).toList());
+    if (tagValues.isNotEmpty) {
       var paidMoneyTags =
-          tagModel.where((element) => element.isReminderTag == true);
-      var tags = paidMoneyTags.map((element) => element.name).toList();
-      // List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
+          tagValues.where((element) => element.isReminderTag == true);
       setState(() {
         // Add non-existing values to tags
-        for (var tag in tags) {
+        for (var tag in paidMoneyTags) {
           if (tag != null) {
-            if (tag.startsWith("Location")) {
-              var locationTag = tag.split(":");
+            if (tag.name!.startsWith("Location")) {
+              var locationTag = tag.name!.split(":");
               logger.d(locationTag[0]);
-              location.add(locationTag[1]);
+              location.add(tag);
             }
-            if (tag.startsWith("Financial")) {
-              var financialTag = tag.split(":");
+            if (tag.name!.startsWith("Financial")) {
+              var financialTag = tag.name!.split(":");
               if (financialTag.length > 1) {
-                financials.add(financialTag[1]);
+                financials.add(tag);
               }
             }
-            if (tag.startsWith("Warning")) {
-              var warningTag = tag.split(":");
-              warnings.add(warningTag[1]);
+            if (tag.name!.startsWith("Warning")) {
+              var warningTag = tag.name!.split(":");
+              warnings.add(tag);
             }
-            if (tag.startsWith("Kid")) {
-              var kidTag = tag.split(":");
-              kids.add(kidTag[1]);
+            if (tag.name!.startsWith("Kid")) {
+              var kidTag = tag.name!.split(":");
+              kids.add(tag);
             }
-            if (tag.startsWith("Atmosphere")) {
-              var atmosphereTag = tag.split(":");
+            if (tag.name!.startsWith("Atmosphere")) {
+              var atmosphereTag = tag.name!.split(":");
             }
           }
         }
@@ -257,26 +254,26 @@ class _LogConversationState extends State<LogConversation> {
               IconButton(
                   onPressed: !state.isLoading
                       ? () {
-                          if (selectedLocation.isEmpty ||
-                              selectedWarnings.isEmpty ||
-                              selectedFinancials.isEmpty ||
-                              selectedKids.isEmpty ||
-                              selectedAtmosphere.isEmpty) {
-                            // Error toast
-                            GFToast.showToast(
-                              "Please select at least one tag from  each section",
-                              context,
-                              toastPosition:
-                                  MediaQuery.of(context).viewInsets.bottom != 0
-                                      ? GFToastPosition.TOP
-                                      : GFToastPosition.BOTTOM,
-                              toastBorderRadius: 12.0,
-                              toastDuration: 5,
-                              backgroundColor: Colors.red,
-                            );
-                          } else {
+                          // if (selectedLocation.isEmpty ||
+                          //     selectedWarnings.isEmpty ||
+                          //     selectedFinancials.isEmpty ||
+                          //     selectedKids.isEmpty ||
+                          //     selectedAtmosphere.isEmpty) {
+                          //   // Error toast
+                          //   GFToast.showToast(
+                          //     "Please select at least one tag from  each section",
+                          //     context,
+                          //     toastPosition:
+                          //         MediaQuery.of(context).viewInsets.bottom != 0
+                          //             ? GFToastPosition.TOP
+                          //             : GFToastPosition.BOTTOM,
+                          //     toastBorderRadius: 12.0,
+                          //     toastDuration: 5,
+                          //     backgroundColor: Colors.red,
+                          //   );
+                          // } else {
+                          // }
                             _logReminder();
-                          }
                         }
                       : null,
                   icon: const Icon(Icons.check))
@@ -344,12 +341,12 @@ class _LogConversationState extends State<LogConversation> {
               ),
               const SizedBox(height: 32),
               const Divider(),
-              buildToggleTagSection(
-                atmosphere,
-                "Atmosphere",
-                Icons.scatter_plot_sharp,
-                selectedAtmosphere,
-              ),
+              // buildToggleTagSection(
+              //   atmosphere,
+              //   "Atmosphere",
+              //   Icons.scatter_plot_sharp,
+              //   selectedAtmosphere,
+              // ),
               const SizedBox(height: 32),
               Row(
                 children: [
@@ -379,26 +376,26 @@ class _LogConversationState extends State<LogConversation> {
                   backgroundColor: SecondaryColors.secondaryYellow,
                   onPressed: !state.isLoading
                       ? () {
-                          if (selectedLocation.isEmpty ||
-                              selectedWarnings.isEmpty ||
-                              selectedFinancials.isEmpty ||
-                              selectedKids.isEmpty ||
-                              selectedAtmosphere.isEmpty) {
-                            // Error toast
-                            GFToast.showToast(
-                              "Please select at least one tag from each section",
-                              context,
-                              toastPosition:
-                                  MediaQuery.of(context).viewInsets.bottom != 0
-                                      ? GFToastPosition.TOP
-                                      : GFToastPosition.BOTTOM,
-                              toastBorderRadius: 12.0,
-                              toastDuration: 5,
-                              backgroundColor: Colors.red,
-                            );
-                          } else {
+                          // if (selectedLocation.isEmpty ||
+                          //     selectedWarnings.isEmpty ||
+                          //     selectedFinancials.isEmpty ||
+                          //     selectedKids.isEmpty ||
+                          //     selectedAtmosphere.isEmpty) {
+                          //   // Error toast
+                          //   GFToast.showToast(
+                          //     "Please select at least one tag from each section",
+                          //     context,
+                          //     toastPosition:
+                          //         MediaQuery.of(context).viewInsets.bottom != 0
+                          //             ? GFToastPosition.TOP
+                          //             : GFToastPosition.BOTTOM,
+                          //     toastBorderRadius: 12.0,
+                          //     toastDuration: 5,
+                          //     backgroundColor: Colors.red,
+                          //   );
+                          // } else {
+                          // }
                             _logReminder();
-                          }
                         }
                       : null,
                   label: !state.isLoading
@@ -424,8 +421,8 @@ class _LogConversationState extends State<LogConversation> {
 }
 
 class ToggleTagComponents {
-  final String positive;
-  final String negative;
+  final TagModel positive;
+  final TagModel negative;
 
   ToggleTagComponents({
     required this.positive,

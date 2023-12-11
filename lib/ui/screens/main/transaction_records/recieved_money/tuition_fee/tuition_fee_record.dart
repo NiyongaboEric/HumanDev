@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
@@ -13,6 +14,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/currency_selector.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/constants/offline_model.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
@@ -43,24 +45,26 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
   var prefs = sl<SharedPreferences>();
+  var preferences = sl<SharedPreferenceModule>();
 
   // final Connectivity _connectivity = Connectivity();
 
-  String selectedPaymentMethod = 'Cash';
+  AccountsModel selectedPaymentMethod = Constants.paymentMethods
+      .where((element) => element.name.name == "CASH")
+      .toList()[0];
   String selectedCurrency = 'GHS';
   DateTime date = DateTime.now();
   bool sendSMS = true;
   // Toggle options
   List<bool> selectedOptions = <bool>[false, false, false];
 
-  List<String> paymentMethods = ['Cash', 'MOMO', "Bank", 'Others'];
-
   List<String> currencies = ['GHS', 'USD', 'NGN', 'EUR'];
 
   // Update Payment Method
   void updatePaymentMethod(value) {
     setState(() {
-      selectedPaymentMethod = value;
+      selectedPaymentMethod = Constants.paymentMethods
+          .firstWhere((element) => element.name.name == value);
     });
   }
 
@@ -98,14 +102,14 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
       OfflineModel(
         id: DateTime.now().toString(),
         title: "Tuition Fee",
-        data: JournalRequest(
+        data: ReceivedMoneyJournalRequest(
           creditAccountId: 1,
           debitAccountId: 1,
+          subaccountPersonId: 1,
           amount: int.parse(amountController.text),
           reason: descriptionController.text,
-          paymentType: PaymentType.RECEIVED_MONEY,
           sendSMS: sendSMS,
-          personIds: [widget.student.id],
+          studentPersonId: widget.student.id,
         ),
         status: UploadStatus.initial,
       ),
@@ -121,18 +125,22 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   // Create Journal Record
   void createJournalRecord() {
     // TODO: implement createJournalRecord
+    var accounts = preferences.getAccounts();
     context.read<JournalBloc>().add(
-          AddNewJournalEvent(
-            JournalRequest(
-              creditAccountId: 1,
-              debitAccountId: 1,
+          AddNewReceivedMoneyJournalEvent([
+            ReceivedMoneyJournalRequest(
+              creditAccountId: accounts
+                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .id,
+              debitAccountId:
+                  selectedPaymentMethod.id,
+              subaccountPersonId: widget.student.id,
               amount: int.parse(amountController.text),
               reason: descriptionController.text,
-              paymentType: PaymentType.RECEIVED_MONEY,
               sendSMS: sendSMS,
-              personIds: [widget.student.id],
+              studentPersonId: widget.student.id,
             ),
-          ),
+          ]),
         );
   }
 
@@ -211,7 +219,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                       : () {
                           // TODO: implement
                           if (amountController.text.isEmpty ||
-                              selectedPaymentMethod.isEmpty ||
+                              selectedPaymentMethod == null ||
                               selectedCurrency.isEmpty) {
                             GFToast.showToast("Please fill all fields", context,
                                 toastPosition:
@@ -346,8 +354,11 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                 const SizedBox(height: 5),
                 CustomDropDownMenu(
                   color: SecondaryColors.secondaryGreen.withOpacity(0.7),
-                  options: ["Payment method", ...paymentMethods],
-                  value: "Cash",
+                  options: [
+                    "Payment method",
+                    ...Constants.paymentMethods.map((e) => e.name.name)
+                  ],
+                  value: selectedPaymentMethod.name.name,
                   onChanged: updatePaymentMethod,
                 ),
                 const SizedBox(height: 30),
@@ -404,7 +415,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                             : () {
                                 // TODO: implement
                                 if (amountController.text.isEmpty ||
-                                    selectedPaymentMethod.isEmpty ||
+                                    selectedPaymentMethod == null ||
                                     selectedCurrency.isEmpty) {
                                   logger.d("Please fill all fields");
                                   GFToast.showToast(

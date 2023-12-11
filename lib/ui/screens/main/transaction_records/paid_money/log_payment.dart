@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
+import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -12,10 +14,14 @@ import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/number_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 
+import '../../../../../data/account/model/account_model.dart';
 import '../../../../../data/constants/logger.dart';
+import '../../../../../data/constants/shared_prefs.dart';
 import '../../../../../data/journal/model/request_model.dart';
 import '../../../../utilities/custom_colors.dart';
 import '../../../../widgets/inputs/drop_down_menu.dart';
+
+var sl = GetIt.instance;
 
 class LogPayment extends StatefulWidget {
   const LogPayment({super.key});
@@ -30,11 +36,13 @@ class _LogPaymentState extends State<LogPayment> {
   TextEditingController otherController = TextEditingController();
   String selectedCurrency = 'GHS';
   DateTime date = DateTime.now();
+  var preferences = sl<SharedPreferenceModule>();
 
   // Update Payment Method
   void updatePaymentMethod(value) {
     setState(() {
-      selectedPaymentMethod = value;
+      selectedPaymentMethod = Constants.paymentMethods
+          .firstWhere((element) => element.name.name == value);
     });
   }
 
@@ -48,28 +56,29 @@ class _LogPaymentState extends State<LogPayment> {
   // Payment Method Buttons
 
   // Selected Payment Method
-  String selectedPaymentMethod = "";
+  AccountsModel selectedPaymentMethod = Constants.paymentMethods
+      .where((element) => element.name.name == "CASH")
+      .toList()[0];
 
   // Selected Options
   List<bool> selectedOptions = [false, false, false, false];
 
   // create journal record
   void _createJournalRecord(JournalModel journalData) {
+    var accounts = preferences.getAccounts();
     logger.i(journalData.personId);
     context.read<JournalBloc>().add(
-          AddNewJournalEvent(
-            JournalRequest(
-              creditAccountId: 1,
-              debitAccountId: 1,
+          AddNewPaidMoneyJournalEvent(
+            [PaidMoneyJournalRequest(
+              creditAccountId: accounts.firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE").id,
+              debitAccountId: selectedPaymentMethod.id,
+              subaccountPersonId: journalData.personId!,
               amount: int.parse(amountController.text),
               reason: journalData.description,
-              paymentType: PaymentType.PAID_MONEY,
-              sendSMS: true,
               tags: journalData.tags!.isEmpty
-                  ? journalData.tags!.map((tag) => Tags(name: tag)).toList()
+                  ? journalData.tags!.map((tag) => TagModel(name: tag)).toList()
                   : null,
-              personIds: [journalData.personId!],
-            ),
+            ),]
           ),
         );
   }
@@ -337,8 +346,8 @@ class _LogPaymentState extends State<LogPayment> {
               ),
               CustomDropDownMenu(
                 color: const Color(0xff410002),
-                options: const ["Payment method", ...Constants.paymentMethods],
-                value: "Cash",
+                options: ["Payment method", ...Constants.paymentMethods.map((e) => e.name.name)],
+                value: selectedPaymentMethod.name.name,
                 onChanged: updatePaymentMethod,
               ),
               const SizedBox(height: 30),

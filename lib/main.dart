@@ -13,6 +13,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records
 
 import 'data/constants/shared_prefs.dart';
 import 'ui/screens/auth/group_bloc/groups_bloc.dart';
+import 'ui/screens/main/invoice/bloc/invoice_bloc.dart';
 import 'ui/screens/main/reminder/blocs/reminder_bloc.dart';
 import 'utilities/dependency_injection.dart';
 
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
                 BlocProvider(create: (context) => sl<TagsBloc>()),
                 BlocProvider(create: (context) => sl<GroupsBloc>()),
                 BlocProvider(create: (context) => SMSBloc()),
+                BlocProvider(create: (context) => sl<InvoiceBloc>(),)
               ],
               child: MaterialApp(
                 title: 'Seymo Pay',

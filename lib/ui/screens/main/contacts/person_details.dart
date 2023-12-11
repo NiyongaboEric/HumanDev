@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_request.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/groups.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/contact_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/drop_down_menu.dart';
@@ -17,22 +22,28 @@ import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart
 import '../../../../data/constants/shared_prefs.dart';
 import '../../../../data/groups/model/group_model.dart';
 import '../../../utilities/font_sizes.dart';
+import '../person/bloc/person_bloc.dart';
 
 enum ScreenFunction {
   add,
   edit,
 }
 
+enum ContactVariant { student, others }
+
 var sl = GetIt.instance;
 
 class PersonDetails extends StatefulWidget {
   final ScreenFunction screenFunction;
+  final ContactVariant contactVariant;
   final PersonModel? person;
-
+  final String? role;
   const PersonDetails({
     Key? key,
     required this.screenFunction,
+    required this.contactVariant,
     this.person,
+    this.role,
   }) : super(key: key);
 
   @override
@@ -83,16 +94,20 @@ class _PersonDetailsState extends State<PersonDetails> {
   // Group list and add new group
   List<Group> groupList = [];
   List<Group> selectGroupList = [];
+  List<Group> disconnectedGroupList = [];
   _updateGroupList() async {
     Group groupData = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            const GroupsScreen(contactSelection: ContactSelection.students),
+        builder: (context) => GroupsScreen(
+            contactSelection: widget.contactVariant == ContactVariant.student
+                ? ContactSelection.students
+                : ContactSelection.allContacts),
       ),
     );
     groupList.add(groupData);
     selectGroupList.add(groupData);
+    disconnectedGroupList.remove(groupData);
     setState(() {});
   }
 
@@ -135,8 +150,122 @@ class _PersonDetailsState extends State<PersonDetails> {
   _addPhoneNumber(String number) {
     phoneNumbers.add(number);
   }
+
   _removePhoneNumber(String number) {
     phoneNumbers.remove(number);
+  }
+
+  saveData() {
+    if (widget.screenFunction == ScreenFunction.add) {
+      context.read<PersonBloc>().add(
+            AddPersonEvent(PersonRequest(
+              firstName: firstNameController.text,
+              middleName: middleNameController.text,
+              lastName1: lastNameController.text,
+              dateOfBirth: selectedDate.toString(),
+              role: widget.contactVariant == ContactVariant.student
+                  ? Role.Student
+                  : stringToRole(widget.role!),
+              phoneNumber: phoneNumberController.text,
+              isLegal: false,
+            )),
+          );
+    } else {
+      try {
+        context.read<PersonBloc>().add(
+              UpdatePersonEvent(UpdatePersonRequest(
+                id: widget.person!.id,
+                firstName: firstNameController.text,
+                middleName: middleNameController.text,
+                lastName1: lastNameController.text,
+                // email1: emailList[0],
+                // email2: emailList[1],
+                // email3: emailList[2],
+                dateOfBirth: selectedDate.toString(),
+                // connectGroupIds: selectGroupList.map((e) => e.id!).toList(),
+                // personSettings: widget.person!.personSettings,
+                // groups: widget.person!.groups,
+                // VATId: widget.person!.VATId,
+                // tagsSettings: widget.person!.tagsSettings,
+                // spaceId: widget.person!.spaceId,
+                // childRelations: widget.person!.childRelations,
+                // relativeRelations: widget.person!.relativeRelations,
+                // deactivationDate: widget.person!.deactivationDate,
+                // isActive: widget.person!.isActive,
+                // createdAt: widget.person!.createdAt,
+                // updatedAt: widget.person!.updatedAt,
+                isDeactivated: widget.person!.isDeactivated,
+                isLegal: false,
+              )),
+            );
+      logger.d(selectGroupList[0].name);
+      } catch (e) {
+        logger.e(e);
+      }
+    }
+  }
+
+  // Primary Color Selection
+  Color _primaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return PrimaryColors.primaryPink;
+    } else {
+      return PrimaryColors.primaryLightGreen;
+    }
+  }
+
+  // Secondary Color Selection
+  Color _secondaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return SecondaryColors.secondaryPink;
+    } else {
+      return SecondaryColors.secondaryLightGreen;
+    }
+  }
+
+  // Background Color Selection
+  Color _backgroundColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return BackgroundColors.bgPink;
+    } else {
+      return BackgroundColors.bgLightGreen;
+    }
+  }
+
+  // Tertiary Color Selection
+  Color _tertiaryColorSelection() {
+    if (widget.contactVariant == ContactVariant.student) {
+      return TertiaryColors.tertiaryPink;
+    } else {
+      return TertiaryColors.tertiaryLightGreen;
+    }
+  }
+
+  // Handle Person State Change
+  void _onPersonStateChange(PersonState state) {
+    if (state.status == PersonStatus.success) {
+      previousScreen(context: context);
+      Navigator.pop(context);
+    } else if (state.status == PersonStatus.error) {
+      if (state.errorMessage!.contains("Unauthorized")) {
+      } else {}
+    }
+  }
+
+  // Handle Refresh State Change
+  void _onRefreshStateChange(AuthState state) {
+    if (state.status == AuthStateStatus.authenticated) {
+      saveData();
+    } else if (state.status == AuthStateStatus.unauthenticated) {
+      // logout
+      _onLogoutStateChange();
+    }
+  }
+
+  // Handle Logout State Change
+  void _onLogoutStateChange() {
+    prefs.clear();
+    nextScreenAndRemoveAll(context: context, screen: LoginScreen());
   }
 
   @override
@@ -151,13 +280,14 @@ class _PersonDetailsState extends State<PersonDetails> {
         widget.person!.phoneNumber2,
         widget.person!.phoneNumber3,
       ];
-      logger.d(personNumbers);
+      selectGroupList.addAll(widget.person!.groups!);
+      logger.d(selectGroupList[0].name);
       for (var number in personNumbers) {
         if (number != null && number.isNotEmpty) {
           phoneNumbers.add(number);
         }
       }
-      
+
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
@@ -185,94 +315,109 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.pink.shade50,
-      appBar: _buildAppBar(),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        children: [
-          const SizedBox(height: 20),
-          _buildCircleAvatar(),
-          const SizedBox(height: 20),
-          _buildTextField(firstNameController, "First name"),
-          const SizedBox(height: 20),
-          _buildTextField(middleNameController, "Middle name"),
-          const SizedBox(height: 20),
-          _buildTextField(lastNameController, "Last name"),
-          const SizedBox(height: 20),
-          _buildDatePicker(),
-          const SizedBox(height: 20),
-          _buildGenderDropDown(),
-          const SizedBox(height: 20),
-          _buildSection("Contacts", Icons.contact_page_rounded, [
-            ...phoneNumbers.map((number) => ListTile(
-              title: Text(
-                number,
-                style: TextStyle(
-                  color: SecondaryColors.secondaryPink,
-                  fontSize: CustomFontSize.large,
+    return BlocConsumer<PersonBloc, PersonState>(
+      listener: (context, state) {
+        // TODO: implement listener
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: _backgroundColorSelection(),
+          appBar: _buildAppBar(),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            children: [
+              const SizedBox(height: 20),
+              _buildCircleAvatar(),
+              const SizedBox(height: 20),
+              _buildTextField(firstNameController, "First name"),
+              const SizedBox(height: 20),
+              _buildTextField(middleNameController, "Middle name"),
+              const SizedBox(height: 20),
+              _buildTextField(lastNameController, "Last name"),
+              const SizedBox(height: 20),
+              _buildDatePicker(),
+              const SizedBox(height: 20),
+              _buildGenderDropDown(),
+              const SizedBox(height: 20),
+              _buildSection("Contacts", Icons.contact_page_rounded, [
+                ...phoneNumbers.map((number) => ListTile(
+                      title: Text(
+                        number,
+                        style: TextStyle(
+                          color: _secondaryColorSelection(),
+                          fontSize: CustomFontSize.large,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        onPressed: () {
+                          _removePhoneNumber(number);
+                        },
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          color: _secondaryColorSelection(),
+                        ),
+                      ),
+                    )),
+                _buildPhoneNumberField(phoneNumberController),
+                // DefaultBtn(
+                //   text: "Add number",
+                //   onPressed: () {
+                //     if (phoneNumberController.text.isNotEmpty) {
+                //       _addPhoneNumber(phoneNumberController.text);
+                //       phoneNumberController.clear();
+                //     }
+                //   },
+                //   textColor: _secondaryColorSelection(),
+                //   btnColor: _primaryColorSelection(),
+                // ),
+                // const SizedBox(height: 30),
+                _buildDropDownOptions(
+                  "Email",
+                  emailList,
+                  _updateEmailList,
                 ),
+              ]),
+              _buildSection("Address", Icons.home_rounded, [
+                _buildTextField(streetController, "Street"),
+                const SizedBox(height: 20),
+                _buildTextField(cityController, "City"),
+                const SizedBox(height: 20),
+                _buildTextField(stateController, "State"),
+                const SizedBox(height: 20),
+                _buildTextField(zipController, "Zip"),
+              ]),
+              _buildPersonRelativeSection(),
+              _buildSection(
+                "Groups",
+                Icons.groups_2_rounded,
+                [
+                  _buildGroupChip(),
+                ],
+                isAddButton: true,
+                btnAction: _updateGroupList,
               ),
-              trailing: IconButton(
-                onPressed: () {
-                  _removePhoneNumber(number);
-                },
-                icon: Icon(
-                  Icons.clear_rounded,
-                  color: SecondaryColors.secondaryPink,
-                ),
+              _buildTextArea(notesController, "Notes..."),
+              const SizedBox(height: 20),
+              _buildSection("Invoices", Icons.receipt, []),
+              _buildSection(
+                  "Upcoming payments", Icons.attach_money_rounded, []),
+              const SizedBox(height: 20),
+              Divider(
+                color: _primaryColorSelection(),
               ),
-            )),
-            _buildPhoneNumberField(phoneNumberController),
-            const SizedBox(height: 10),
-            _buildDropDownOptions("Email", emailList, _updateEmailList,),
-          ]),
-          _buildSection("Address", Icons.home_rounded, [
-            _buildTextField(streetController, "Street"),
-            const SizedBox(height: 20),
-            _buildTextField(cityController, "City"),
-            const SizedBox(height: 20),
-            _buildTextField(stateController, "State"),
-            const SizedBox(height: 20),
-            _buildTextField(zipController, "Zip"),
-          ]),
-          _buildSection(
-              "Parents",
-              Icons.people_alt_rounded,
-              parentList.map((parent) => _buildParentListTile(parent)).toList(),
-              isAddButton: true,
-              btnAction: _addToParentList,),
-          _buildSection(
-              "Groups",
-              Icons.groups_2_rounded,
-              [
-                _buildGroupChip(),
-              ],
-              isAddButton: true,
-              btnAction: _updateGroupList,),
-          _buildTextArea(notesController, "Notes..."),
-          const SizedBox(height: 20),
-          _buildSection("Invoices", Icons.receipt, []),
-          _buildSection("Upcoming payments", Icons.attach_money_rounded, []),
-          const SizedBox(height: 20),
-          Divider(
-            color: Colors.pink.shade100,
+              _buildSaveButton(saveData, loading: state.isLoading),
+            ],
           ),
-          _buildSaveButton(),
-        ],
-      ),
+        );
+      },
     );
   }
 
   AppBar _buildAppBar() {
     return AppBar(
-      iconTheme: IconThemeData(color: SecondaryColors.secondaryPink),
-      backgroundColor: Colors.pink.shade100,
-      title: Text(
-        widget.screenFunction == ScreenFunction.add
-            ? "Add contact"
-            : "Edit contact",
-      ),
+      iconTheme: IconThemeData(color: _secondaryColorSelection()),
+      backgroundColor: _primaryColorSelection(),
+      title: _buildAppBarTitle(widget.screenFunction, widget.contactVariant),
       actions: [
         IconButton(
           onPressed: () {},
@@ -282,10 +427,31 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
+  Text _buildAppBarTitle(
+      ScreenFunction screenFunction, ContactVariant contactVariant) {
+    if (screenFunction == ScreenFunction.add) {
+      if (contactVariant == ContactVariant.student) {
+        return Text("Add student",
+            style: TextStyle(color: _secondaryColorSelection()));
+      } else {
+        return Text("Add contact",
+            style: TextStyle(color: _secondaryColorSelection()));
+      }
+    } else {
+      if (contactVariant == ContactVariant.student) {
+        return Text("Edit student",
+            style: TextStyle(color: _secondaryColorSelection()));
+      } else {
+        return Text("Edit contact",
+            style: TextStyle(color: _secondaryColorSelection()));
+      }
+    }
+  }
+
   Widget _buildCircleAvatar() {
     return CircleAvatar(
       radius: 25,
-      backgroundColor: Colors.pink.shade100,
+      backgroundColor: _primaryColorSelection(),
       child: Icon(Icons.person_add_rounded),
     );
   }
@@ -294,7 +460,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       {TextInputType? inputType}) {
     return CustomTextField(
       controller: controller,
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
       hintText: hintText,
       inputType: inputType,
     );
@@ -304,13 +470,13 @@ class _PersonDetailsState extends State<PersonDetails> {
     return Column(
       children: [
         Divider(
-          color: Colors.pink.shade100,
+          color: _primaryColorSelection(),
         ),
         const SizedBox(height: 20),
         CustomTextArea(
           hintText: hintText,
           controller: controller,
-          color: SecondaryColors.secondaryPink,
+          color: _secondaryColorSelection(),
           maxLines: 3,
         ),
       ],
@@ -320,24 +486,41 @@ class _PersonDetailsState extends State<PersonDetails> {
   Widget _buildPhoneNumberField(TextEditingController controller) {
     return CustomPhoneNumberField(
       controller: controller,
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
     );
   }
 
   Widget _buildDatePicker() {
+    // convert tertiary Color to Material Color
+    var tertiaryColor = MaterialColor(
+      _tertiaryColorSelection().value,
+      <int, Color>{
+        50: _tertiaryColorSelection(),
+        100: _tertiaryColorSelection(),
+        200: _tertiaryColorSelection(),
+        300: _tertiaryColorSelection(),
+        400: _tertiaryColorSelection(),
+        500: _tertiaryColorSelection(),
+        600: _tertiaryColorSelection(),
+        700: _tertiaryColorSelection(),
+        800: _tertiaryColorSelection(),
+        900: _tertiaryColorSelection(),
+      },
+    );
+
     return DatePicker(
       pickerTimeLime: PickerTimeLime.past,
       bgColor: Colors.white.withOpacity(0.3),
       date: selectedDate,
       onSelect: _changeDate,
-      pickerColor: Colors.pink,
-      borderColor: SecondaryColors.secondaryPink,
+      pickerColor: tertiaryColor,
+      borderColor: _secondaryColorSelection(),
     );
   }
 
   Widget _buildGenderDropDown() {
     return CustomDropDownMenu(
-      color: SecondaryColors.secondaryPink,
+      color: _secondaryColorSelection(),
       options: const [
         "Gender",
         ...Constants.genders,
@@ -352,18 +535,18 @@ class _PersonDetailsState extends State<PersonDetails> {
     return Column(
       children: [
         Divider(
-          color: Colors.pink.shade100,
+          color: _primaryColorSelection(),
         ),
         const SizedBox(height: 20),
         Row(
           children: [
-            Icon(icon, color: SecondaryColors.secondaryPink),
+            Icon(icon, color: _secondaryColorSelection()),
             const SizedBox(width: 20),
             Text(
               title,
               style: TextStyle(
                 fontSize: CustomFontSize.large,
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
               ),
             ),
             const Spacer(),
@@ -382,7 +565,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       child: Center(
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink.shade100,
+            backgroundColor: _primaryColorSelection(),
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
                 Radius.circular(12),
@@ -393,29 +576,33 @@ class _PersonDetailsState extends State<PersonDetails> {
           onPressed: onPressed,
           child: Icon(
             Icons.add,
-            color: SecondaryColors.secondaryPink,
+            color: _secondaryColorSelection(),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(Function()? onPressed, {bool loading = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 22),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
-            backgroundColor: Colors.pink.shade100,
-            onPressed: () {},
-            label: Text(
-              "Save",
-              style: TextStyle(
-                color: SecondaryColors.secondaryPink,
-                fontSize: CustomFontSize.large,
-              ),
-            ),
+            backgroundColor: _primaryColorSelection(),
+            onPressed: loading ? null : onPressed,
+            label: !loading
+                ? Text(
+                    "Save",
+                    style: TextStyle(
+                      color: _secondaryColorSelection(),
+                      fontSize: CustomFontSize.large,
+                    ),
+                  )
+                : CircularProgressIndicator(
+                    color: _secondaryColorSelection(),
+                  ),
           ),
         ],
       ),
@@ -430,7 +617,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return ContactDropDownOptions(
       value: value,
       options: ["Email", ...options, "Add new email"],
-      color: Colors.pink,
+      color: _secondaryColorSelection(),
       onChanged: onChanged,
     );
   }
@@ -446,16 +633,17 @@ class _PersonDetailsState extends State<PersonDetails> {
                 label: Text(
                   group.name!,
                   style: TextStyle(
-                    color: SecondaryColors.secondaryPink,
+                    color: _secondaryColorSelection(),
                     fontSize: CustomFontSize.medium,
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-                backgroundColor: Colors.pink.shade100,
-                deleteIconColor: SecondaryColors.secondaryPink,
+                backgroundColor: _primaryColorSelection(),
+                deleteIconColor: _secondaryColorSelection(),
                 onDeleted: () {
                   setState(() {
                     selectGroupList.remove(group);
+                    disconnectedGroupList.add(group);
                   });
                 },
               )),
@@ -469,7 +657,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       children: [
         Container(
           decoration: BoxDecoration(
-              color: Colors.pink.shade100,
+              color: _primaryColorSelection(),
               borderRadius: BorderRadius.circular(12),
               // Shadow
               boxShadow: [
@@ -483,7 +671,7 @@ class _PersonDetailsState extends State<PersonDetails> {
             title: Text(
               parentName,
               style: TextStyle(
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
                 fontSize: CustomFontSize.large,
               ),
             ),
@@ -493,7 +681,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               },
               icon: Icon(
                 Icons.clear_rounded,
-                color: SecondaryColors.secondaryPink,
+                color: _secondaryColorSelection(),
               ),
             ),
           ),
@@ -501,6 +689,21 @@ class _PersonDetailsState extends State<PersonDetails> {
         const SizedBox(height: 10),
       ],
     );
+  }
+
+  Widget _buildPersonRelativeSection() {
+    if (widget.contactVariant == ContactVariant.student ||
+        widget.person != null && widget.person!.role == "Student") {
+      return _buildSection(
+        "Parents",
+        Icons.people_alt_rounded,
+        parentList.map((parent) => _buildParentListTile(parent)).toList(),
+        isAddButton: true,
+        btnAction: _addToParentList,
+      );
+    } else {
+      return Container();
+    }
   }
 
   _buildDialog(
@@ -513,7 +716,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         context: context,
         builder: (context) {
           return AlertDialog(
-              backgroundColor: Colors.pink.shade100,
+              backgroundColor: _primaryColorSelection(),
               title: Text(title),
               content: _buildTextField(
                 controller,
@@ -528,7 +731,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                   child: Text(
                     "Cancel",
                     style: TextStyle(
-                      color: SecondaryColors.secondaryPink,
+                      color: _secondaryColorSelection(),
                       fontSize: CustomFontSize.large,
                     ),
                   ),
@@ -539,8 +742,8 @@ class _PersonDetailsState extends State<PersonDetails> {
                     Navigator.pop(context);
                     if (onPressed != null) onPressed();
                   },
-                  textColor: SecondaryColors.secondaryPink,
-                  btnColor: Colors.pink.shade100,
+                  textColor: _secondaryColorSelection(),
+                  btnColor: _primaryColorSelection(),
                 )
               ]);
         });

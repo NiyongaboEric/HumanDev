@@ -36,7 +36,7 @@ class _DefaultBtnState extends State<DefaultBtn> {
     return FloatingActionButton.extended(
       backgroundColor: btnColor,
       onPressed: onPressed,
-      icon: Icon(icon, color: textColor),
+      icon: icon != null ? Icon(icon, color: textColor) : null,
       label: isLoading
           ? const CircularProgressIndicator()
           : Text(

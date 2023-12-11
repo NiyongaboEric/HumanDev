@@ -15,6 +15,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     // on<GetOnePersonEvent>(_getOneStudent);
     // on<GetRelativesEvent>(_getRelatives);
     on<AddPersonEvent>(_addPerson);
+    on<UpdatePersonEvent>(_updatePerson);
   }
 
   Future _getAllStudents(
@@ -118,6 +119,37 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         status: PersonStatus.success,
         personResponse: person,
         successMessage: "Person created successfully",
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        errorMessage: error.toString(),
+        isLoading: false,
+        status: PersonStatus.error,
+      ));
+    } finally {
+      emit(state.copyWith(
+        status: PersonStatus.initial,
+        errorMessage: null,
+        successMessage: null,
+        isLoading: false,
+        personRequest: null,
+      ));
+    }
+  }
+
+  // Update Person
+  Future _updatePerson(
+    UpdatePersonEvent event,
+    Emitter<PersonState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final person = await studentApiImpl.updatePerson(event.person);
+      emit(state.copyWith(
+        isLoading: false,
+        status: PersonStatus.success,
+        personResponse: person,
+        successMessage: "Person updated successfully",
       ));
     } catch (error) {
       emit(state.copyWith(

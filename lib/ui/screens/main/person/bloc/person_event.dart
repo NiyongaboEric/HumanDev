@@ -25,3 +25,8 @@ final class AddPersonEvent extends PersonEvent {
   final PersonRequest personRequest;
   const AddPersonEvent(this.personRequest);
 }
+
+final class UpdatePersonEvent extends PersonEvent {
+  final UpdatePersonRequest person;
+  const UpdatePersonEvent(this.person);
+}

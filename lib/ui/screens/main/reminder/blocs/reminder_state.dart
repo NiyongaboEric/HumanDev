@@ -11,7 +11,7 @@ class ReminderState {
   final ReminderStateStatus status;
   final String? successMessage;
   final String? errorMessage;
-  final ReminderRequest? reminderRequest;
+  final List<ReminderRequest>? reminderRequests;
   final List<ReminderModel>? reminders;
   final List<String>? recipients;
 
@@ -20,7 +20,7 @@ class ReminderState {
     this.status = ReminderStateStatus.initial,
     this.successMessage,
     this.errorMessage,
-    this.reminderRequest,
+    this.reminderRequests,
     this.reminders = const <ReminderModel>[],
     this.recipients = const <String>[],
   });
@@ -30,7 +30,7 @@ class ReminderState {
     ReminderStateStatus? status,
     String? successMessage,
     String? errorMessage,
-    ReminderRequest? reminderRequest,
+    List<ReminderRequest>? reminderRequests,
     List<ReminderModel>? reminders,
     List<String>? recipients,
   }) {
@@ -39,7 +39,7 @@ class ReminderState {
       status: status ?? this.status,
       successMessage: successMessage ?? this.successMessage,
       errorMessage: errorMessage ?? this.errorMessage,
-      reminderRequest: reminderRequest ?? this.reminderRequest,
+      reminderRequests: reminderRequests ?? this.reminderRequests,
       reminders: reminders ?? this.reminders,
       recipients: recipients ?? this.recipients,
     );

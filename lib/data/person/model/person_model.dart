@@ -262,7 +262,9 @@ class ChildRelation {
   final String? lastName1;
   final String? lastName2;
   final String? dateOfBirth;
-  final String? phoneNumber;
+  final String? phoneNumber1;
+  final String? phoneNumber2;
+  final String? phoneNumber3;
   final int? spaceId;
   final bool? isLegal;
   final String? counterpartyName;
@@ -279,7 +281,9 @@ class ChildRelation {
     this.lastName1,
     this.lastName2,
     this.dateOfBirth,
-    this.phoneNumber,
+    this.phoneNumber1,
+    this.phoneNumber2,
+    this.phoneNumber3,
     this.spaceId,
     this.isLegal,
     this.counterpartyName,
@@ -298,7 +302,9 @@ class ChildRelation {
       lastName1: json['lastName1'],
       lastName2: json['lastName2'],
       dateOfBirth: json['dateOfBirth'],
-      phoneNumber: json['phoneNumber'],
+      phoneNumber1: json['phoneNumber1'],
+      phoneNumber2: json['phoneNumber2'],
+      phoneNumber3: json['phoneNumber3'],
       spaceId: json['spaceId'],
       isLegal: json['isLegal'],
       counterpartyName: json['counterpartyName'],
@@ -318,7 +324,9 @@ class ChildRelation {
       'lastName1': lastName1,
       'lastName2': lastName2,
       'dateOfBirth': dateOfBirth,
-      'phoneNumber': phoneNumber,
+      'phoneNumber1': phoneNumber1,
+      'phoneNumber2': phoneNumber2,
+      'phoneNumber3': phoneNumber3,
       'spaceId': spaceId,
       'isLegal': isLegal,
       'counterpartyName': counterpartyName,
