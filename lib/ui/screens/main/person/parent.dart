@@ -387,7 +387,7 @@ class _ParentsState extends State<Parents> {
       case ParentSection.students:
         return BackgroundColors.bgPink;
       case ParentSection.sendSMS:
-        return BackgroundColors.bgDarkBlue;
+        return BackgroundColors.bgBlue;
       case ParentSection.contacts:
         return BackgroundColors.bgLightGreen;
       default:
@@ -1422,7 +1422,7 @@ class _ParentsState extends State<Parents> {
         return Text(
           "Send SMS",
           style: TextStyle(
-            color: secondaryColorSelection(parentSection),
+            color: SMSRecipientColors.primaryColor,
           ),
         );
       case ParentSection.contacts:
@@ -1444,7 +1444,9 @@ class _ParentsState extends State<Parents> {
 
   IconThemeData _buildAppBarIconTheme() {
     return IconThemeData(
-      color: secondaryColorSelection(widget.parentSection),
+      color: widget.parentSection == ParentSection.sendSMS
+        ? SMSRecipientColors.primaryColor
+        : secondaryColorSelection(widget.parentSection),
     );
   }
 
