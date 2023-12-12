@@ -46,6 +46,8 @@ enum ParentSection {
   students
 }
 
+List<String> selectedGroups = <String>['Groups', 'Group A', 'Group B'];
+
 class Parents extends StatefulWidget {
   final ParentSection parentSection;
   const Parents({
@@ -95,6 +97,15 @@ class _ParentsState extends State<Parents> {
   List<bool> personSelection = [true, false, false];
 
   List<bool> personSelectionSendSMS = [true, false, false, false];
+
+  String selectedGroupDropdownValue = selectedGroups.first;
+
+  // Update Groups
+  void _updateGroups(value) {
+    setState(() {
+      selectedGroupDropdownValue = value!;
+    });
+  }
 
   // Update Person Selection
   void updatePersonSelection(int index) {
@@ -579,6 +590,7 @@ class _ParentsState extends State<Parents> {
     ]
     .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
     .toList();
+    print("recipientsWithNameAndNumbers: $recipientsWithNameAndNumbers");
 
     ReminderRequest reminderRequest = ReminderRequest(
       type: reminderType(widget.parentSection),
@@ -1526,7 +1538,7 @@ class _ParentsState extends State<Parents> {
       double.infinity,
       widget.parentSection == ParentSection.sendSMS ||
               widget.parentSection == ParentSection.contacts
-          ? 150
+          ? 225
           : 80,
     );
   }
@@ -1541,6 +1553,7 @@ class _ParentsState extends State<Parents> {
           if (widget.parentSection == ParentSection.contacts)
             _buildDropDownGroups(),
           // _buildSizedBox(),
+          _buildCustomGroups(),
           _buildCustomTextField(),
           _buildParentSelectionSendSMS(toggleOptionsSendSMS),
           _buildSizedBox(),
@@ -1576,6 +1589,23 @@ class _ParentsState extends State<Parents> {
             onChanged: search,
           )
         : Container();
+  }
+
+  Widget _buildCustomGroups() {
+    return widget.parentSection == ParentSection.sendSMS
+      ?
+      CustomDropDownMenu(
+        color: SMSRecipientColors.primaryColor,
+        options: selectedGroups,
+        value: selectedGroupDropdownValue,
+        onChanged: _updateGroups,
+        // onChanged: (dynamic value) {
+        //   setState(() {
+        //     selectedGroupDropdownValue = value!; 
+        //   });
+        // },
+      )    
+      : Container();
   }
 
   Widget _buildParentSelectionSendSMS(List<SizedBox> toggleOptionsSendSMS) {
