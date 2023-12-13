@@ -75,4 +75,9 @@ class Constants {
     DateTime dateTime = DateTime.parse(date);
     return DateFormat('dd MMM yy').format(dateTime);
   }
+
+  static List<String> selectedGroups = <String> [
+    'Custom groups', 'Parents', 'Relative', 'Student',
+    'Supplier', 'Supplier administrator', 'Teacher'
+  ];
 }

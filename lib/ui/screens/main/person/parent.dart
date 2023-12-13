@@ -46,7 +46,10 @@ enum ParentSection {
   students
 }
 
-List<String> selectedGroups = <String>['Groups', 'Group A', 'Group B'];
+// List<String> selectedGroups = <String>[
+//   'All groups', 'Parents', 'Relative', 'Student',
+//   'Supplier', 'Supplier administrator', 'Teacher'
+// ];
 
 class Parents extends StatefulWidget {
   final ParentSection parentSection;
@@ -98,7 +101,7 @@ class _ParentsState extends State<Parents> {
 
   List<bool> personSelectionSendSMS = [true, false, false, false];
 
-  String selectedGroupDropdownValue = selectedGroups.first;
+  String selectedGroupDropdownValue = Constants.selectedGroups.first; //selectedGroups.first;
 
   // Update Groups
   void _updateGroups(value) {
@@ -590,7 +593,6 @@ class _ParentsState extends State<Parents> {
     ]
     .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
     .toList();
-    print("recipientsWithNameAndNumbers: $recipientsWithNameAndNumbers");
 
     ReminderRequest reminderRequest = ReminderRequest(
       type: reminderType(widget.parentSection),
@@ -781,8 +783,15 @@ class _ParentsState extends State<Parents> {
     super.dispose();
   }
 
+  void handleChangeDropdownItem(value) {
+    setState(() {
+      print(".....value:   $value");
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+
     ParentSection parentSection = widget.parentSection;
     var toggleOptions = [
       SizedBox(
@@ -1536,9 +1545,10 @@ class _ParentsState extends State<Parents> {
   Size _buildPreferredSize() {
     return Size(
       double.infinity,
-      widget.parentSection == ParentSection.sendSMS ||
-              widget.parentSection == ParentSection.contacts
-          ? 225
+      widget.parentSection == ParentSection.sendSMS ?
+        190 
+        : widget.parentSection == ParentSection.contacts
+          ? 170
           : 80,
     );
   }
@@ -1555,8 +1565,8 @@ class _ParentsState extends State<Parents> {
           // _buildSizedBox(),
           _buildCustomGroups(),
           _buildCustomTextField(),
-          _buildParentSelectionSendSMS(toggleOptionsSendSMS),
-          _buildSizedBox(),
+          // _buildParentSelectionSendSMS(toggleOptionsSendSMS),
+          // _buildSizedBox(),
           _buildCustomizeParentSelectionSendSMSSearch(),
           // Select All Button
           // _buildSelectAllButton(),
@@ -1594,17 +1604,67 @@ class _ParentsState extends State<Parents> {
   Widget _buildCustomGroups() {
     return widget.parentSection == ParentSection.sendSMS
       ?
-      CustomDropDownMenu(
-        color: SMSRecipientColors.primaryColor,
-        options: selectedGroups,
-        value: selectedGroupDropdownValue,
-        onChanged: _updateGroups,
-        // onChanged: (dynamic value) {
-        //   setState(() {
-        //     selectedGroupDropdownValue = value!; 
-        //   });
-        // },
-      )    
+      Column(
+        children: [
+          DropdownMenu<String>(
+            leadingIcon: Icon(Icons.filter_list_alt, color: SMSRecipientColors.primaryColor),
+            inputDecorationTheme: InputDecorationTheme(
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:  const BorderSide(
+                  color: Color(0xff1877F2),
+                  width: 1
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(70),
+                borderSide: const BorderSide(
+                  color: Color(0xff1877F2),
+                  width: 1
+                ),
+              ),
+            ),
+            width: 390,
+            initialSelection: selectedGroupDropdownValue,
+            onSelected: (String? value) => handleChangeDropdownItem(value),  
+            // enabled: Constants.selectedGroups[0] false,
+            dropdownMenuEntries: Constants.selectedGroups.map<DropdownMenuEntry<String>>((item) {
+              return DropdownMenuEntry<String>(
+                value: item, 
+                label: item,
+                style: ButtonStyle(
+                  side: MaterialStateProperty.all<BorderSide>(
+                    const BorderSide(
+                      width: 0.01,
+                      color: Color(0xff1877F2),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+
+          GestureDetector(
+            onTap: () {
+              print("tada.....");
+            },
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+              padding: const EdgeInsets.all(8),
+              child: const Text(
+                "All recipients",
+                style: TextStyle(
+                  fontSize: 17,
+                  color: Color(0xff1877F2),
+                ),
+              ),
+            ),
+            ),
+          ),
+        ],
+      )
       : Container();
   }
 
