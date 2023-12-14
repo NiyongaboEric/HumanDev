@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:alphabet_list_view/alphabet_list_view.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:intl/intl.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/contact_type.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/person_details.dart';
@@ -101,12 +103,13 @@ class _ParentsState extends State<Parents> {
 
   List<bool> personSelectionSendSMS = [true, false, false, false];
 
-  String selectedGroupDropdownValue = Constants.selectedGroups.first; //selectedGroups.first;
+  // Groups
+  List<Group> groupSpace = [];
 
   // Update Groups
   void _updateGroups(value) {
     setState(() {
-      selectedGroupDropdownValue = value!;
+      // selectedGroupDropdownValue = value!;
     });
   }
 
@@ -775,6 +778,22 @@ class _ParentsState extends State<Parents> {
     var allPeopleList = preferences.getPersons();
     allPeople.addAll(allPeopleList);
     getAllStudents();
+
+    String? groupValue = prefs.getString("groups");
+      if (groupValue != null) {
+      List<dynamic> groupData = json.decode(groupValue);
+      try {
+        List<Group> groupList = groupData.map((data) {
+          return Group.fromJson(data);
+        }).toList();
+        logger.d(groupList);
+        // Display group 
+        groupSpace = groupList;
+      } catch (e) {
+        logger.f(groupData);
+        logger.w(e);
+      }
+    }
     super.initState();
   }
 
@@ -784,9 +803,9 @@ class _ParentsState extends State<Parents> {
   }
 
   void handleChangeDropdownItem(value) {
-    setState(() {
-      print(".....value:   $value");
-    });
+    // setState(() {
+    //   print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....value:   $value");
+    // });
   }
 
   @override
@@ -848,6 +867,7 @@ class _ParentsState extends State<Parents> {
     var buildAlphabetListView = _buildAlphabetView();
     var buildSearchResultsAlphabetView = _buildSearchResultAlphabetView();
     var buildAlphabetListViewOptions = _buildAlphabetListViewOptions();
+  
     return VisibilityDetector(
       key: parentData,
       onVisibilityChanged: (visibilityInfo) {
@@ -1546,7 +1566,7 @@ class _ParentsState extends State<Parents> {
     return Size(
       double.infinity,
       widget.parentSection == ParentSection.sendSMS ?
-        190 
+        160 
         : widget.parentSection == ParentSection.contacts
           ? 170
           : 80,
@@ -1602,68 +1622,28 @@ class _ParentsState extends State<Parents> {
   }
 
   Widget _buildCustomGroups() {
+    var addAllgroupInSpace = [
+      Group.fromJson({
+        "id": 0,
+        "name": "All groups",
+        "isRole": false,
+        "isActive": false,
+        "spaceId": 00,
+      }),
+      ...groupSpace
+    ];
+
     return widget.parentSection == ParentSection.sendSMS
       ?
-      Column(
-        children: [
-          DropdownMenu<String>(
-            leadingIcon: Icon(Icons.filter_list_alt, color: SMSRecipientColors.primaryColor),
-            inputDecorationTheme: InputDecorationTheme(
-              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide:  const BorderSide(
-                  color: Color(0xff1877F2),
-                  width: 1
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(70),
-                borderSide: const BorderSide(
-                  color: Color(0xff1877F2),
-                  width: 1
-                ),
-              ),
-            ),
-            width: 390,
-            initialSelection: selectedGroupDropdownValue,
-            onSelected: (String? value) => handleChangeDropdownItem(value),  
-            // enabled: Constants.selectedGroups[0] false,
-            dropdownMenuEntries: Constants.selectedGroups.map<DropdownMenuEntry<String>>((item) {
-              return DropdownMenuEntry<String>(
-                value: item, 
-                label: item,
-                style: ButtonStyle(
-                  side: MaterialStateProperty.all<BorderSide>(
-                    const BorderSide(
-                      width: 0.01,
-                      color: Color(0xff1877F2),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-
-          GestureDetector(
-            onTap: () {
-              print("tada.....");
-            },
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-              padding: const EdgeInsets.all(8),
-              child: const Text(
-                "All recipients",
-                style: TextStyle(
-                  fontSize: 17,
-                  color: Color(0xff1877F2),
-                ),
-              ),
-            ),
-            ),
-          ),
-        ],
+      Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 3, 
+          vertical: 10
+        ),
+        child: CustomDropDownMenuTwo(
+          groupSpace: addAllgroupInSpace, 
+          handleChangeDropdownItem: handleChangeDropdownItem
+        )
       )
       : Container();
   }
@@ -1695,13 +1675,20 @@ class _ParentsState extends State<Parents> {
 
   Widget _buildCustomizeParentSelectionSendSMSSearch() {
     return widget.parentSection == ParentSection.sendSMS
-        ? CustomTextField(
-            color: SMSRecipientColors.primaryColor,
-            fillColor: SMSRecipientColors.fifthColor,
-            hintText: "Search...",
-            controller: searchController,
-            onChanged: searchSendSMS,
+        ?
+        Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 2, 
+          vertical: 2
+        ),
+        child: CustomTextField(
+          color: SMSRecipientColors.primaryColor,
+          fillColor: SMSRecipientColors.fifthColor,
+          hintText: "Search...",
+          controller: searchController,
+          onChanged: searchSendSMS,
           )
+        )
         : Container();
   }
 

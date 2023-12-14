@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 
 class CustomDropDownMenu extends StatelessWidget {
   final String value;
@@ -67,5 +69,95 @@ class CustomDropDownMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Placeholder();
+  }
+}
+
+class CustomDropDownMenuTwo extends StatelessWidget {
+  CustomDropDownMenuTwo({
+    super.key, 
+    required this.groupSpace, 
+    required this.handleChangeDropdownItem 
+  });
+
+  List<Group> groupSpace;
+  Function(dynamic) handleChangeDropdownItem;
+  
+  @override
+  Widget build(BuildContext context) {
+
+    DropdownMenu dropdownMenu;
+
+    ButtonStyle btnstyle = ButtonStyle(
+      side: MaterialStateProperty.all<BorderSide>(
+        const BorderSide(
+          width: 0.01,
+          color: Color(0xff1877F2),
+        ),
+      ),
+      foregroundColor: MaterialStatePropertyAll<Color>(SMSRecipientColors.primaryColor),
+    );
+
+    InputDecorationTheme inputDecorationTheme = InputDecorationTheme(
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+      enabledBorder: OutlineInputBorder(
+        gapPadding: 0,
+        borderRadius: BorderRadius.circular(10),
+        borderSide:  const BorderSide(
+          color: Color(0xff1877F2),
+          width: 1
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(70),
+        borderSide: const BorderSide(
+          color: Color(0xff1877F2),
+          width: 1
+        ),
+      ),
+    );
+
+    var leadingIcon = Icon(
+      Icons.filter_list_alt,
+      color: SMSRecipientColors.primaryColor
+    );
+
+    if (groupSpace.isEmpty) {
+      List<String> data = ['No groups available'];
+      dropdownMenu = DropdownMenu<String>(
+        leadingIcon: leadingIcon,
+        inputDecorationTheme: inputDecorationTheme,
+        width: 390,
+        initialSelection: data.first,
+        onSelected: (String? value) => handleChangeDropdownItem(value),  
+        dropdownMenuEntries: data.map<DropdownMenuEntry<String>>((item) {
+          return DropdownMenuEntry<String>(
+            value: item, 
+            label: item,
+            style: btnstyle
+          );
+        }).toList(),
+      );
+    } else {
+      dropdownMenu = DropdownMenu<String>(
+        menuStyle: MenuStyle(
+          backgroundColor:
+            MaterialStatePropertyAll<Color>(SMSRecipientColors.fourthColor)
+        ),
+        leadingIcon: leadingIcon,
+        inputDecorationTheme: inputDecorationTheme,
+        width: 390,
+        initialSelection: groupSpace.first.name,
+        onSelected: (String? value) => handleChangeDropdownItem(value),  
+        dropdownMenuEntries: groupSpace.map<DropdownMenuEntry<String>>((item) {
+          return DropdownMenuEntry<String>(
+            value: "${item.name}", 
+            label: "${item.name}",
+            style: btnstyle
+          );
+        }).toList(),
+      );
+    }
+
+    return dropdownMenu;
   }
 }
