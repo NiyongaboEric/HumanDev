@@ -98,6 +98,7 @@ enum Role {
   Student,
   Teacher,
   Relative,
+  Supplier,
 }
 
 class PersonModel {

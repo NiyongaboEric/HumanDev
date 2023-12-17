@@ -88,22 +88,15 @@ class CustomDropDownMenuTwo extends StatelessWidget {
     DropdownMenu dropdownMenu;
 
     ButtonStyle btnstyle = ButtonStyle(
-      side: MaterialStateProperty.all<BorderSide>(
-        const BorderSide(
-          width: 0.01,
-          color: Color(0xff1877F2),
-        ),
-      ),
       foregroundColor: MaterialStatePropertyAll<Color>(SMSRecipientColors.primaryColor),
     );
 
     InputDecorationTheme inputDecorationTheme = InputDecorationTheme(
-      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 0),
       enabledBorder: OutlineInputBorder(
         gapPadding: 0,
         borderRadius: BorderRadius.circular(10),
         borderSide:  const BorderSide(
-          color: Color(0xff1877F2),
+          color: Color(0xFF031A38),
           width: 1
         ),
       ),
@@ -140,8 +133,8 @@ class CustomDropDownMenuTwo extends StatelessWidget {
     } else {
       dropdownMenu = DropdownMenu<String>(
         menuStyle: MenuStyle(
-          backgroundColor:
-            MaterialStatePropertyAll<Color>(SMSRecipientColors.fourthColor)
+          backgroundColor: 
+            MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue)
         ),
         leadingIcon: leadingIcon,
         inputDecorationTheme: inputDecorationTheme,

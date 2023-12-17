@@ -88,6 +88,20 @@ class SharedPreferenceModule {
     pref.setString("teachers", jsonString);
   }
 
+  void saveSuppliers (List<PersonModel> suppliers) {
+    final jsonStrings = jsonEncode(
+      suppliers.map((supplier) => supplier.toJson()).toList()
+    );
+    pref.setString("suppliers", jsonStrings);
+  }
+
+  void saveSchoolAdministrator (List<PersonModel> schoolAdministrators) {
+    final jsonStrings = jsonEncode(
+      schoolAdministrators.map((administrator) => administrator.toJson()).toList()
+    );
+    pref.setString("schoolAdministrators", jsonStrings);
+  }
+
   // Save Students to Shared Preferences
   void saveStudents(List<PersonModel> students) {
     final jsonString = jsonEncode(

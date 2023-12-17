@@ -72,6 +72,10 @@ class _ParentsState extends State<Parents> {
   List<ChildRelation> relatives = <ChildRelation>[];
   List<PersonModel> parents = <PersonModel>[];
   List<PersonModel> teachers = <PersonModel>[];
+
+  List<PersonModel> suppliers = <PersonModel>[];
+  List<PersonModel> schoolAdministrators = <PersonModel>[];
+
   // PS => allPeople. [Students, Parents, Teachers]
   List<PersonModel> allPeople = <PersonModel>[];
 
@@ -79,6 +83,9 @@ class _ParentsState extends State<Parents> {
   List<PersonModel> selectedStudentsSendSMS = <PersonModel>[];
   List<PersonModel> selectedParentsSendSMS = <PersonModel>[];
   List<PersonModel> selectedTeachersSendSMS = <PersonModel>[];
+
+  List<PersonModel> selectedSuppliersSendSMS = <PersonModel>[];
+  List<PersonModel> selectedSchoolAdministratorsSendSMS = <PersonModel>[];
 
   String selectedContactType = 'All people';
   void _updateSelectedContactType(value) {
@@ -101,10 +108,108 @@ class _ParentsState extends State<Parents> {
   // PS => personSelection. PS[0] = All, PS[1] = Students, PS[2] = Parents, PS[3] = Teachers
   List<bool> personSelection = [true, false, false];
 
-  List<bool> personSelectionSendSMS = [true, false, false, false];
+  // List<bool> personSelectionSendSMS = [true, false, false, false];
 
-  // Groups
+  // Groups Space
   List<Group> groupSpace = [];
+  String currentSelectedGroupSpace = '';
+  String allGroups = 'All groups';
+  String schoolAdministrator = 'School administrator';
+
+  switchGroupSpace(String selectGroupSpace) {
+    switch(selectGroupSpace) {
+      case 'All groups':
+        return allPeople;
+      case 'Student':
+        return students;
+      case 'Relative':
+        return parents;
+      case 'Teacher':
+        return teachers;
+      case 'Supplier':
+        return suppliers;
+      case 'School administrator':
+        return schoolAdministrators;
+      default:
+        print('You are to Implement custom group.....');
+    }
+  }
+  
+  void handleAddPersonForSendSMS(currentSelectedGroup, PersonModel person) {
+    currentSelectedGroup == allGroups ? addAllPeopleSendSMS(person) : null;
+    currentSelectedGroup == Role.Student.name ? addStudentsSendSMS(person) : null;
+    currentSelectedGroup == Role.Relative.name ? addParentsSendSMS(person) : null;
+    currentSelectedGroup == Role.Teacher.name ? addTeachersSendSMS(person) : null;
+    currentSelectedGroup == Role.Supplier.name ? addSuppliersSendSMS(person) : null;
+    currentSelectedGroup == schoolAdministrator ? addSchoolAdministratorsSendSMS(person) : null;
+  }
+
+  void handleRemovePersonForSendSMS(currentSelectedGroup, PersonModel person) {
+    currentSelectedGroup == allGroups ? removeAllPeopleSendSMS(person) : null;
+    currentSelectedGroup == Role.Student.name ? removeStudentsSendSMS(person) : null;
+    currentSelectedGroup == Role.Relative.name ? removeParentsSendSMS(person) : null;
+    currentSelectedGroup == Role.Teacher.name ? removeTeachersSendSMS(person) : null;
+    currentSelectedGroup == Role.Supplier.name ? removeSuppliersSendSMS(person) : null;
+    currentSelectedGroup == schoolAdministrator ? removeSchoolAdministratorsSendSMS(person) : null;
+  }
+
+  // handleAddPersonForSendSMS
+  // handleRemovePersonForSendSMS
+  // print("======> All group:   ****  ${currentSelectedGroup == 'All group'}");
+  // print("======> Role.Student.name:   ****  ${currentSelectedGroup == Role.Student.name}");
+  // print("======> Role.Relative.name:   ****  ${currentSelectedGroup == Role.Relative.name}");
+  // print("======> Role.Teacher.name:   ****  ${currentSelectedGroup == Role.Teacher.name}");
+  // print("======> School administrator:   ****  ${currentSelectedGroup == 'School administrator'}");
+  // print("======> All group:   ****  ${currentSelectedGroup == 'All group'}  ===> person: $person");
+  // print("======> All group:   ****  ${currentSelectedGroup == allGroups}   ===> person: $person");
+  // print("======> Role.Student.name:   ****  ${currentSelectedGroup == Role.Student.name}   ===> person: $person");
+  // print("======> Role.Relative.name:   ****  ${currentSelectedGroup == Role.Relative.name}   ===> person: $person");
+  // print("======> Role.Teacher.name:   ****  ${currentSelectedGroup == Role.Teacher.name}   ===> person: $person");
+  // print("======> School administrator:   ****  ${currentSelectedGroup == schoolAdministrator}   ===> person: $person");
+  // List<PersonModel> getSelectedPeopleForSendSMS() {
+  //   print("currentSelectedGroupSpace: ................... $currentSelectedGroupSpace");
+  //   if (personSelectionSendSMS[0]) {
+  //     return allPeople;
+  //   } else if (personSelectionSendSMS[1]) {
+  //     return students;
+  //   } else if (personSelectionSendSMS[2]) {
+  //     return parents;
+  //   } else {
+  //     return teachers;
+  //   }
+  // }
+  // void handleAddPersonForSendSMS(PersonModel person) {
+  //   print('***** add a person \n\n: ${person} $currentSelectedGroupSpace');
+  //   // personSelectionSendSMS[0] ? addAllPeopleSendSMS(person) : null;
+  //   // personSelectionSendSMS[1] ? addStudentsSendSMS(person) : null;
+  //   // personSelectionSendSMS[2] ? addParentsSendSMS(person) : null;
+  //   // personSelectionSendSMS[3] ? addTeachersSendSMS(person) : null;
+  // }
+  // void handleRemovePersonForSendSMS(PersonModel person) {
+  //   print('***** remove a person \n\n: ${person} $currentSelectedGroupSpace');
+  //   // personSelectionSendSMS[0] ? removeAllPeopleSendSMS(person) : null;
+  //   // personSelectionSendSMS[1] ? removeStudentsSendSMS(person) : null;
+  //   // personSelectionSendSMS[2] ? removeParentsSendSMS(person) : null;
+  //   // personSelectionSendSMS[3] ? removeTeachersSendSMS(person) : null;
+  // }
+  // currentSelectedGroupSpace == allGroups
+  // currentSelectedGroupSpace == Role.Student.name
+  // currentSelectedGroupSpace == Role.Relative.name
+  // currentSelectedGroupSpace == Role.Teacher.name
+  // currentSelectedGroupSpace == Role.Supplier.name
+  // currentSelectedGroupSpace == schoolAdministrator
+  // currentSelectedGroup == allGroups
+  // currentSelectedGroup == Role.Student.name
+  // currentSelectedGroup == Role.Relative.name
+  // currentSelectedGroup == Role.Teacher.name
+  // currentSelectedGroup == Role.Supplier.name
+  // currentSelectedGroup == schoolAdministrator
+
+  void handleChangeDropdownItem(value) {
+    setState(() {
+      currentSelectedGroupSpace = value;
+    });
+  }
 
   // Update Groups
   void _updateGroups(value) {
@@ -126,17 +231,17 @@ class _ParentsState extends State<Parents> {
     });
   }
 
-  void updatePersonSelectionSendSMS(int index) {
-    setState(() {
-      for (int i = 0; i < personSelectionSendSMS.length; i++) {
-        if (i == index) {
-          personSelectionSendSMS[i] = true;
-        } else {
-          personSelectionSendSMS[i] = false;
-        }
-      }
-    });
-  }
+  // void updatePersonSelectionSendSMS(int index) {
+  //   setState(() {
+  //     for (int i = 0; i < personSelectionSendSMS.length; i++) {
+  //       if (i == index) {
+  //         personSelectionSendSMS[i] = true;
+  //       } else {
+  //         personSelectionSendSMS[i] = false;
+  //       }
+  //     }
+  //   });
+  // }
 
 // Search Function
   search(String query) {
@@ -147,15 +252,15 @@ class _ParentsState extends State<Parents> {
       });
     } else {
       List<PersonModel> searchList = [];
-      if (widget.parentSection == ParentSection.sendSMS) {
-        if (personSelection[0]) {
-          searchList = students;
-        } else if (personSelection[1]) {
-          searchList = parents;
-        } else if (personSelection[2]) {
-          searchList = teachers;
-        }
-      }
+      // if (widget.parentSection == ParentSection.sendSMS) {
+      //   if (personSelection[0]) {
+      //     searchList = students;
+      //   } else if (personSelection[1]) {
+      //     searchList = parents;
+      //   } else if (personSelection[2]) {
+      //     searchList = teachers;
+      //   }
+      // }
       if (widget.parentSection == ParentSection.students) {
         searchList = parents;
       }
@@ -193,67 +298,106 @@ class _ParentsState extends State<Parents> {
 
   searchSendSMS(String query) {
     query = query.toLowerCase();
-    setState(() {
-      showResults = query.isNotEmpty;
-      searchResults = [];
+    if (query.isEmpty) {
+       setState(() {
+        showResults = false;
+      });
+    } else {
+      List<PersonModel> searchList = [];
 
-      if (personSelectionSendSMS[0]) {
-        searchResults.addAll(searchInPeople(allPeople, query));
+      if (currentSelectedGroupSpace == allGroups) {
+        searchList = allPeople;
+      }
+      if (currentSelectedGroupSpace == Role.Student.name) {
+        searchList = students;
+      }
+      if (currentSelectedGroupSpace == Role.Relative.name) {
+        searchList = parents;
+      }
+      if (currentSelectedGroupSpace == Role.Teacher.name) {
+        searchList = teachers;
+      }
+      if (currentSelectedGroupSpace == Role.Supplier.name) {
+        searchList = suppliers;
+      }
+      if (currentSelectedGroupSpace == schoolAdministrator) {
+        searchList = schoolAdministrators;
       }
 
-      if (personSelectionSendSMS[1]) {
-        searchResults.addAll(searchInStudents(students, query));
-      }
-
-      if (personSelectionSendSMS[2]) {
-        searchResults.addAll(searchInParents(parents, query));
-      }
-
-      if (personSelectionSendSMS[3]) {
-        searchResults.addAll(searchInTeachers(teachers, query));
-      }
-    });
+      setState(() {
+        showResults = true;
+        searchResults = searchList
+            .toSet()
+            .toList()
+            .where((item) =>
+                (item.firstName ?? "").toLowerCase().contains(query) ||
+                (item.middleName ?? "").toLowerCase().contains(query) ||
+                (item.lastName1 ?? "").toLowerCase().contains(query) ||
+                (item.lastName2 ?? "").toLowerCase().contains(query))
+            .toList();
+      });
+    }
   }
 
-  List<PersonModel> searchInPeople(List<PersonModel> people, String query) {
-    return people
-        .where((person) =>
-            (person.firstName ?? "").toLowerCase().contains(query) ||
-            (person.middleName ?? "").toLowerCase().contains(query) ||
-            (person.lastName1 ?? "").toLowerCase().contains(query) ||
-            (person.lastName2 ?? "").toLowerCase().contains(query))
-        .toList();
-  }
+  // List<PersonModel> searchInPeople(List<PersonModel> people, String query) {
+  //   return people
+  //       .where((person) =>
+  //           (person.firstName ?? "").toLowerCase().contains(query) ||
+  //           (person.middleName ?? "").toLowerCase().contains(query) ||
+  //           (person.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (person.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
 
-  List<PersonModel> searchInStudents(List<PersonModel> students, String query) {
-    return students
-        .where((student) =>
-            (student.firstName ?? "").toLowerCase().contains(query) ||
-            (student.middleName ?? "").toLowerCase().contains(query) ||
-            (student.lastName1 ?? "").toLowerCase().contains(query) ||
-            (student.lastName2 ?? "").toLowerCase().contains(query))
-        .toList();
-  }
+  // List<PersonModel> searchInStudents(List<PersonModel> students, String query) {
+  //   return students
+  //       .where((student) =>
+  //           (student.firstName ?? "").toLowerCase().contains(query) ||
+  //           (student.middleName ?? "").toLowerCase().contains(query) ||
+  //           (student.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (student.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
 
-  List<PersonModel> searchInParents(List<PersonModel> parents, String query) {
-    return parents
-        .where((parent) =>
-            (parent.firstName ?? "").toLowerCase().contains(query) ||
-            (parent.middleName ?? "").toLowerCase().contains(query) ||
-            (parent.lastName1 ?? "").toLowerCase().contains(query) ||
-            (parent.lastName2 ?? "").toLowerCase().contains(query))
-        .toList();
-  }
+  // List<PersonModel> searchInParents(List<PersonModel> parents, String query) {
+  //   return parents
+  //       .where((parent) =>
+  //           (parent.firstName ?? "").toLowerCase().contains(query) ||
+  //           (parent.middleName ?? "").toLowerCase().contains(query) ||
+  //           (parent.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (parent.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
 
-  List<PersonModel> searchInTeachers(List<PersonModel> teachers, String query) {
-    return teachers
-        .where((teacher) =>
-            (teacher.firstName ?? "").toLowerCase().contains(query) ||
-            (teacher.middleName ?? "").toLowerCase().contains(query) ||
-            (teacher.lastName1 ?? "").toLowerCase().contains(query) ||
-            (teacher.lastName2 ?? "").toLowerCase().contains(query))
-        .toList();
-  }
+  // List<PersonModel> searchInTeachers(List<PersonModel> teachers, String query) {
+  //   return teachers
+  //       .where((teacher) =>
+  //           (teacher.firstName ?? "").toLowerCase().contains(query) ||
+  //           (teacher.middleName ?? "").toLowerCase().contains(query) ||
+  //           (teacher.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (teacher.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
+
+  // List<PersonModel> searchInSuppliers(List<PersonModel> parents, String query) {
+  //   return suppliers
+  //       .where((parent) =>
+  //           (parent.firstName ?? "").toLowerCase().contains(query) ||
+  //           (parent.middleName ?? "").toLowerCase().contains(query) ||
+  //           (parent.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (parent.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
+
+  // List<PersonModel> searchInSchoolAdministrator(List<PersonModel> teachers, String query) {
+  //   return schoolAdministrators
+  //       .where((teacher) =>
+  //           (teacher.firstName ?? "").toLowerCase().contains(query) ||
+  //           (teacher.middleName ?? "").toLowerCase().contains(query) ||
+  //           (teacher.lastName1 ?? "").toLowerCase().contains(query) ||
+  //           (teacher.lastName2 ?? "").toLowerCase().contains(query))
+  //       .toList();
+  // }
 
   void addParent(ChildRelation parents) {
     setState(() {
@@ -324,6 +468,30 @@ class _ParentsState extends State<Parents> {
   void removeTeachersSendSMS(PersonModel teacher) {
     setState(() {
       selectedTeachersSendSMS.remove(teacher);
+    });
+  }
+
+  void addSuppliersSendSMS(PersonModel supplier) {
+    setState(() {
+      selectedSuppliersSendSMS.add(supplier);
+    });
+  }
+
+  void removeSuppliersSendSMS(PersonModel supplier) {
+    setState(() {
+      selectedSuppliersSendSMS.remove(supplier);
+    });
+  }
+  
+  void addSchoolAdministratorsSendSMS(PersonModel schoolAdministrator) {
+    setState(() {
+      selectedSchoolAdministratorsSendSMS.add(schoolAdministrator);
+    });
+  }
+
+  void removeSchoolAdministratorsSendSMS(PersonModel schoolAdministrator) {
+    setState(() {
+      selectedSchoolAdministratorsSendSMS.remove(schoolAdministrator);
     });
   }
 
@@ -502,6 +670,8 @@ class _ParentsState extends State<Parents> {
         parents.clear();
         teachers.clear();
         allPeople.clear();
+        suppliers.clear();
+        schoolAdministrators.clear();
       });
       for (var person in state.persons) {
         if (person.role == Role.Student.name) {
@@ -523,6 +693,16 @@ class _ParentsState extends State<Parents> {
             teachers.add(person);
           }
         }
+        if (person.role == Role.Supplier.name) {
+          if (!suppliers.contains(person)) {
+            suppliers.add(person);
+          }
+        }
+        if (person.role == schoolAdministrator) {
+          if (!schoolAdministrators.contains(person)) {
+            schoolAdministrators.add(person);
+          }
+        }
       }
 
       allPeople = [...state.persons];
@@ -531,6 +711,9 @@ class _ParentsState extends State<Parents> {
       preferences.saveStudents(students);
       preferences.saveParents(parents);
       preferences.saveTeachers(teachers);
+
+      preferences.saveSuppliers(suppliers);
+      preferences.saveSchoolAdministrator(schoolAdministrators);
     }
     if (state.status == PersonStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
@@ -592,15 +775,15 @@ class _ParentsState extends State<Parents> {
       ...selectedAllPeopleSendSMS,
       ...selectedStudentsSendSMS,
       ...selectedParentsSendSMS,
-      ...selectedTeachersSendSMS
+      ...selectedTeachersSendSMS,
+      ...selectedSuppliersSendSMS,
+      ...selectedSchoolAdministratorsSendSMS
     ]
     .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
     .toList();
 
     ReminderRequest reminderRequest = ReminderRequest(
       type: reminderType(widget.parentSection),
-      // attendeePersonIds: selectedParents.map((parent) => parent.id).toList(),
-      // expandRelations: false,
       recipientsNameWithNumbers: recipientsWithNameAndNumbers
     );
 
@@ -608,7 +791,9 @@ class _ParentsState extends State<Parents> {
       ...selectedAllPeopleSendSMS,
       ...selectedStudentsSendSMS,
       ...selectedParentsSendSMS,
-      ...selectedTeachersSendSMS
+      ...selectedTeachersSendSMS,
+      ...selectedSuppliersSendSMS,
+      ...selectedSchoolAdministratorsSendSMS
     ].map((e) => "${e.firstName} ${e.lastName1}").toList();
 
     context
@@ -635,19 +820,6 @@ class _ParentsState extends State<Parents> {
 
   List<PersonModel> findStudentsWithoutParentNumber() {
     List<PersonModel> result = [];
-
-    // for (var element in selectedParents) {
-    //   if (element.phoneNumber == null) {
-    //     logger.d(element.id);
-    //     // Find
-    //     // var studentsWithoutNumber = students.where((student) {
-    //     //   return student.relatedPersons?.every((relatedPerson) =>
-    //     //           relatedPerson.id == element.id) ??
-    //     //       false;
-    //     // }).toList();
-    //     // result.addAll(studentsWithoutNumber);
-    //   }
-    // }
 
     return result;
   }
@@ -787,8 +959,21 @@ class _ParentsState extends State<Parents> {
           return Group.fromJson(data);
         }).toList();
         logger.d(groupList);
-        // Display group 
-        groupSpace = groupList;
+
+        // groupSpace = groupList;
+        // Attach all groups as a default in group space
+        groupSpace = [
+          Group.fromJson({
+            "id": 0,
+            "name": allGroups,
+            "isRole": false,
+            "isActive": false,
+            "spaceId": 00,
+          }),
+          ...groupList
+        ];
+        currentSelectedGroupSpace = groupSpace.first.name!;
+
       } catch (e) {
         logger.f(groupData);
         logger.w(e);
@@ -800,12 +985,6 @@ class _ParentsState extends State<Parents> {
   @override
   void dispose() {
     super.dispose();
-  }
-
-  void handleChangeDropdownItem(value) {
-    // setState(() {
-    //   print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&.....value:   $value");
-    // });
   }
 
   @override
@@ -827,24 +1006,24 @@ class _ParentsState extends State<Parents> {
       ),
     ];
 
-    var toggleOptionsSendSMS = [
-      SizedBox(
-        width: (MediaQuery.of(context).size.width - 24) / 4,
-        child: const Center(child: Text("All")),
-      ),
-      SizedBox(
-        width: (MediaQuery.of(context).size.width - 24) / 4,
-        child: const Center(child: Text("Students")),
-      ),
-      SizedBox(
-        width: (MediaQuery.of(context).size.width - 24) / 4,
-        child: const Center(child: Text("Parents")),
-      ),
-      SizedBox(
-        width: (MediaQuery.of(context).size.width - 24) / 4,
-        child: const Center(child: Text("Teachers")),
-      ),
-    ];
+    // var toggleOptionsSendSMS = [
+    //   SizedBox(
+    //     width: (MediaQuery.of(context).size.width - 24) / 4,
+    //     child: const Center(child: Text("All")),
+    //   ),
+    //   SizedBox(
+    //     width: (MediaQuery.of(context).size.width - 24) / 4,
+    //     child: const Center(child: Text("Students")),
+    //   ),
+    //   SizedBox(
+    //     width: (MediaQuery.of(context).size.width - 24) / 4,
+    //     child: const Center(child: Text("Parents")),
+    //   ),
+    //   SizedBox(
+    //     width: (MediaQuery.of(context).size.width - 24) / 4,
+    //     child: const Center(child: Text("Teachers")),
+    //   ),
+    // ];
 
     searchController.addListener(() {
       if (searchController.text.isNotEmpty) {
@@ -856,11 +1035,22 @@ class _ParentsState extends State<Parents> {
             searchResults.add(student);
           }
         }
+        // print("********************** U get ******************");
+        // for (var user in allPeople) {
+        //   if (user.firstName!
+        //       .toLowerCase()
+        //       .contains(searchController.text)) {
+        //     searchResults.add(user);
+        //   }
+        // }
       } else {
         searchResults.clear();
         for (var student in students) {
           searchResults.add(student);
         }
+        // for (var user in allPeople) {
+        //   searchResults.add(user);
+        // }
       }
     });
 
@@ -894,7 +1084,7 @@ class _ParentsState extends State<Parents> {
           return Scaffold(
             // resizeToAvoidBottomInset: false,
             backgroundColor: bgColorSelection(parentSection),
-            appBar: _buildAppBar(toggleOptions, toggleOptionsSendSMS),
+            appBar: _buildAppBar(toggleOptions),
             floatingActionButton: parentSection == ParentSection.sms ||
                     parentSection == ParentSection.sendSMS
                 ? Padding(
@@ -905,10 +1095,14 @@ class _ParentsState extends State<Parents> {
                               ...selectedAllPeopleSendSMS,
                               ...selectedStudentsSendSMS,
                               ...selectedParentsSendSMS,
-                              ...selectedTeachersSendSMS
+                              ...selectedTeachersSendSMS,
+                              ...selectedSuppliersSendSMS,
+                              ...selectedSchoolAdministratorsSendSMS
                             ].isEmpty
-                              ? primaryColorSelection(parentSection)
-                              : SMSRecipientColors.thirdColor
+
+                        ? Colors.blue.shade200
+                        : SMSRecipientColors.thirdColor
+
                           : parentSection == ParentSection.sms
                               ? selectedParents.isEmpty
                                   ? Colors.grey.shade300
@@ -921,7 +1115,9 @@ class _ParentsState extends State<Parents> {
                               ...selectedAllPeopleSendSMS,
                               ...selectedStudentsSendSMS,
                               ...selectedParentsSendSMS,
-                              ...selectedTeachersSendSMS
+                              ...selectedTeachersSendSMS,
+                              ...selectedSuppliersSendSMS,
+                              ...selectedSchoolAdministratorsSendSMS
                             ].isEmpty
                               ? null
                               : () {
@@ -986,25 +1182,14 @@ class _ParentsState extends State<Parents> {
 
   List<PersonModel> getSelectedPersonState(ParentSection parentSection) {
     if (parentSection == ParentSection.sendSMS) {
-      return getSelectedPeopleForSendSMS();
+      // return getSelectedPeopleForSendSMS();
+      return switchGroupSpace(currentSelectedGroupSpace);
     } else if (parentSection == ParentSection.students) {
       return parents;
     } else if (parentSection == ParentSection.contacts) {
       return getSelectedPeopleForContacts();
     } else {
       return getSelectedPeople();
-    }
-  }
-
-  List<PersonModel> getSelectedPeopleForSendSMS() {
-    if (personSelectionSendSMS[0]) {
-      return allPeople;
-    } else if (personSelectionSendSMS[1]) {
-      return students;
-    } else if (personSelectionSendSMS[2]) {
-      return parents;
-    } else {
-      return teachers;
     }
   }
 
@@ -1287,16 +1472,32 @@ class _ParentsState extends State<Parents> {
           : getCheckboxValueForSendSMS(person);
 
   bool getCheckboxValueForSendSMS(PersonModel person) =>
-      personSelectionSendSMS[0]
+      currentSelectedGroupSpace == allGroups
           ? selectedAllPeopleSendSMS
               .any((selectedAllPeople) => person.id == selectedAllPeople.id)
-          : personSelectionSendSMS[1]
-              ? selectedStudentsSendSMS
-                  .any((selectedAllPeople) => person.id == selectedAllPeople.id)
-              : personSelectionSendSMS[2]
+
+            : currentSelectedGroupSpace == Role.Student.name
+                ? selectedStudentsSendSMS
+                    .any((selectedAllPeople) => person.id == selectedAllPeople.id)
+  
+              : currentSelectedGroupSpace == Role.Relative.name
                   ? selectedParentsSendSMS.any(
                       (selectedAllPeople) => person.id == selectedAllPeople.id)
-                  : selectedTeachersSendSMS.any(
+
+                    : currentSelectedGroupSpace == Role.Teacher.name
+                      ? selectedTeachersSendSMS.any(
+                          (selectedAllPeople) => person.id == selectedAllPeople.id)
+                   
+                      : currentSelectedGroupSpace == Role.Supplier.name
+                        ? selectedSuppliersSendSMS.any(
+                            (selectedAllPeople) => person.id == selectedAllPeople.id)
+
+                        // : currentSelectedGroupSpace == schoolAdministrator
+                        //   ? selectedSchoolAdministratorsSendSMS.any(
+                        //     (selectedAllPeople) => person.id == selectedAllPeople.id)
+
+                  // Default target is school administrator
+                  : selectedSchoolAdministratorsSendSMS.any(
                       (selectedAllPeople) => person.id == selectedAllPeople.id);
 
   void onCheckboxChanged(PersonModel person, bool? value) {
@@ -1373,13 +1574,13 @@ class _ParentsState extends State<Parents> {
                 person.phoneNumber2 != null &&
                     person.phoneNumber2!.isNotEmpty ||
                 person.phoneNumber3 != null && person.phoneNumber3!.isNotEmpty)
-            ? handleAddPersonForSendSMS(person)
+            ? handleAddPersonForSendSMS(currentSelectedGroupSpace, person)
             : null
         : (person.phoneNumber1 != null && person.phoneNumber1!.isNotEmpty ||
                 person.phoneNumber2 != null &&
                     person.phoneNumber2!.isNotEmpty ||
                 person.phoneNumber3 != null && person.phoneNumber3!.isNotEmpty)
-            ? handleRemovePersonForSendSMS(person)
+            ? handleRemovePersonForSendSMS(currentSelectedGroupSpace, person)
             : null;
 
     if (person.phoneNumber1 == null &&
@@ -1396,29 +1597,15 @@ class _ParentsState extends State<Parents> {
     }
   }
 
-  void handleAddPersonForSendSMS(PersonModel person) {
-    personSelectionSendSMS[0] ? addAllPeopleSendSMS(person) : null;
-    personSelectionSendSMS[1] ? addStudentsSendSMS(person) : null;
-    personSelectionSendSMS[2] ? addParentsSendSMS(person) : null;
-    personSelectionSendSMS[3] ? addTeachersSendSMS(person) : null;
-  }
-
-  void handleRemovePersonForSendSMS(PersonModel person) {
-    personSelectionSendSMS[0] ? removeAllPeopleSendSMS(person) : null;
-    personSelectionSendSMS[1] ? removeStudentsSendSMS(person) : null;
-    personSelectionSendSMS[2] ? removeParentsSendSMS(person) : null;
-    personSelectionSendSMS[3] ? removeTeachersSendSMS(person) : null;
-  }
-
   AppBar _buildAppBar(
-      List<SizedBox> toggleOptions, List<SizedBox> toggleOptionsSendSMS) {
+      List<SizedBox> toggleOptions) {
     return AppBar(
       title: _buildAppBarTitle(widget.parentSection),
       iconTheme: _buildAppBarIconTheme(),
       centerTitle: true,
       backgroundColor: _buildAppBarBackgroundColor(),
       actions: _buildAppBarActions(widget.parentSection),
-      bottom: _buildAppBarBottom(toggleOptions, toggleOptionsSendSMS),
+      bottom: _buildAppBarBottom(toggleOptions),
     );
   }
 
@@ -1555,10 +1742,10 @@ class _ParentsState extends State<Parents> {
   }
 
   PreferredSizeWidget _buildAppBarBottom(
-      List<SizedBox> toggleOptions, List<SizedBox> toggleOptionsSendSMS) {
+      List<SizedBox> toggleOptions) {
     return PreferredSize(
       preferredSize: _buildPreferredSize(),
-      child: _buildColumn(toggleOptions, toggleOptionsSendSMS),
+      child: _buildColumn(toggleOptions),
     );
   }
 
@@ -1574,7 +1761,7 @@ class _ParentsState extends State<Parents> {
   }
 
   Padding _buildColumn(
-      List<SizedBox> toggleOptions, List<SizedBox> toggleOptionsSendSMS) {
+      List<SizedBox> toggleOptions) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
@@ -1604,11 +1791,11 @@ class _ParentsState extends State<Parents> {
     );
   }
 
-  Widget _buildSizedBox() {
-    return widget.parentSection == ParentSection.sendSMS
-        ? const SizedBox(height: 20)
-        : Container();
-  }
+  // Widget _buildSizedBox() {
+  //   return widget.parentSection == ParentSection.sendSMS
+  //       ? const SizedBox(height: 20)
+  //       : Container();
+  // }
 
   Widget _buildCustomTextField() {
     return widget.parentSection != ParentSection.sendSMS
@@ -1622,17 +1809,6 @@ class _ParentsState extends State<Parents> {
   }
 
   Widget _buildCustomGroups() {
-    var addAllgroupInSpace = [
-      Group.fromJson({
-        "id": 0,
-        "name": "All groups",
-        "isRole": false,
-        "isActive": false,
-        "spaceId": 00,
-      }),
-      ...groupSpace
-    ];
-
     return widget.parentSection == ParentSection.sendSMS
       ?
       Padding(
@@ -1641,37 +1817,37 @@ class _ParentsState extends State<Parents> {
           vertical: 10
         ),
         child: CustomDropDownMenuTwo(
-          groupSpace: addAllgroupInSpace, 
+          groupSpace: groupSpace, 
           handleChangeDropdownItem: handleChangeDropdownItem
         )
       )
       : Container();
   }
 
-  Widget _buildParentSelectionSendSMS(List<SizedBox> toggleOptionsSendSMS) {
-    return widget.parentSection == ParentSection.sendSMS
-        ? Center(
-            child: ToggleButtons(
-              borderWidth: 1.3,
-              renderBorder: true,
-              selectedColor: Colors.white,
-              fillColor: SMSRecipientColors.primaryColor,
-              borderRadius: BorderRadius.circular(50),
-              selectedBorderColor: SMSRecipientColors.primaryColor,
-              borderColor: SMSRecipientColors.primaryColor,
-              color: SMSRecipientColors.primaryColor,
-              // constraints: const BoxConstraints.expand(width: 400 / 4.3),
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: CustomFontSize.small,
-              ),
-              isSelected: personSelectionSendSMS,
-              onPressed: updatePersonSelectionSendSMS,
-              children: toggleOptionsSendSMS,
-            ),
-          )
-        : Container();
-  }
+  // Widget _buildParentSelectionSendSMS(List<SizedBox> toggleOptionsSendSMS) {
+  //   return widget.parentSection == ParentSection.sendSMS
+  //       ? Center(
+  //           child: ToggleButtons(
+  //             borderWidth: 1.3,
+  //             renderBorder: true,
+  //             selectedColor: Colors.white,
+  //             fillColor: SMSRecipientColors.primaryColor,
+  //             borderRadius: BorderRadius.circular(50),
+  //             selectedBorderColor: SMSRecipientColors.primaryColor,
+  //             borderColor: SMSRecipientColors.primaryColor,
+  //             color: SMSRecipientColors.primaryColor,
+  //             // constraints: const BoxConstraints.expand(width: 400 / 4.3),
+  //             textStyle: const TextStyle(
+  //               fontWeight: FontWeight.w500,
+  //               fontSize: CustomFontSize.small,
+  //             ),
+  //             isSelected: personSelectionSendSMS,
+  //             onPressed: updatePersonSelectionSendSMS,
+  //             children: toggleOptionsSendSMS,
+  //           ),
+  //         )
+  //       : Container();
+  // }
 
   Widget _buildCustomizeParentSelectionSendSMSSearch() {
     return widget.parentSection == ParentSection.sendSMS
