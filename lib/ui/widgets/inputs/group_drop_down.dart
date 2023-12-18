@@ -26,6 +26,13 @@ class GroupDropdownMenu extends StatelessWidget {
     if (groupSpace.isEmpty) {
       List<String> data = ['No groups available'];
       dropdownMenu = DropdownMenu<String>(
+        menuStyle: MenuStyle(
+          backgroundColor: 
+            MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 18,
+        ),
         leadingIcon: leadingIcon,
         inputDecorationTheme: inputDecorationTheme,
         width: 390,
@@ -43,7 +50,10 @@ class GroupDropdownMenu extends StatelessWidget {
       dropdownMenu = DropdownMenu<String>(
         menuStyle: MenuStyle(
           backgroundColor: 
-            MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue)
+            MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 18,
         ),
         leadingIcon: leadingIcon,
         inputDecorationTheme: inputDecorationTheme,

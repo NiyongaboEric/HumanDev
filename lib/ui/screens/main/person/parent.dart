@@ -932,7 +932,7 @@ class _ParentsState extends State<Parents> {
                             ].isEmpty
 
                         ? Colors.blue.shade200
-                        : SMSRecipientColors.thirdColor
+                        : PrimaryColors.primaryDeepBlue
 
                           : parentSection == ParentSection.sms
                               ? selectedParents.isEmpty
@@ -1107,7 +1107,7 @@ class _ParentsState extends State<Parents> {
   BoxDecoration _buildListHeaderDecoration() {
     return BoxDecoration(
       color: widget.parentSection == ParentSection.sendSMS
-          ? SMSRecipientColors.thirdColor
+          ? Colors.blue.shade200
           : primaryColorSelection(widget.parentSection),
       borderRadius: BorderRadius.circular(100),
     );
@@ -1118,7 +1118,9 @@ class _ParentsState extends State<Parents> {
       child: Text(
         symbol,
         style: TextStyle(
-          color: secondaryColorSelection(widget.parentSection),
+          color: widget.parentSection == ParentSection.sendSMS
+            ? SMSRecipientColors.primaryColor
+            : secondaryColorSelection(widget.parentSection),
           fontSize: CustomFontSize.small,
         ),
       ),
@@ -1293,7 +1295,7 @@ class _ParentsState extends State<Parents> {
           : null;
 
   Color? getActiveColor() => widget.parentSection == ParentSection.sendSMS
-      ? SMSRecipientColors.thirdColor
+      ? PrimaryColors.primaryDeepBlue
       : Colors.orange;
 
   bool getCheckboxValue(PersonModel person) =>
@@ -1479,9 +1481,11 @@ class _ParentsState extends State<Parents> {
         );
       case ParentSection.sendSMS:
         return Text(
-          "Send SMS",
+          "Select recipient",
           style: TextStyle(
             color: SMSRecipientColors.primaryColor,
+            fontSize: 22,
+            fontWeight: FontWeight.bold
           ),
         );
       case ParentSection.contacts:
@@ -1503,6 +1507,7 @@ class _ParentsState extends State<Parents> {
 
   IconThemeData _buildAppBarIconTheme() {
     return IconThemeData(
+      size: 24,
       color: widget.parentSection == ParentSection.sendSMS
         ? SMSRecipientColors.primaryColor
         : secondaryColorSelection(widget.parentSection),
@@ -1622,12 +1627,6 @@ class _ParentsState extends State<Parents> {
     );
   }
 
-  // Widget _buildSizedBox() {
-  //   return widget.parentSection == ParentSection.sendSMS
-  //       ? const SizedBox(height: 20)
-  //       : Container();
-  // }
-
   Widget _buildCustomTextField() {
     return widget.parentSection != ParentSection.sendSMS
         ? CustomTextField(
@@ -1642,12 +1641,11 @@ class _ParentsState extends State<Parents> {
   Widget _buildCustomGroups() {
     return widget.parentSection == ParentSection.sendSMS
       ?
-      Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 3, 
-          vertical: 10
-        ),
-        child: GroupDropdownMenu(
+      Container(
+        margin: const EdgeInsets.only(right: 4, left: 4),
+        padding: const EdgeInsets.only(top: 0, bottom: 6, left: 0, right: 0),
+        child:
+        GroupDropdownMenu(
           groupSpace: groupSpace, 
           handleChangeDropdownItem: handleChangeDropdownItem,
           btnstyle: ButtonStyle(
@@ -1659,7 +1657,7 @@ class _ParentsState extends State<Parents> {
               borderRadius: BorderRadius.circular(10),
               borderSide:  const BorderSide(
                 color: Color(0xFF031A38),
-                width: 1
+                width: 1,
               ),
             ),
           ),
@@ -1675,11 +1673,9 @@ class _ParentsState extends State<Parents> {
   Widget _buildCustomizeParentSelectionSendSMSSearch() {
     return widget.parentSection == ParentSection.sendSMS
         ?
-        Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 2, 
-          vertical: 2
-        ),
+        Container(
+          margin: const EdgeInsets.only(right: 4, left: 4),
+          padding: const EdgeInsets.only(top: 5, bottom: 0, left: 0, right: 0),
         child: CustomTextField(
           color: SMSRecipientColors.primaryColor,
           fillColor: SMSRecipientColors.fifthColor,
