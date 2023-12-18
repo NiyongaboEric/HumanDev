@@ -99,6 +99,7 @@ enum Role {
   Teacher,
   Relative,
   Supplier,
+  School_administrator,
 }
 
 class PersonModel {
@@ -427,5 +428,16 @@ Role stringToRole(String value) {
       return Role.Teacher;
     default:
       return Role.Student;
+  }
+}
+
+String roleToString(Enum value) {
+  switch (value) {
+    case Role.Supplier:
+      return "Supplier";
+    case Role.School_administrator:
+      return "School administrator";
+    default:
+      return "Student";
   }
 }
