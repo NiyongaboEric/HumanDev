@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class PaymentScheduleDataSource extends DataGridSource {
   PaymentScheduleDataSource(List<PaymentScheduleTable> items) {
     _items = items
         .map<DataGridRow>((e) => DataGridRow(cells: [
-              // DataGridCell<int>(columnName: 'id', value: e.id),
-              DataGridCell<DateTime>(columnName: 'date', value: e.date),
+              DataGridCell<String>(columnName: 'date', value: Constants.dateFormatParser(e.date)),
               DataGridCell<double>(columnName: 'due', value: e.due),
               DataGridCell<double>(columnName: 'paid', value: e.paid),
             ]))
@@ -36,7 +36,7 @@ class PaymentScheduleDataSource extends DataGridSource {
 
 class PaymentScheduleTable {
   final int id;
-  final DateTime date;
+  final String date;
   final double due;
   final double paid;
 

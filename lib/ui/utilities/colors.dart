@@ -39,6 +39,7 @@ class PrimaryColors {
   static Color primaryDarkBlue = const Color(0XFF18E4F2);
   static Color primaryLightGreen = const Color(0xFFD5F0B5);
   static Color primaryPurple = const Color(0xFFEADAFF);
+  static Color primaryDeepBlue = const Color(0xff1877F2);
 }
 // const Color(0xFFD5F0B5)
 

@@ -144,16 +144,24 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
     List<Widget> sendOptions = [
       SizedBox(
           width: (MediaQuery.of(context).size.width - 30) / 2,
-          child: const Center(
-            child: Text("Send now",
-                style: TextStyle(fontSize: CustomFontSize.medium)),
+          child: Center(
+            child: Text(
+              "Send now",
+              style: TextStyle(
+                fontSize: CustomFontSize.medium,
+                color: SMSRecipientColors.primaryColor,
+              )
+            ),
           )),
       SizedBox(
         width: (MediaQuery.of(context).size.width - 30) / 2,
-        child: const Center(
+        child: Center(
           child: Text(
             "Send later",
-            style: TextStyle(fontSize: CustomFontSize.medium),
+            style: TextStyle(
+              fontSize: CustomFontSize.medium,
+              color: SMSRecipientColors.primaryColor,
+            ),
           ),
         ),
       ),
@@ -174,6 +182,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
             title: Text("Send SMS",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
+                  fontSize: 22,
                   color: widget.parentSection == ParentSection.sendSMS
                       ? SMSRecipientColors.primaryColor
                       : SecondaryColors.secondaryOrange,
@@ -202,6 +211,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
               const SizedBox(height: 20),
               Text("Recipients: ",
                   style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: CustomFontSize.small,
                     color: widget.parentSection == ParentSection.sendSMS
                         ? SMSRecipientColors.primaryColor
@@ -227,7 +237,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                 color: widget.parentSection == ParentSection.sendSMS
                     ? SMSRecipientColors.primaryColor
                     : SecondaryColors.secondaryOrange,
-                hintText: "Message",
+                hintText: "Type your message here",
                 controller: messageController,
                 fillColor: widget.parentSection == ParentSection.sendSMS
                     ? SMSRecipientColors.fifthColor
@@ -238,7 +248,7 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                 isSelected: isSelected,
                 onPressed: toggleForm,
                 fillColor: widget.parentSection == ParentSection.sendSMS
-                    ? const Color(0xFF1877F2)
+                    ? Colors.blue.shade200
                     : Colors.orange.shade100,
                 borderRadius: BorderRadius.circular(8),
                 selectedBorderColor:
@@ -293,9 +303,10 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   FloatingActionButton.extended(
+                    elevation: 1,
                     backgroundColor: state.reminderRequest == null ||
                             messageController.text.isEmpty
-                        ? Colors.blue.shade200
+                        ? Colors.grey.shade400
                         : const Color(0xFF1877F2),
                     onPressed: !state.isLoading
                         ? () {
