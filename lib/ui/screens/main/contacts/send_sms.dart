@@ -1,17 +1,11 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:getwidget/getwidget.dart';  
-import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/sms/bloc/sms_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/blocs/reminder_bloc.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/sms_reminder/send_sms.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/sms_reminder/sms_reminder.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';

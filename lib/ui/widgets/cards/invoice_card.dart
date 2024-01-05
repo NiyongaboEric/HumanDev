@@ -12,6 +12,8 @@ class InvoiceCard extends StatelessWidget {
   final bool isVoid;
   final bool isPaid;
   final bool isDraft;
+  final int? paidAmount;
+  final String? invoiceNumber;
   const InvoiceCard({
     super.key,
     required this.name,
@@ -21,6 +23,8 @@ class InvoiceCard extends StatelessWidget {
     required this.isVoid,
     required this.isPaid,
     required this.isDraft,
+    this.paidAmount,
+    this.invoiceNumber,
   });
 
   @override
@@ -29,7 +33,7 @@ class InvoiceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
       decoration: ShapeDecoration(
-        color: Color(0xFFE0E0E0),
+        color: const Color(0xffeaeaea),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.01),
         ),
@@ -44,10 +48,41 @@ class InvoiceCard extends StatelessWidget {
     );
   }
 
+      // Badge Info
+    String _badgeInfo() {
+      if (isVoid) {
+        return "Void";
+      } else if (isDraft) {
+        return "Draft";
+      } else if (isPaid) {
+        return "Paid";
+      } else if (!isPaid && !isDraft && !isVoid) {
+        return "Unpaid";
+      } else {
+        return "";
+      }
+    }
+
+    // Badge Color
+    Color _badgeColor() {
+      if (isVoid) {
+        return Color(0xFFE0E0E0);
+      } else if (isDraft) {
+        return Color(0xFF68D5FF);
+      } else if (isPaid) {
+        return Color(0xFF027A48);
+      } else if (!isPaid && !isDraft && !isVoid) {
+        return Color(0xFFF2CA0C);
+      } else {
+        return Color(0xFFE0E0E0);
+      }
+    }
+
   Widget _buildDivider() {
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
       width: double.infinity,
-      decoration: ShapeDecoration(
+      decoration: const ShapeDecoration(
         shape: RoundedRectangleBorder(
           side: BorderSide(
             width: 0.70,
@@ -59,36 +94,26 @@ class InvoiceCard extends StatelessWidget {
     );
   }
 
-  Stack _buildVoidText() {
-    return Stack(
-      children: [
-        Positioned(
-          left: 141,
-          top: 40,
-          child: Transform(
-            transform: Matrix4.identity()
-              ..translate(0.0, 0.0)
-              ..rotateZ(-0.35),
-            child: Text(
-              isVoid
-                  ? 'Void'
-                  : isDraft
-                      ? 'Draft'
-                      : isPaid
-                          ? 'Paid'
-                          : '',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFF898989),
-                fontSize: 22,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w400,
-                height: 0.07,
-              ),
-            ),
+  // Build Badge
+  Widget _buildBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+      decoration: BoxDecoration(
+        color: _badgeColor(),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+      ),
+      child: Center(
+        child: Text(
+          _badgeInfo(),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: CustomFontSize.extraSmall,
+            fontWeight: FontWeight.w400,
+            height: 0.07,
           ),
         ),
-      ],
+      ),
     );
   }
 
@@ -105,7 +130,7 @@ class InvoiceCard extends StatelessWidget {
               ),
             ),
             Text(
-              "$name",
+              name,
               style: TextStyle(
                 color: SecondaryColors.secondaryPurple,
                 fontSize: CustomFontSize.large,
@@ -113,14 +138,8 @@ class InvoiceCard extends StatelessWidget {
             ),
           ],
         ),
-        Spacer(),
-        isPaid ? Text(
-          "Invoice #",
-          style: TextStyle(
-            color: TertiaryColors.tertiaryPurple,
-            fontSize: CustomFontSize.large,
-          ),
-        ) : Container(),
+        const Spacer(),
+        _buildBadge(),
       ],
     );
   }
@@ -128,6 +147,7 @@ class InvoiceCard extends StatelessWidget {
   Widget _buildDateAndAmount() {
     var parsedDate = Constants.dateFormatParser(date);
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           parsedDate,
@@ -135,6 +155,37 @@ class InvoiceCard extends StatelessWidget {
             color: SecondaryColors.secondaryPurple.withOpacity(0.6),
             fontSize: CustomFontSize.extraSmall,
           ),
+        ),
+        Text(
+          isDraft || isVoid ? " - " : "$invoiceNumber",
+          style: TextStyle(
+            color: SecondaryColors.secondaryPurple.withOpacity(0.6),
+            fontSize: CustomFontSize.extraSmall,
+          ),
+        ),
+        Row(
+          children: [
+            Text(
+              "${paidAmount != null ? paidAmount : "--"}",
+              style: TextStyle(
+                fontSize: CustomFontSize.extraSmall,
+              ),
+            ),
+            Text(
+              "  of",
+              style: TextStyle(
+                color: SecondaryColors.secondaryPurple.withOpacity(0.6),
+                fontSize: CustomFontSize.extraSmall,
+              ),
+            ),
+            Text(
+              " $amount $currency",
+              style: TextStyle(
+                color: SecondaryColors.secondaryPurple,
+                fontSize: CustomFontSize.extraSmall,
+              ),
+            ),
+          ],
         ),
       ],
     );

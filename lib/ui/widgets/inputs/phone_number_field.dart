@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/phone_number.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 
-class CustomPhoneNumberField extends StatelessWidget {
+class CustomPhoneNumberField extends StatefulWidget {
   final String? initialValue;
   final Function(PhoneNumber)? onChanged;
   final void Function(dynamic)? onCountryChanged;
@@ -28,15 +29,32 @@ class CustomPhoneNumberField extends StatelessWidget {
   });
 
   @override
+  State<CustomPhoneNumberField> createState() => _CustomPhoneNumberFieldState();
+}
+
+class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
+  PhoneNumber? number;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+      number = PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
+      widget.controller.text = number!.number;
+    }
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: heightSize ?? 80,
+      height: widget.heightSize ?? 80,
       child: IntlPhoneField(
-        controller: controller,
+        controller: widget.controller,
         keyboardType: TextInputType.number,
-        initialValue: initialValue,
-        style: TextStyle(fontSize: fontSize ?? 24),
-        dropdownTextStyle: TextStyle(fontSize: fontSize ?? 24),
+        initialValue: widget.initialValue,
+        style: const TextStyle(fontSize: 24),
+        dropdownTextStyle: const TextStyle(fontSize: 24),
         decoration: InputDecoration(
           counterText: "",
           hintStyle: TextStyle(
@@ -45,35 +63,35 @@ class CustomPhoneNumberField extends StatelessWidget {
               const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: color ?? CustomColor.primaryDark,
+              color: widget.color ?? CustomColor.primaryDark,
             ),
           ),
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: color ?? CustomColor.primaryDark,
+              color: widget.color ?? CustomColor.primaryDark,
             ),
           ),
           disabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: color ?? CustomColor.primaryDark,
+              color: widget.color ?? CustomColor.primaryDark,
             ),
           ),
           errorBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: color ?? CustomColor.primaryDark,
+              color: widget.color ?? CustomColor.primaryDark,
             ),
           ),
           focusedErrorBorder: UnderlineInputBorder(
             borderSide: BorderSide(
-              color: color ?? CustomColor.primaryDark,
+              color: widget.color ?? CustomColor.primaryDark,
             ),
           ),
           filled: true,
-          isDense: isDense,
-          fillColor: fillColor ?? Colors.white.withOpacity(0.6),
+          isDense: widget.isDense,
+          fillColor: widget.fillColor ?? Colors.white.withOpacity(0.6),
         ),
-        initialCountryCode: 'GH',
-        onChanged: onChanged,
+        initialCountryCode: number?.countryISOCode ?? 'GH',
+        onChanged: widget.onChanged,
         validator: (value) {
           if (value!.number.isEmpty) {
             return "Please enter your phone number";
@@ -83,7 +101,7 @@ class CustomPhoneNumberField extends StatelessWidget {
           }
           return null;
         },
-        onCountryChanged: onCountryChanged,
+        onCountryChanged: widget.onCountryChanged,
       ),
     );
   }

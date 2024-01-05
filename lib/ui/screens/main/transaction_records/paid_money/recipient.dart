@@ -156,7 +156,7 @@ class _RecipientState extends State<Recipient> {
             lastName: person.lastName1,
             role: person.role == Role.Relative.name
                 ? "parent"
-                : person.role.toLowerCase(),
+                : person.role!.toLowerCase(),
             isPerson: true,
           ));
         } else {
@@ -167,7 +167,7 @@ class _RecipientState extends State<Recipient> {
             lastName: person.lastName1,
             role: person.role == Role.Relative.name
                 ? "parent"
-                : person.role.toLowerCase(),
+                : person.role!.toLowerCase(),
           ));
         }
       }
@@ -328,6 +328,10 @@ class _RecipientState extends State<Recipient> {
                   children: [
                     Expanded(
                       child: CustomTextField(
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: SecondaryColors.secondaryRed,
+            ),
                         color: SecondaryColors.secondaryRed,
                         hintText: "Search...",
                         controller: searchController,

@@ -1,8 +1,15 @@
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+
 class Space {
   final int? id;
   final String? name;
   final SpaceSettings? spaceSettings;
   final String? currency;
+  final String? timezone;
+  final String? country;
+  final String? language;
+  final int? lastInvoiceNumber;
+  final bool? sendViaAws;
   final String? createdAt; // Change the type to String
   final String? updatedAt; // Change the type to String
 
@@ -10,18 +17,30 @@ class Space {
     this.id,
     this.name,
     this.spaceSettings,
+    this.language,
+    this.country,
+    this.timezone,
+    this.lastInvoiceNumber,
+    this.sendViaAws,
     this.currency,
     this.createdAt,
     this.updatedAt,
   });
 
   factory Space.fromJson(Map<String, dynamic> json) {
+    logger.wtf("spaceSettings: ${json["spaceSettings"]}");
+    // logger.wtf("spaceSettings: ${SpaceSettings.fromJson(json["spaceSettings"])}");
     return Space(
       id: json['id'],
       name: json['name'],
       spaceSettings: json['spaceSettings'] != null
           ? SpaceSettings.fromJson(json['spaceSettings'])
           : null,
+      language: json['language'] ?? 'en',
+      country: json['country'],
+      timezone: json['timezone'],
+      lastInvoiceNumber: json['lastInvoiceNumber'],
+      sendViaAws: json['sendViaAws'],
       currency: json['currency'],
       createdAt: json['createdAt'], // Keep it as String
       updatedAt: json['updatedAt'], // Keep it as String
@@ -39,67 +58,48 @@ class Space {
 }
 
 class SpaceSettings {
-  final SMSTemplates? smsTemplates;
+  SmsTemplates smsTemplates;
 
-  const SpaceSettings({
-    this.smsTemplates,
-  });
+  SpaceSettings({required this.smsTemplates});
 
   factory SpaceSettings.fromJson(Map<String, dynamic> json) {
     return SpaceSettings(
-      smsTemplates: json['smsTemplates'] != null
-          ? SMSTemplates.fromJson(json['smsTemplates'])
-          : null,
+      smsTemplates: SmsTemplates.fromJson(json['smsTemplates']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'smsTemplates': smsTemplates};
   }
 }
 
-class SMSTemplates {
-  final EngSMSTemplates? en;
+class SmsTemplates {
+  SmsTemplate en;
 
-  const SMSTemplates({
-    this.en,
-  });
+  SmsTemplates({required this.en});
 
-  factory SMSTemplates.fromJson(Map<String, dynamic> json) {
-    return SMSTemplates(
-      en: json['en'] != null ? EngSMSTemplates.fromJson(json['en']) : null,
+  factory SmsTemplates.fromJson(Map<String, dynamic> json) {
+    return SmsTemplates(
+      en: SmsTemplate.fromJson(json['en']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'en': en};
   }
 }
 
-class EngSMSTemplates {
-  final String? reminder;
-  final String? paidMoney;
-  final String? receivedMoney;
+class SmsTemplate {
+  String reminder;
+  String paidMoney;
+  String receivedMoney;
+  String receivedMoneyParty;
 
-  const EngSMSTemplates({
-    this.reminder,
-    this.paidMoney,
-    this.receivedMoney,
+  SmsTemplate({
+    required this.reminder,
+    required this.paidMoney,
+    required this.receivedMoney,
+    required this.receivedMoneyParty,
   });
 
-  factory EngSMSTemplates.fromJson(Map<String, dynamic> json) {
-    return EngSMSTemplates(
+  factory SmsTemplate.fromJson(Map<String, dynamic> json) {
+    return SmsTemplate(
       reminder: json['reminder'],
       paidMoney: json['paidMoney'],
       receivedMoney: json['receivedMoney'],
+      receivedMoneyParty: json['receivedMoneyParty'],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'reminder': reminder,
-      'paidMoney': paidMoney,
-      'receivedMoney': receivedMoney,
-    };
   }
 }

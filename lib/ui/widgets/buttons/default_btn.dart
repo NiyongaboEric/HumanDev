@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
@@ -35,14 +34,15 @@ class _DefaultBtnState extends State<DefaultBtn> {
 
     return FloatingActionButton.extended(
       backgroundColor: btnColor,
+      heroTag: text.split(" ").join("_").toLowerCase(),
       onPressed: onPressed,
       icon: icon != null ? Icon(icon, color: textColor) : null,
       label: isLoading
-          ? const CircularProgressIndicator()
+          ? CircularProgressIndicator(color: textColor)
           : Text(
               text,
               style: TextStyle(
-                fontSize: CustomFontSize.large,                
+                fontSize: CustomFontSize.large,
                 color: textColor,
               ),
             ),

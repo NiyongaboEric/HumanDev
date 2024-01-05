@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
@@ -10,12 +11,15 @@ part 'person_state.dart';
 
 class PersonBloc extends Bloc<PersonEvent, PersonState> {
   final PersonApiImpl studentApiImpl;
-  PersonBloc(this.studentApiImpl) : super(const PersonState()) {
+  final SharedPreferenceModule prefs;
+  PersonBloc(this.studentApiImpl, this.prefs) : super(const PersonState()) {
     on<GetAllPersonEvent>(_getAllStudents);
     // on<GetOnePersonEvent>(_getOneStudent);
     // on<GetRelativesEvent>(_getRelatives);
     on<AddPersonEvent>(_addPerson);
     on<UpdatePersonEvent>(_updatePerson);
+    on<GetAdminEvent>(_getAdmin);
+    on<GetStudentsWithPendingPaymentsEvent>(_getStudentsWithPendingPayments);
   }
 
   Future _getAllStudents(
@@ -117,7 +121,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       emit(state.copyWith(
         isLoading: false,
         status: PersonStatus.success,
-        personResponse: person,
+        personResponse: [person],
         successMessage: "Person created successfully",
       ));
     } catch (error) {
@@ -144,11 +148,11 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final person = await studentApiImpl.updatePerson(event.person);
+      final persons = await studentApiImpl.updatePerson(event.persons);
       emit(state.copyWith(
         isLoading: false,
         status: PersonStatus.success,
-        personResponse: person,
+        personResponse: persons,
         successMessage: "Person updated successfully",
       ));
     } catch (error) {
@@ -164,6 +168,63 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         successMessage: null,
         isLoading: false,
         personRequest: null,
+      ));
+    }
+  }
+
+  // Get Admin
+  Future _getAdmin(
+    GetAdminEvent event,
+    Emitter<PersonState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final admin = await studentApiImpl.getAdmin();
+      prefs.saveAdmin(admin);
+      emit(state.copyWith(
+        isLoading: false,
+        status: PersonStatus.success,
+        schoolAdmin: admin,
+        successMessage: "Request Successful",
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        errorMessage: error.toString(),
+        isLoading: false,
+        status: PersonStatus.error,
+      ));
+      emit(state.copyWith(
+        status: PersonStatus.initial,
+        errorMessage: null,
+      ));
+    }
+  }
+
+  // Get Students with pending payments
+  Future _getStudentsWithPendingPayments(
+    GetStudentsWithPendingPaymentsEvent event,
+    Emitter<PersonState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final students = await studentApiImpl.getAllStudentsWithPendingPayments();
+      emit(
+        state.copyWith(
+          persons: students,
+          isLoading: false,
+          status: PersonStatus.success,
+          successMessage: "Request Successful",
+        ),
+      );
+    } catch (error) {
+      emit(state.copyWith(
+        errorMessage: error.toString(),
+        isLoading: false,
+        status: PersonStatus.error,
+      ));
+      emit(state.copyWith(
+        status: PersonStatus.initial,
+        errorMessage: null,
       ));
     }
   }

@@ -30,7 +30,7 @@ class SpaceApiImpl implements SpaceApi {
           logger.d(response);
           throw Exception(response['message']);
         }
-          logger.d(response);
+        logger.d(response);
         List responseData = response;
         final List<Space> spaces =
             responseData.map((data) => Space.fromJson(data)).toList();
@@ -42,8 +42,10 @@ class SpaceApiImpl implements SpaceApi {
       }
     } on DioException catch (error) {
       // Handle Dio errors and other exceptions
-      logger.e("An error occurred: ${error.response?.data["message"] ?? "No internet connection"}");
-      throw Exception(error.response?.data["message"] ?? "No internet connection");
+      logger.e(
+          "An error occurred: ${error.response?.data["message"] ?? "No internet connection"}");
+      throw Exception(
+          error.response?.data["message"] ?? "No internet connection");
     }
   }
 
@@ -72,7 +74,8 @@ class SpaceApiImpl implements SpaceApi {
       }
     } on DioException catch (error) {
       // Handle Dio errors and other exceptions
-      logger.e("An error occurred: ${error.response?.data["message"] ?? "Network Error"}");
+      logger.e(
+          "An error occurred: ${error.response?.data["message"] ?? "Network Error"}");
       throw Exception(error.response?.data["message"] ?? "Network Error");
     }
   }

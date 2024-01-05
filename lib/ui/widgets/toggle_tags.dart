@@ -1,20 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
 import '../screens/main/reminder/reminder_types/conversation/log_conversation.dart';
 import '../utilities/font_sizes.dart';
 
 class ToggleTags extends StatefulWidget {
   final List<ToggleTagComponents> tags;
-  final List<TagModel> selectedTags;
+  final List<DefaultTagsSettings> selectedTags;
   final Color defaultColor;
   final Color btnColor;
   final Color textColor;
   final Color unselectedTagBg;
   final Color unselectedTextColor;
-  final Function(TagModel) addTag;
-  final Function(TagModel) removeTag;
+  final Function(DefaultTagsSettings) addTag;
+  final Function(DefaultTagsSettings) removeTag;
   const ToggleTags({
     super.key,
     required this.tags,

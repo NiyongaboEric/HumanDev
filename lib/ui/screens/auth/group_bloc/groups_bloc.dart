@@ -13,7 +13,7 @@ part 'groups_state.dart';
 class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
   final SharedPreferenceModule sharedPreferenceModule;
   final GroupApiImpl groupApiImpl;
-  GroupsBloc(this.sharedPreferenceModule, this.groupApiImpl) : super(GroupsState()) {
+  GroupsBloc(this.sharedPreferenceModule, this.groupApiImpl) : super(const GroupsState()) {
     on<GroupsEventGetGroups>(_getGroups);
     on<GroupsEventCreateGroup>(_createGroup);
   }

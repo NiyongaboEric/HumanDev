@@ -8,7 +8,8 @@ final class PersonState extends Equatable {
   final List<PersonModel> persons;
   final List<PersonModel> relatives;
   final PersonRequest? personRequest;
-  final PersonModel? personResponse;
+  final List<PersonModel>? personResponse;
+  final PersonModel? schoolAdmin;
   final PersonStatus status;
   final String? successMessage;
   final String? errorMessage;
@@ -19,6 +20,7 @@ final class PersonState extends Equatable {
     this.relatives = const <PersonModel>[],
     this.personRequest,
     this.personResponse,
+    this.schoolAdmin,
     this.status = PersonStatus.initial,
     this.successMessage,
     this.errorMessage,
@@ -29,7 +31,8 @@ final class PersonState extends Equatable {
     List<PersonModel>? persons,
     List<PersonModel>? relatives,
     PersonRequest? personRequest,
-    PersonModel? personResponse,
+    List<PersonModel>? personResponse,
+    PersonModel? schoolAdmin,
     PersonStatus? status,
     String? successMessage,
     String? errorMessage,
@@ -40,6 +43,7 @@ final class PersonState extends Equatable {
       relatives: relatives ?? this.relatives,
       personRequest: personRequest ?? this.personRequest,
       personResponse: personResponse ?? this.personResponse,
+      schoolAdmin: schoolAdmin ?? this.schoolAdmin,
       status: status ?? this.status,
       successMessage: successMessage ?? this.successMessage,
       errorMessage: errorMessage ?? this.errorMessage,

@@ -7,9 +7,10 @@ class InvoiceState {
   final String? id;
   final InvoiceStateStatus? status;
   final bool isLoading;
-  final List<InvoiceRequest>? invoiceRequests;
+  final List<InvoiceCreateRequest>? invoiceCreateRequests;
+  final List<InvoiceUpdateRequest>? invoiceUpdateRequests;
   final List<InvoiceModel>? invoices;
-  final InvoiceModel? invoiceResponse;
+  final InvoiceResponse? invoiceResponse;
   final String? errorMessage;
   final String? successMessage;
 
@@ -17,7 +18,8 @@ class InvoiceState {
     this.id,
     this.status,
     this.isLoading = false,
-    this.invoiceRequests,
+    this.invoiceCreateRequests,
+    this.invoiceUpdateRequests,
     this.invoices,
     this.invoiceResponse,
     this.errorMessage,
@@ -28,9 +30,10 @@ class InvoiceState {
     String? id,
     InvoiceStateStatus? status,
     bool? isLoading,
-    List<InvoiceRequest>? invoiceRequests,
+    List<InvoiceCreateRequest>? invoiceCreateRequests,
+    List<InvoiceUpdateRequest>? invoiceUpdateRequests,
     List<InvoiceModel>? invoices,
-    InvoiceModel? invoiceResponse,
+    InvoiceResponse? invoiceResponse,
     String? errorMessage,
     String? successMessage,
   }) {
@@ -38,7 +41,8 @@ class InvoiceState {
       id: id ?? this.id,
       status: status ?? this.status,
       isLoading: isLoading ?? this.isLoading,
-      invoiceRequests: invoiceRequests ?? this.invoiceRequests,
+      invoiceCreateRequests: invoiceCreateRequests ?? this.invoiceCreateRequests,
+      invoiceUpdateRequests: invoiceUpdateRequests ?? this.invoiceUpdateRequests,
       invoices: invoices ?? this.invoices,
       invoiceResponse: invoiceResponse ?? this.invoiceResponse,
       errorMessage: errorMessage ?? this.errorMessage,

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -8,9 +7,9 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
-import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
-import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -18,7 +17,6 @@ import 'package:seymo_pay_mobile_application/ui/widgets/cards/disposable_card.da
 import 'package:seymo_pay_mobile_application/ui/widgets/constants/upload_card_model.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/default_tag_buttons.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../utilities/navigation.dart';
 import '../../../../widgets/cards/upload_card.dart';
@@ -26,7 +24,7 @@ import 'recipient.dart';
 
 var sl = GetIt.instance;
 
-var prefs = sl<SharedPreferences>();
+var prefs = sl<SharedPreferenceModule>();
 
 class Payment extends StatefulWidget {
   const Payment({super.key});
@@ -41,8 +39,8 @@ class _PaymentState extends State<Payment> {
   final List<XFile> _images = [];
   bool previewState = false;
   Widget? previewWidget;
-  List<String> tags = [];
-  List<String> selectedTags = [];
+  List<DefaultTagsSettings> tags = [];
+  List<DefaultTagsSettings> selectedTags = [];
 
   _imgFromCamera() async {
     XFile? image = await ImagePicker().pickImage(
@@ -74,21 +72,21 @@ class _PaymentState extends State<Payment> {
   }
 
   // Add To tag List
-  void _addTag(String text) {
+  void _addTag(DefaultTagsSettings text) {
     setState(() {
       tags.add(text);
     });
     // Save List of tags to SharedPreferences
-    prefs.setString("tags", json.encode(tags));
+    // prefs.setString("tags", json.encode(tags));
   }
 
   // Remove Tag From List
-  void _removeTag(String text) {
+  void _removeTag(DefaultTagsSettings text) {
     setState(() {
       tags.remove(text);
     });
     // Save List of tags to SharedPreferences
-    prefs.setString("tags", json.encode(tags));
+    // prefs.setString("tags", json.encode(tags));
   }
 
   // Handle Paid Money State Change
@@ -188,26 +186,32 @@ class _PaymentState extends State<Payment> {
   @override
   void initState() {
     // Get Tags From Shared Preferences
-    var value = prefs.getString("tags");
-    if (value != null) {
-      List<dynamic> decodedTags = json.decode(value);
-      List<TagModel> tagModel =
-          decodedTags.map((tag) => TagModel.fromJson(tag)).toList();
-      var paidMoneyTags =
-          tagModel.where((element) => element.isPaidMoneyTag == true);
-      var tags =
-          paidMoneyTags.map((element) => element.name).toList();
-      // List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
+    // var value = prefs.getString("tags");
+    // if (value != null) {
+    //   List<dynamic> decodedTags = json.decode(value);
+    //   List<TagModel> tagModel =
+    //       decodedTags.map((tag) => TagModel.fromJson(tag)).toList();
+    //   var paidMoneyTags =
+    //       tagModel.where((element) => element.isPaidMoneyTag == true);
+    //   var tags = paidMoneyTags.map((element) => element.name).toList();
+    //   // List<String> tags = decodedTags.map((tag) => tag.toString()).toList();
+    //   setState(() {
+    //     // Add non-existing values to tags
+    //     for (var tag in tags) {
+    //       if (tag != null && !this.tags.contains(tag)) {
+    //         this.tags.add(tag);
+    //       }
+    //     }
+    //   });
+    // }
+    // Get Admin Data From Shared Preferences
+    var admin = prefs.getAdmin();
+    if (admin != null && admin.tagsSettings != null) {
       setState(() {
-        // Add non-existing values to tags
-        for (var tag in tags) {
-          if (tag != null && !this.tags.contains(tag)) {
-            this.tags.add(tag);
-          }
-        }
+          tags.addAll(admin.tagsSettings!.paidMoney!);
       });
+      
     }
-
     super.initState();
   }
 
@@ -244,22 +248,22 @@ class _PaymentState extends State<Payment> {
           centerTitle: true,
         ),
         floatingActionButton: FloatingActionButton.extended(
-                backgroundColor: Colors.red.shade200,
-                onPressed: () {
-                  navigate(context, state);
-                },
-                label: SizedBox(
-                  width: 80,
-                  child: Center(
-                    child: Text(
-                      "Next",
-                      style: TextStyle(
-                          fontSize: CustomFontSize.large,
-                          color: SecondaryColors.secondaryRed),
-                    ),
-                  ),
-                ),
+          backgroundColor: Colors.red.shade200,
+          onPressed: () {
+            navigate(context, state);
+          },
+          label: SizedBox(
+            width: 80,
+            child: Center(
+              child: Text(
+                "Next",
+                style: TextStyle(
+                    fontSize: CustomFontSize.large,
+                    color: SecondaryColors.secondaryRed),
               ),
+            ),
+          ),
+        ),
         body: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           children: [

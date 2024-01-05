@@ -75,3 +75,9 @@ class SMSRecipientColors {
   static Color fourthColor = const Color(0xFFE5F0FE);
   static Color fifthColor = const Color(0xFFE4FDFF);
 }
+
+class LightInvoiceColors {
+  static Color light = const Color(0xFFFAF7FF);
+  static Color medium = const Color(0xFFB88EEF);
+  static Color dark = const Color(0xFF947FFF);
+}

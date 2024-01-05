@@ -93,6 +93,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
     // var prefs = sl<SharedPreferences>();
     List<OfflineModel> offlineTuitionFee = [];
     String? value = prefs.getString("offlineTuitionFee");
+    var accounts = preferences.getAccounts();
     if (value != null) {
       List<dynamic> decodedValue = json.decode(value);
       offlineTuitionFee.addAll(
@@ -103,10 +104,14 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
         id: DateTime.now().toString(),
         title: "Tuition Fee",
         data: ReceivedMoneyJournalRequest(
-          creditAccountId: 1,
-          debitAccountId: 1,
-          subaccountPersonId: 1,
+          creditAccountId: accounts
+                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .id,
+              debitAccountId:
+                  selectedPaymentMethod.id,
+              subaccountPersonId: widget.student.childRelations!.first.id,
           amount: int.parse(amountController.text),
+          currency: selectedCurrency,
           reason: descriptionController.text,
           sendSMS: sendSMS,
           studentPersonId: widget.student.id,
@@ -132,12 +137,13 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
               creditAccountId: accounts
                   .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
                   .id,
-              debitAccountId:
-                  selectedPaymentMethod.id,
-              subaccountPersonId: widget.student.id,
+              debitAccountId: selectedPaymentMethod.id,
+              subaccountPersonId: widget.student.childRelations!.first.id,
+              currency: selectedCurrency,
               amount: int.parse(amountController.text),
               reason: descriptionController.text,
               sendSMS: sendSMS,
+              isInvoicePayment: true,
               studentPersonId: widget.student.id,
             ),
           ]),
@@ -219,7 +225,6 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                       : () {
                           // TODO: implement
                           if (amountController.text.isEmpty ||
-                              selectedPaymentMethod == null ||
                               selectedCurrency.isEmpty) {
                             GFToast.showToast("Please fill all fields", context,
                                 toastPosition:
@@ -288,7 +293,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        var value = await Navigator.push(
+                        String? value = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => CurrencySelector(
@@ -299,9 +304,11 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                           ),
                         );
                         logger.f(value);
-                        setState(() {
-                          selectedCurrency = value;
-                        });
+                        if (value != null) {
+                          setState(() {
+                            selectedCurrency = value;
+                          });                          
+                        }
                       },
                       child: Padding(
                         padding: const EdgeInsets.only(top: 14),
@@ -415,7 +422,6 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                             : () {
                                 // TODO: implement
                                 if (amountController.text.isEmpty ||
-                                    selectedPaymentMethod == null ||
                                     selectedCurrency.isEmpty) {
                                   logger.d("Please fill all fields");
                                   GFToast.showToast(
@@ -431,12 +437,12 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                                       toastDuration: 5);
                                 } else {
                                   // TODO: implement save
-                                  try {
-                                    // saveOffline();
                                     createJournalRecord();
-                                  } catch (e) {
-                                    logger.w(e);
-                                  }
+                                  // try {
+                                  //   // saveOffline();
+                                  // } catch (e) {
+                                  //   logger.w(e);
+                                  // }
                                 }
                               },
                         backgroundColor: Colors.green.shade300,

@@ -12,8 +12,8 @@ var sl = GetIt.instance;
 abstract class InvoiceApi {
   Future<InvoiceModel> getInvoice(String id);
   Future<List<InvoiceModel>> getInvoices();
-  Future<InvoiceModel> createInvoice(InvoiceRequest invoice);
-  Future<InvoiceModel> updateInvoice(InvoiceRequest invoice, String id);
+  Future<List<InvoiceResponse>> createInvoice(InvoiceCreateRequest invoice);
+  Future<InvoiceResponse> updateInvoice(InvoiceUpdateRequest invoice, String id);
   Future<InvoiceModel> deleteInvoice(String id);
 }
 
@@ -53,15 +53,16 @@ class InvoiceApiImpl implements InvoiceApi {
   }
   
   @override
-  Future<InvoiceModel> createInvoice(InvoiceRequest invoice) async{
+  Future<List<InvoiceResponse>> createInvoice(InvoiceCreateRequest invoice) async{
     // TODO: implement createInvoice
     var interceptor = sl<RequestInterceptor>();
     var dio = sl<Dio>()..interceptors.add(interceptor);
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
-    return dio.post("/space/${space.id}/invoice", data: invoice.toJson()).then((res) {
+    return dio.post("/space/${space.id}/invoice", data: [invoice.toJson()]).then((res) {
       if (res.statusCode == 201) {
-        return InvoiceModel.fromJson(res.data);
+        List<dynamic> responseData = res.data; 
+        return responseData.map<InvoiceResponse>((e) => InvoiceResponse.fromJson(e)).toList();
       } else {
         throw Exception(res.data["message"]);
       }
@@ -69,15 +70,15 @@ class InvoiceApiImpl implements InvoiceApi {
   }
 
   @override
-  Future<InvoiceModel> updateInvoice(InvoiceRequest invoice, String id) async{
+  Future<InvoiceResponse> updateInvoice(InvoiceUpdateRequest invoice, String id) async{
     // TODO: implement updateInvoice
     var interceptor = sl<RequestInterceptor>();
     var dio = sl<Dio>()..interceptors.add(interceptor);
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
-    var res = await dio.patch("/space/${space.id}/invoice/$id", data: invoice.toJson());
+    var res = await dio.put("/space/${space.id}/invoice/$id", data: invoice.toJson());
     if (res.statusCode == 200) {
-      return InvoiceModel.fromJson(res.data);
+      return InvoiceResponse.fromJson(res.data);
     } else {
       throw Exception(res.data["message"]);
     }

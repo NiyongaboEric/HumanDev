@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:getwidget/getwidget.dart';
+import 'package:intl_phone_field/phone_number.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_request.dart';
@@ -58,8 +60,12 @@ class _PersonDetailsState extends State<PersonDetails> {
   final middleNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneNumberController = TextEditingController();
+  final phoneNumberController2 = TextEditingController();
+  final phoneNumberController3 = TextEditingController();
   final notesController = TextEditingController();
   final emailController = TextEditingController();
+  final emailController2 = TextEditingController();
+  final emailController3 = TextEditingController();
   final streetController = TextEditingController();
   final cityController = TextEditingController();
   final stateController = TextEditingController();
@@ -67,6 +73,13 @@ class _PersonDetailsState extends State<PersonDetails> {
   final groupController = TextEditingController();
   final countryController = TextEditingController();
   // final country = Constants.countries[0];
+
+  // Collapse Sections
+  bool collapseContacts = false;
+  bool collapseAddress = false;
+  bool collapseGroups = false;
+  bool collapseInvoices = false;
+  bool collapsePendingPayments = false;
 
   // Date picker and change date handler
   DateTime selectedDate = DateTime.now();
@@ -125,7 +138,8 @@ class _PersonDetailsState extends State<PersonDetails> {
     PersonModel parentData = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Parents(parentSection: ParentSection.students),
+        builder: (context) =>
+            const Parents(parentSection: ParentSection.students),
       ),
     );
     parentList.add("${parentData.firstName} ${parentData.lastName1}");
@@ -138,21 +152,11 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   // Gender option and change handler
-  String selectedGender = "Gender";
+  String selectedGender = "Gender*";
   void _changeGender(gender) {
     setState(() {
       selectedGender = gender;
     });
-  }
-
-  // Phone Number List Options ad handler
-  List<String> phoneNumbers = [];
-  _addPhoneNumber(String number) {
-    phoneNumbers.add(number);
-  }
-
-  _removePhoneNumber(String number) {
-    phoneNumbers.remove(number);
   }
 
   saveData() {
@@ -162,43 +166,62 @@ class _PersonDetailsState extends State<PersonDetails> {
               firstName: firstNameController.text,
               middleName: middleNameController.text,
               lastName1: lastNameController.text,
+              gender: selectedGender == "Gender*" ? null : selectedGender,
+              phoneNumber1: phoneNumberController.text,
+              phoneNumber2: phoneNumberController2.text,
+              phoneNumber3: phoneNumberController3.text,
+              email1: emailController.text,
+              email2: emailController2.text,
+              email3: emailController3.text,
               dateOfBirth: selectedDate.toString(),
-              role: widget.contactVariant == ContactVariant.student
-                  ? Role.Student
-                  : stringToRole(widget.role!),
-              phoneNumber: phoneNumberController.text,
+              groupIds: selectGroupList.map((e) => e.id!).toList(),
+              // role: widget.contactVariant == ContactVariant.student
+              //     ? Role.Student
+              // : stringToRole(widget.role!),
               isLegal: false,
             )),
           );
     } else {
       try {
         context.read<PersonBloc>().add(
-              UpdatePersonEvent(UpdatePersonRequest(
-                id: widget.person!.id,
-                firstName: firstNameController.text,
-                middleName: middleNameController.text,
-                lastName1: lastNameController.text,
-                // email1: emailList[0],
-                // email2: emailList[1],
-                // email3: emailList[2],
-                dateOfBirth: selectedDate.toString(),
-                // connectGroupIds: selectGroupList.map((e) => e.id!).toList(),
-                // personSettings: widget.person!.personSettings,
-                // groups: widget.person!.groups,
-                // VATId: widget.person!.VATId,
-                // tagsSettings: widget.person!.tagsSettings,
-                // spaceId: widget.person!.spaceId,
-                // childRelations: widget.person!.childRelations,
-                // relativeRelations: widget.person!.relativeRelations,
-                // deactivationDate: widget.person!.deactivationDate,
-                // isActive: widget.person!.isActive,
-                // createdAt: widget.person!.createdAt,
-                // updatedAt: widget.person!.updatedAt,
-                isDeactivated: widget.person!.isDeactivated,
-                isLegal: false,
-              )),
+              UpdatePersonEvent([
+                UpdatePersonRequest(
+                  id: widget.person!.id,
+                  firstName: firstNameController.text,
+                  middleName: middleNameController.text,
+                  lastName1: lastNameController.text,
+                  gender: selectedGender != "Gender*" ? selectedGender : null,
+                  phoneNumber1: phoneNumberController.text,
+                  phoneNumber2: phoneNumberController2.text,
+                  phoneNumber3: phoneNumberController3.text,
+                  email1: emailController.text,
+                  email2: emailController2.text,
+                  email3: emailController3.text,
+                  dateOfBirth: selectedDate.toString(),
+                  connectGroupIds: selectGroupList
+                      .where((element) => !widget.person!.groups!
+                          .map((e) => e.id)
+                          .toList()
+                          .contains(element.id))
+                      .map((e) => e.id!)
+                      .toList(),
+                  disconnectGroupIds: widget.person!.groups!
+                      .where((element) => !selectGroupList.contains(element))
+                      .map((e) => e.id!)
+                      .toList(),
+                  isLegal: widget.person!.isLegal,
+                  VATId: widget.person!.VATId,
+                  taxId: widget.person!.taxId,
+                  address: Address(
+                    street: streetController.text,
+                    city: cityController.text,
+                    state: stateController.text,
+                    zip: zipController.text,
+                  ),
+                  isDeactivated: widget.person!.isDeactivated,
+                )
+              ]),
             );
-      logger.d(selectGroupList[0].name);
       } catch (e) {
         logger.e(e);
       }
@@ -244,8 +267,17 @@ class _PersonDetailsState extends State<PersonDetails> {
   // Handle Person State Change
   void _onPersonStateChange(PersonState state) {
     if (state.status == PersonStatus.success) {
-      previousScreen(context: context);
-      Navigator.pop(context);
+      Navigator.pop(context, true);
+      GFToast.showToast(
+        state.successMessage,
+        context,
+        toastDuration: 5,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        toastBorderRadius: 12.0,
+      );
     } else if (state.status == PersonStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
       } else {}
@@ -265,7 +297,7 @@ class _PersonDetailsState extends State<PersonDetails> {
   // Handle Logout State Change
   void _onLogoutStateChange() {
     prefs.clear();
-    nextScreenAndRemoveAll(context: context, screen: LoginScreen());
+    nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
   }
 
   @override
@@ -275,18 +307,15 @@ class _PersonDetailsState extends State<PersonDetails> {
       firstNameController.text = widget.person!.firstName;
       middleNameController.text = widget.person!.middleName ?? "";
       lastNameController.text = widget.person!.lastName1;
-      var personNumbers = [
-        widget.person!.phoneNumber1,
-        widget.person!.phoneNumber2,
-        widget.person!.phoneNumber3,
-      ];
+      phoneNumberController.text = widget.person!.phoneNumber1 ?? "";
+      phoneNumberController2.text = widget.person!.phoneNumber2 ?? "";
+      phoneNumberController3.text = widget.person!.phoneNumber3 ?? "";
+      emailController.text = widget.person!.email1 ?? "";
+      emailController2.text = widget.person!.email2 ?? "";
+      emailController3.text = widget.person!.email3 ?? "";
       selectGroupList.addAll(widget.person!.groups!);
-      logger.d(selectGroupList[0].name);
-      for (var number in personNumbers) {
-        if (number != null && number.isNotEmpty) {
-          phoneNumbers.add(number);
-        }
-      }
+      selectedGender = widget.person?.gender ?? "Gender*";
+      // logger.d(selectGroupList[0].name);
 
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
@@ -305,7 +334,11 @@ class _PersonDetailsState extends State<PersonDetails> {
     middleNameController.dispose();
     lastNameController.dispose();
     phoneNumberController.dispose();
+    phoneNumberController2.dispose();
+    phoneNumberController3.dispose();
     emailController.dispose();
+    emailController2.dispose();
+    emailController3.dispose();
     streetController.dispose();
     cityController.dispose();
     stateController.dispose();
@@ -313,11 +346,15 @@ class _PersonDetailsState extends State<PersonDetails> {
     super.dispose();
   }
 
+  int displayPhoneNumberField = 1;
+  int displayEmailField = 1;
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PersonBloc, PersonState>(
       listener: (context, state) {
         // TODO: implement listener
+        _onPersonStateChange(state);
       },
       builder: (context, state) {
         return Scaffold(
@@ -329,63 +366,73 @@ class _PersonDetailsState extends State<PersonDetails> {
               const SizedBox(height: 20),
               _buildCircleAvatar(),
               const SizedBox(height: 20),
-              _buildTextField(firstNameController, "First name"),
-              const SizedBox(height: 20),
+              _buildTextField(firstNameController, "First name*"),
               _buildTextField(middleNameController, "Middle name"),
-              const SizedBox(height: 20),
-              _buildTextField(lastNameController, "Last name"),
-              const SizedBox(height: 20),
+              _buildTextField(lastNameController, "Last name*"),
               _buildDatePicker(),
               const SizedBox(height: 20),
               _buildGenderDropDown(),
               const SizedBox(height: 20),
-              _buildSection("Contacts", Icons.contact_page_rounded, [
-                ...phoneNumbers.map((number) => ListTile(
-                      title: Text(
-                        number,
-                        style: TextStyle(
-                          color: _secondaryColorSelection(),
-                          fontSize: CustomFontSize.large,
-                        ),
-                      ),
-                      trailing: IconButton(
-                        onPressed: () {
-                          _removePhoneNumber(number);
-                        },
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          color: _secondaryColorSelection(),
-                        ),
-                      ),
-                    )),
-                _buildPhoneNumberField(phoneNumberController),
-                // DefaultBtn(
-                //   text: "Add number",
-                //   onPressed: () {
-                //     if (phoneNumberController.text.isNotEmpty) {
-                //       _addPhoneNumber(phoneNumberController.text);
-                //       phoneNumberController.clear();
-                //     }
-                //   },
-                //   textColor: _secondaryColorSelection(),
-                //   btnColor: _primaryColorSelection(),
-                // ),
-                // const SizedBox(height: 30),
-                _buildDropDownOptions(
-                  "Email",
-                  emailList,
-                  _updateEmailList,
-                ),
-              ]),
-              _buildSection("Address", Icons.home_rounded, [
-                _buildTextField(streetController, "Street"),
-                const SizedBox(height: 20),
-                _buildTextField(cityController, "City"),
-                const SizedBox(height: 20),
-                _buildTextField(stateController, "State"),
-                const SizedBox(height: 20),
-                _buildTextField(zipController, "Zip"),
-              ]),
+              _buildSection(
+                  "Contacts",
+                  Icons.contact_page_rounded,
+                  [
+                    _buildPhoneNumberField(
+                        phoneNumberController, "Primary number"),
+                    if (displayPhoneNumberField >= 2)
+                      _buildPhoneNumberField(
+                          phoneNumberController2, "Second number"),
+                    if (displayPhoneNumberField >= 3)
+                      _buildPhoneNumberField(
+                          phoneNumberController3, "Third number"),
+                    // SizedBox(height: 5),
+                    if (displayPhoneNumberField < 3)
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              if (displayPhoneNumberField < 3) {
+                                displayPhoneNumberField =
+                                    displayPhoneNumberField + 1;
+                              }
+                            });
+                          },
+                          child: Text(
+                            "Add another number",
+                            style: TextStyle(color: _secondaryColorSelection()),
+                          )),
+                    _buildEmailField(emailController, "Primary email"),
+                    if (displayEmailField >= 2)
+                      _buildEmailField(emailController2, "Second email"),
+                    if (displayEmailField >= 3)
+                      _buildEmailField(emailController3, "Third email"),
+                    if (displayEmailField < 3)
+                      TextButton(
+                          onPressed: () {
+                            setState(() {
+                              if (displayEmailField < 3) {
+                                displayEmailField = displayEmailField + 1;
+                              }
+                            });
+                          },
+                          child: Text(
+                            "Add another email",
+                            style: TextStyle(
+                              color: _secondaryColorSelection(),
+                              decoration: TextDecoration.underline,
+                            ),
+                          )),
+                  ],
+                  collapse: collapseContacts),
+              _buildSection(
+                  "Address",
+                  Icons.home_rounded,
+                  [
+                    _buildTextField(streetController, "Street"),
+                    _buildTextField(cityController, "City"),
+                    _buildTextField(stateController, "State"),
+                    _buildTextField(zipController, "Zip"),
+                  ],
+                  collapse: collapseAddress),
               _buildPersonRelativeSection(),
               _buildSection(
                 "Groups",
@@ -395,17 +442,19 @@ class _PersonDetailsState extends State<PersonDetails> {
                 ],
                 isAddButton: true,
                 btnAction: _updateGroupList,
+                collapse: collapseGroups,
               ),
               _buildTextArea(notesController, "Notes..."),
               const SizedBox(height: 20),
-              _buildSection("Invoices", Icons.receipt, []),
-              _buildSection(
-                  "Upcoming payments", Icons.attach_money_rounded, []),
+              _buildSection("Invoices", Icons.receipt, [],
+                  collapse: collapseInvoices),
+              _buildSection("Pending payments", Icons.attach_money_rounded, [],
+                  collapse: collapsePendingPayments),
               const SizedBox(height: 20),
               Divider(
                 color: _primaryColorSelection(),
               ),
-              _buildSaveButton(saveData, loading: state.isLoading),
+              _buildSaveButton(saveData),
             ],
           ),
         );
@@ -419,9 +468,15 @@ class _PersonDetailsState extends State<PersonDetails> {
       backgroundColor: _primaryColorSelection(),
       title: _buildAppBarTitle(widget.screenFunction, widget.contactVariant),
       actions: [
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            _onRefreshStateChange(state);
+          },
+          child: Container(),
+        ),
         IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.check_rounded),
+          onPressed: saveData,
+          icon: const Icon(Icons.check_rounded),
         ),
       ],
     );
@@ -452,7 +507,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return CircleAvatar(
       radius: 25,
       backgroundColor: _primaryColorSelection(),
-      child: Icon(Icons.person_add_rounded),
+      child: const Icon(Icons.person_add_rounded),
     );
   }
 
@@ -483,10 +538,79 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPhoneNumberField(TextEditingController controller) {
-    return CustomPhoneNumberField(
-      controller: controller,
-      color: _secondaryColorSelection(),
+  Widget _buildPhoneNumberField(TextEditingController controller, String text) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(text,
+                style: TextStyle(
+                  color: _secondaryColorSelection(),
+                  fontSize: CustomFontSize.extraSmall,
+                )),
+            Spacer(),
+            if (text.toLowerCase() != "primary number")
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      if (displayPhoneNumberField > 1) {
+                        displayPhoneNumberField = displayPhoneNumberField - 1;
+                      }
+                    });
+                  },
+                  child: Text(
+                    "Remove number",
+                    style: TextStyle(color: _secondaryColorSelection()),
+                  )),
+          ],
+        ),
+        const SizedBox(height: 5),
+        CustomPhoneNumberField(
+          initialValue: controller.text,
+          controller: controller,
+          color: _secondaryColorSelection(),
+        ),
+      ],
+    );
+  }
+
+  // Build Email Field
+  Widget _buildEmailField(TextEditingController controller, String text) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(text,
+                style: TextStyle(
+                  color: _secondaryColorSelection(),
+                  fontSize: CustomFontSize.extraSmall,
+                )),
+            Spacer(),
+            if (text.toLowerCase() != "primary email")
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      if (displayEmailField > 1) {
+                        displayEmailField = displayEmailField - 1;
+                      }
+                    });
+                  },
+                  child: Text(
+                    "Remove email",
+                    style: TextStyle(color: _secondaryColorSelection()),
+                  )),
+          ],
+        ),
+        const SizedBox(height: 5),
+        CustomTextField(
+          controller: controller,
+          color: _secondaryColorSelection(),
+          hintText: text,
+          inputType: TextInputType.emailAddress,
+        ),
+      ],
     );
   }
 
@@ -522,7 +646,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return CustomDropDownMenu(
       color: _secondaryColorSelection(),
       options: const [
-        "Gender",
+        "Gender*",
         ...Constants.genders,
       ],
       value: selectedGender,
@@ -531,8 +655,11 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   Widget _buildSection(String title, IconData icon, List<Widget> children,
-      {bool isAddButton = false, Function()? btnAction}) {
+      {bool isAddButton = false,
+      Function()? btnAction,
+      bool collapse = false}) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Divider(
           color: _primaryColorSelection(),
@@ -546,15 +673,42 @@ class _PersonDetailsState extends State<PersonDetails> {
               title,
               style: TextStyle(
                 fontSize: CustomFontSize.large,
+                fontWeight: FontWeight.w600,
                 color: _secondaryColorSelection(),
               ),
             ),
+            const SizedBox(width: 10),
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    logger.d(collapse);
+                    // Update the state variable based on the provided collapse parameter
+                    if (title == "Contacts") {
+                      collapseContacts = !collapseContacts;
+                    } else if (title == "Address") {
+                      collapseAddress = !collapseAddress;
+                    } else if (title == "Groups") {
+                      collapseGroups = !collapseGroups;
+                    } else if (title == "Invoices") {
+                      collapseInvoices = !collapseInvoices;
+                    } else if (title == "Pending Payments") {
+                      collapsePendingPayments = !collapsePendingPayments;
+                    }
+                  });
+                },
+                icon: Icon(
+                  collapse
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
+                  size: 30,
+                  color: _secondaryColorSelection(),
+                )),
             const Spacer(),
             if (isAddButton) _buildAddButton(onPressed: btnAction),
           ],
         ),
         const SizedBox(height: 20),
-        ...children,
+        if (!collapse) ...children,
       ],
     );
   }
@@ -583,29 +737,33 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildSaveButton(Function()? onPressed, {bool loading = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 22),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            backgroundColor: _primaryColorSelection(),
-            onPressed: loading ? null : onPressed,
-            label: !loading
-                ? Text(
-                    "Save",
-                    style: TextStyle(
-                      color: _secondaryColorSelection(),
-                      fontSize: CustomFontSize.large,
-                    ),
-                  )
-                : CircularProgressIndicator(
-                    color: _secondaryColorSelection(),
-                  ),
+  Widget _buildSaveButton(Function()? onPressed) {
+    return BlocBuilder<PersonBloc, PersonState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 22),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FloatingActionButton.extended(
+                backgroundColor: _primaryColorSelection(),
+                onPressed: state.isLoading ? null : onPressed,
+                label: !state.isLoading
+                    ? Text(
+                        "Save",
+                        style: TextStyle(
+                          color: _secondaryColorSelection(),
+                          fontSize: CustomFontSize.large,
+                        ),
+                      )
+                    : CircularProgressIndicator(
+                        color: _secondaryColorSelection(),
+                      ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -663,7 +821,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.5),
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                   blurRadius: 5,
                 )
               ]),

@@ -3,7 +3,7 @@
 class InvoiceModel {
   final int id;
   final int spaceId;
-  final int? number;
+  final String? number;
   final int totalAmount;
   final String invoiceDate;
   final int creatorPersonId;
@@ -16,13 +16,13 @@ class InvoiceModel {
   final bool isDraft;
   final String createdAt;
   final String updatedAt;
-  final List<PaymentScheduleModel> paymentSchedules;
-  final List<InvoiceItemModel> invoiceItems;
+  final List<PaymentScheduleModel>? paymentSchedules;
+  final List<InvoiceItemModel>? invoiceItems;
 
   InvoiceModel({
     required this.id,
     required this.spaceId,
-    required this.number,
+    this.number,
     required this.totalAmount,
     required this.invoiceDate,
     required this.creatorPersonId,
@@ -56,13 +56,17 @@ class InvoiceModel {
       isDraft: json['isDraft'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
-      paymentSchedules: json['paymentSchedules']
-          .map<PaymentScheduleModel>(
-              (e) => PaymentScheduleModel.fromJson(e))
-          .toList(),
-      invoiceItems: json['invoiceItems']
-          .map<InvoiceItemModel>((e) => InvoiceItemModel.fromJson(e))
-          .toList(),
+      paymentSchedules: json['paymentSchedules'] == null
+          ? null
+          : (json['paymentSchedules'] as List)
+              .map<PaymentScheduleModel>(
+                  (e) => PaymentScheduleModel.fromJson(e))
+              .toList(),
+      invoiceItems: json['invoiceItems'] == null
+          ? null
+          : (json['invoiceItems'] as List)
+              .map<InvoiceItemModel>((e) => InvoiceItemModel.fromJson(e))
+              .toList(),
     );
   }
 
@@ -73,36 +77,42 @@ class InvoiceModel {
       "currency": currency,
       "invoiceePersonId": invoiceePersonId,
       "studentPersonId": studentPersonId,
-      "paymentSchedules": paymentSchedules.map((e) => e.toJson()).toList(),
-      "invoiceItems": invoiceItems.map((e) => e.toJson()).toList(),
+      "paymentSchedules": paymentSchedules == null
+          ? null
+          : paymentSchedules!.map((e) => e.toJson()).toList(),
+      "invoiceItems": invoiceItems == null
+          ? null
+          : invoiceItems!.map((e) => e.toJson()).toList(),
       "isDraft": isDraft,
     };
   } 
 }
 
 class PaymentScheduleModel {
-  final int id;
-  final int spaceId;
-  final int sequenceNumber;
-  final String dueDate;
-  final int dueAmount;
+  final int? id;
+  final int? spaceId;
+  final int? sequenceNumber;
+  final String? dueDate;
+  final int? dueAmount;
+  final int? totalDueAmount;
   final String? lastPaidDate;
-  final int paidAmount;
-  final int invoiceId;
-  final String createdAt;
-  final String updatedAt;
+  final int? paidAmount;
+  final int? invoiceId;
+  final String? createdAt;
+  final String? updatedAt;
 
   PaymentScheduleModel({
-    required this.id,
-    required this.spaceId,
-    required this.sequenceNumber,
-    required this.dueDate,
-    required this.dueAmount,
-    required this.lastPaidDate,
-    required this.paidAmount,
-    required this.invoiceId,
-    required this.createdAt,
-    required this.updatedAt,
+    this.id,
+    this.spaceId,
+    this.sequenceNumber,
+    this.dueDate,
+    this.dueAmount,
+    this.totalDueAmount,
+    this.lastPaidDate,
+    this.paidAmount,
+    this.invoiceId,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory PaymentScheduleModel.fromJson(Map<String, dynamic> json) {
@@ -112,6 +122,7 @@ class PaymentScheduleModel {
       sequenceNumber: json['sequenceNumber'],
       dueDate: json['dueDate'],
       dueAmount: json['dueAmount'],
+      totalDueAmount: json['totalDueAmount'],
       lastPaidDate: json['lastPaidDate'],
       paidAmount: json['paidAmount'],
       invoiceId: json['invoiceId'],
@@ -127,6 +138,7 @@ class PaymentScheduleModel {
       "sequenceNumber": sequenceNumber,
       "dueDate": dueDate,
       "dueAmount": dueAmount,
+      "totalDueAmount": totalDueAmount,
       "lastPaidDate": lastPaidDate,
       "paidAmount": paidAmount,
       "invoiceId": invoiceId,
@@ -137,26 +149,26 @@ class PaymentScheduleModel {
 }
 
 class InvoiceItemModel {
-  final int id;
-  final int spaceId;
-  final int quantity;
-  final String description;
-  final int price;
-  final int total;
-  final int invoiceId;
-  final String createdAt;
-  final String updatedAt;
+  final int? id;
+  final int? spaceId;
+  final int? quantity;
+  final String? description;
+  final int? price;
+  final int? total;
+  final int? invoiceId;
+  final String? createdAt;
+  final String? updatedAt;
 
   InvoiceItemModel({
-    required this.id,
-    required this.spaceId,
-    required this.quantity,
-    required this.description,
-    required this.price,
-    required this.total,
-    required this.invoiceId,
-    required this.createdAt,
-    required this.updatedAt,
+    this.id,
+    this.spaceId,
+    this.quantity,
+    this.description,
+    this.price,
+    this.total,
+    this.invoiceId,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory InvoiceItemModel.fromJson(Map<String, dynamic> json) {

@@ -68,7 +68,6 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
       lastName1: recipientLastNameController.text.isNotEmpty
           ? recipientLastNameController.text
           : null,
-      role: stringToRole(role.toUpperCase()),
       organizationName: companyNameController.text.isNotEmpty
           ? companyNameController.text
           : null,
@@ -84,7 +83,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
         Navigator.pop(
           context,
           RecipientModel(
-            id: state.personResponse?.id,
+            id: state.personResponse?.first.id,
             firstName: recipientFirstNameController.text,
             lastName: recipientLastNameController.text,
             role: role.isNotEmpty ? role : null,
@@ -95,7 +94,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
         Navigator.pop(
           context,
           RecipientModel(
-            id: state.personResponse?.id,
+            id: state.personResponse?.first.id,
             companyName: companyNameController.text,
             supplier: supplier,
             isPerson: false,

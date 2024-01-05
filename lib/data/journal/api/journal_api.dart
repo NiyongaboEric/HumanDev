@@ -16,9 +16,11 @@ abstract class JournalApi {
   // Get One Journal
   Future<JournalModel> getOneJournal(String journalID);
   // Create Received Money Journal
-  Future<List<JournalModel>> createReceivedMoneyJournal(List<ReceivedMoneyJournalRequest> journalRequests);
+  Future<List<JournalModel>> createReceivedMoneyJournal(
+      List<ReceivedMoneyJournalRequest> journalRequests);
   // Create Payed Money Journal
-  Future<List<JournalModel>> createPaidMoneyJournal(List<PaidMoneyJournalRequest> journalRequests);
+  Future<List<JournalModel>> createPaidMoneyJournal(
+      List<PaidMoneyJournalRequest> journalRequests);
   // Update Journal
   // Future<JournalModel> updateJournal(JournalRequest journalRequest);
   // Delete Journal
@@ -81,7 +83,8 @@ class JournalApiImpl implements JournalApi {
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
       logger.i(tuitionFeesRequests.map((e) => e.toJson()));
-      final res = await dio.post("/space/${space.id}/journal/received-money",
+      final res = await dio.post(
+          "/space/${space.id}/transaction/received-money",
           data: tuitionFeesRequests.map((e) => e.toJson()).toList());
       if (res.statusCode == 201) {
         var response = res.data;
@@ -117,7 +120,7 @@ class JournalApiImpl implements JournalApi {
       var dio = sl.get<Dio>()..interceptors.add(interceptor);
       var prefs = sl<SharedPreferenceModule>();
       Space? space = prefs.getSpaces().first;
-      final res = await dio.post("/space/${space.id}/journal/paid-money",
+      final res = await dio.post("/space/${space.id}/transaction/paid-money",
           data: tuitionFeesRequests.map((e) => e.toJson()).toList());
       if (res.statusCode == 201) {
         var response = res.data;
@@ -149,7 +152,9 @@ class JournalApiImpl implements JournalApi {
     // TODO: implement deleteTuitionFees
     var interceptor = sl.get<RequestInterceptor>();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.delete("/space/1/journal/$journalID");
+    var prefs = sl<SharedPreferenceModule>();
+    Space? space = prefs.getSpaces().first;
+    final res = await dio.delete("/space/${space.id}/transaction/$journalID");
     if (res.statusCode == 200) {
       return;
     }

@@ -6,11 +6,20 @@ class PersonRequest {
   final String? middleName;
   final String? lastName1;
   final String? lastName2;
+  final String? gender;
   final String? dateOfBirth;
-  final Role? role;
-  final String? phoneNumber;
+  final String? phoneNumber1;
+  final String? phoneNumber2;
+  final String? phoneNumber3;
+  final Address? address;
+  final String? email1;
+  final String? email2;
+  final String? email3;
+  final String? taxId;
+  final String?  VATId;
   final bool isLegal;
   final String? organizationName;
+  final List<int>? groupIds;
 
   const PersonRequest({
     this.id,
@@ -18,11 +27,20 @@ class PersonRequest {
     this.middleName,
     this.lastName1,
     this.lastName2,
+    this.phoneNumber1,
+    this.phoneNumber2,
+    this.phoneNumber3,
+    this.address,
+    this.email1,
+    this.email2,
+    this.email3,
+    this.VATId,
+    this.gender,
+    this.taxId,
     this.dateOfBirth,
-    this.role,
-    this.phoneNumber,
     required this.isLegal,
     this.organizationName,
+    this.groupIds,
   });
 
   Map<String, dynamic> toJson() {
@@ -33,10 +51,18 @@ class PersonRequest {
       'lastName1': lastName1,
       'lastName2': lastName2,
       'dateOfBirth': dateOfBirth,
-      'role': role?.name,
-      'phoneNumber': phoneNumber,
+      "phoneNumber1": phoneNumber1,
+      "phoneNumber2": phoneNumber2,
+      "phoneNumber3": phoneNumber3,
+      "address": address?.toJson(),
+      "email1": email1,
+      "email2": email2,
+      "email3": email3,
+      "taxId": taxId,
+      "VATId": VATId,      
       'isLegal': isLegal,
       'organizationName': organizationName,
+      'groupIds': groupIds,
     };
   }
 }
@@ -47,12 +73,19 @@ class UpdatePersonRequest {
   final String? middleName;
   final String? lastName1;
   final String? lastName2;
+  final String? gender;
   final String? dateOfBirth;
   final String? phoneNumber1;
   final String? phoneNumber2;
   final String? phoneNumber3;
+  final Address? address;
+  final String? email1;
+  final String? email2;
+  final String? email3;
+  final String? taxId;
+  final String?  VATId;
   final bool isLegal;
-  final String? counterpartyName;
+  final String? organizationName;
   final List<int>? connectGroupIds;
   final List<int>? disconnectGroupIds;
   final List<ConnectedPersonRelativeRelation>? connectPersonRelativeRelations;
@@ -67,12 +100,19 @@ class UpdatePersonRequest {
     this.middleName,
     this.lastName1,
     this.lastName2,
+    this.gender,
     this.dateOfBirth,
     this.phoneNumber1,
     this.phoneNumber2,
     this.phoneNumber3,
+    this.address,
+    this.email1,
+    this.email2,
+    this.email3,
+    this.taxId,
+    this.VATId,
     required this.isLegal,
-    this.counterpartyName,
+    this.organizationName,
     this.connectGroupIds,
     this.disconnectGroupIds,
     this.connectPersonRelativeRelations,
@@ -89,12 +129,19 @@ class UpdatePersonRequest {
       'middleName': middleName,
       'lastName1': lastName1,
       'lastName2': lastName2,
+      'gender': gender,
       'dateOfBirth': dateOfBirth,
       'phoneNumber1': phoneNumber1,
       'phoneNumber2': phoneNumber2,
       'phoneNumber3': phoneNumber3,
       'isLegal': isLegal,
-      'counterpartyName': counterpartyName,
+      'organizationName': organizationName,
+      'address': address?.toJson(),
+      'email1': email1,
+      'email2': email2,
+      'email3': email3,
+      'taxId': taxId,
+      'VATId': VATId,
       'connectGroupIds': connectGroupIds,
       'disconnectGroupIds': disconnectGroupIds,
       'connectPersonRelativeRelations': connectPersonRelativeRelations,
@@ -102,6 +149,29 @@ class UpdatePersonRequest {
       'connectPersonChildRelations': connectPersonChildRelations,
       'disconnectPersonChildRelations': disconnectPersonChildRelations,
       'isDeactivated': isDeactivated,
+    };
+  }
+}
+
+class Address {
+  final String? street;
+  final String? city;
+  final String? state;
+  final String? zip;
+
+  const Address({
+    this.street,
+    this.city,
+    this.state,
+    this.zip,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'street': street,
+      'city': city,
+      'state': state,
+      'zip': zip,
     };
   }
 }

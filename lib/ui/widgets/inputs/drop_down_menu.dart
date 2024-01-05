@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
-import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
 class CustomDropDownMenu extends StatelessWidget {
   final String value;
@@ -17,9 +16,17 @@ class CustomDropDownMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Convert color to a MaterialColor
+    var colorMap = <int, Color>{
+      50:Color.fromRGBO(color.red, color.green, color.blue, .1),
+      100:Color.fromRGBO(color.red, color.green, color.blue, .2),
+    };
+    final materialColor = MaterialColor(color.value, colorMap);
+    
     return SizedBox(
       height: 80,
       child: DropdownButtonFormField(
+        // dropdownColor: materialColor.shade100,
         items: options
             .map(
               (option) => DropdownMenuItem(
@@ -28,7 +35,7 @@ class CustomDropDownMenu extends StatelessWidget {
                 child: Text(
                   option,
                   style: TextStyle(
-                    color: option != options[0] ? color : Colors.grey,
+                    color: option != options[0] ? color : color.withOpacity(0.5),
                   ),
                 ),
               ),
@@ -39,7 +46,7 @@ class CustomDropDownMenu extends StatelessWidget {
         onChanged: onChanged,
         value: value,
         style: TextStyle(
-            fontWeight: FontWeight.normal, fontSize: 24, color: color),
+            fontWeight: FontWeight.normal, fontSize: CustomFontSize.medium, color: color),
         decoration: InputDecoration(
           counterText: '',
           contentPadding:
@@ -54,7 +61,7 @@ class CustomDropDownMenu extends StatelessWidget {
           errorBorder: const UnderlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: Colors.red)),
-          hintStyle: TextStyle(color: Colors.red),
+          hintStyle: const TextStyle(color: Colors.red),
           filled: true,
           fillColor: color.withOpacity(0.08),
         ),

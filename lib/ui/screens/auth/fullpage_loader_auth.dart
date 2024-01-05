@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
-import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/group_bloc/groups_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -21,7 +18,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../../../data/auth/model/auth_response.dart';
 import '../../../data/constants/shared_prefs.dart';
 import '../../utilities/custom_colors.dart';
-import '../../widgets/constants/offline_model.dart';
+import '../main/person/bloc/person_bloc.dart';
 import 'accounts_bloc/accounts_bloc.dart';
 import 'auth_bloc/auth_bloc.dart';
 
@@ -69,20 +66,9 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
-  saveOfflineToDB() {
-    // Tuition Fees
-    // var tuitionObject = prefs.getString("offlineTuitionFee");
-    // if (tuitionObject != null) {
-    //   List<OfflineModel> offlineTuitionFee = json.decode(tuitionObject);
-    //   for (var element in offlineTuitionFee) {
-    //     JournalRequest journalRequest = element.data;
-    //     context.read<JournalBloc>().add(
-    //           AddNewJournalEvent(
-    //             journalRequest,
-    //           ),
-    //         );
-    //   }
-    // }
+  // Get Admin
+  void _getAdmin() {
+    context.read<PersonBloc>().add(const GetAdminEvent());
   }
 
   // Refresh Tokens
@@ -133,6 +119,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       if (_connectivityResult != ConnectivityResult.none) {
         if (state.refreshFailure != null &&
             state.refreshFailure!.contains("Invalid refresh token")) {
+          logger.w("Invalid refresh token");
           setState(() {
             logout = true;
           });
@@ -200,38 +187,10 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     }
   }
 
-  // Handle Offline Tuition HTTP Req State Change
-  void _handleTuitionRequestStateChange(
-      BuildContext context, JournalState state) {
-    if (state.status == JournalStatus.success) {
-      GFToast.showToast(
-        "All Pending Records Saved",
-        context,
-        toastBorderRadius: 8.0,
-        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-            ? GFToastPosition.TOP
-            : GFToastPosition.BOTTOM,
-        backgroundColor: Colors.green.shade800,
-      );
-      prefs.remove("offlineTuitionFee");
-    }
-    if (state.status == JournalStatus.error) {
-      GFToast.showToast(
-        "Unable To Save Pending Records",
-        context,
-        toastBorderRadius: 8.0,
-        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-            ? GFToastPosition.TOP
-            : GFToastPosition.BOTTOM,
-        backgroundColor: CustomColor.red,
-      );
-    }
-  }
-
   // Handle Accounts State Change
   void _handleAccountStateChange(BuildContext context, AccountsState state) {
     if (state.status == AccountsStateStatus.success) {
-      _getTags();
+      _getAdmin();
     }
     if (state.status == AccountsStateStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
@@ -251,16 +210,17 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
     }
   }
 
-  // Handle Tags State Change
-  void _handleTagsStateChange(BuildContext context, TagsState state) {
-    if (state.status == TagsStateStatus.success) {
+  // Handle Admin State Change
+  void _handleAdminStateChange(BuildContext context, PersonState state) {
+    if (state.status == PersonStatus.success) {
       _getGroups();
     }
-    if (state.status == TagsStateStatus.error) {
+    if (state.status == PersonStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
           state.errorMessage == "Exception: Unauthorized") {
         _refreshTokens();
       } else {
+        logger.w(state.errorMessage);
         GFToast.showToast(
           state.errorMessage,
           context,
@@ -309,7 +269,6 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   @override
   Widget build(BuildContext context) {
-
     return VisibilityDetector(
       key: startLoader,
       onVisibilityChanged: (visibilityInfo) {
@@ -341,19 +300,6 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
               }
             },
           ),
-          BlocListener<JournalBloc, JournalState>(
-            listenWhen: (context, state) {
-              return true;
-            },
-            listener: (context, state) {
-              // TODO: implement tuitions listener
-              if (mounted) {
-                if (isCurrentPage) {
-                  _handleTuitionRequestStateChange(context, state);
-                }
-              }
-            },
-          ),
           BlocListener<SpaceBloc, SpaceState>(
             listenWhen: (context, state) {
               return true;
@@ -378,13 +324,13 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
               }
             }
           }),
-          BlocListener<TagsBloc, TagsState>(listenWhen: (context, state) {
+          BlocListener<PersonBloc, PersonState>(listenWhen: (context, state) {
             return true;
           }, listener: (context, state) {
-            // TODO: implement tags listener
+            // TODO: implement admin listener
             if (mounted) {
               if (isCurrentPage) {
-                _handleTagsStateChange(context, state);
+                _handleAdminStateChange(context, state);
               }
             }
           }),
@@ -397,7 +343,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
                 _handleGroupsStateChange(context, state);
               }
             }
-          })
+          }),
         ],
         child: const Scaffold(
           body: Center(

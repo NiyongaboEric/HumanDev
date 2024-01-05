@@ -42,7 +42,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
 
   // Get Groups
   _getGroups() {
-    sl<GroupsBloc>().add(GroupsEventGetGroups());
+    sl<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
   // Refresh Tokens
@@ -105,7 +105,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
   // Handle Logout State Change
   void _handleLogoutStateChange(BuildContext context, AuthState state) {
     pref.clear();
-    nextScreenAndRemoveAll(context: context, screen: LoginScreen());
+    nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
   }
 
 

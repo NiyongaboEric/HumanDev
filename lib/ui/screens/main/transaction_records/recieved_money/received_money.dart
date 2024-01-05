@@ -22,7 +22,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
         color: Colors.green.shade100,
         icon: Icon(
           Icons.school_rounded,
-          size: 36,
+          size: 40,
           color: SecondaryColors.secondaryGreen,
         ),
         onPressed: () {
@@ -40,7 +40,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
         icon: Icon(
           Icons.fastfood_rounded,
           color: SecondaryColors.secondaryGreen,
-          size: 36,
+          size: 40,
         ),
         onPressed: () {
           nextScreen(
@@ -58,7 +58,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
         icon: Icon(
           Icons.more_horiz,
           color: SecondaryColors.secondaryGreen,
-          size: 36,
+          size: 40,
         ),
         onPressed: () {},
       ),

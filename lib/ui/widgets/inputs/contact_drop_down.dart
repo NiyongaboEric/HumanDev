@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class ContactDropDownOptions extends StatelessWidget {
@@ -54,7 +53,7 @@ class ContactDropDownOptions extends StatelessWidget {
           errorBorder: const UnderlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(8)),
               borderSide: BorderSide(color: Colors.red)),
-          hintStyle: TextStyle(color: Colors.red),
+          hintStyle: const TextStyle(color: Colors.red),
           filled: true,
           fillColor: color.withOpacity(0.08),
         ),      

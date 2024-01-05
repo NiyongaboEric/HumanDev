@@ -24,7 +24,7 @@ final class InvoiceGetOneInvoice extends InvoiceEvent {
 }
 
 final class InvoiceEventCreateInvoice extends InvoiceEvent {
-  final InvoiceRequest invoiceRequest;
+  final InvoiceCreateRequest invoiceRequest;
 
   const InvoiceEventCreateInvoice(this.invoiceRequest);
   
@@ -33,7 +33,7 @@ final class InvoiceEventCreateInvoice extends InvoiceEvent {
 }
 
 final class InvoiceUpdateInvoice extends InvoiceEvent {
-  final InvoiceRequest invoiceRequest;
+  final InvoiceUpdateRequest invoiceRequest;
   final String id;
 
   const InvoiceUpdateInvoice(this.invoiceRequest, this.id);

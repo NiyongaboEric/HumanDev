@@ -13,7 +13,7 @@ part 'tags_state.dart';
 class TagsBloc extends Bloc<TagsEvent, TagsState> {
   final TagApiImpl tagApiImpl;
   final SharedPreferenceModule sharedPreferenceModule;
-  TagsBloc(this.tagApiImpl, this.sharedPreferenceModule) : super(TagsState()) {
+  TagsBloc(this.tagApiImpl, this.sharedPreferenceModule) : super(const TagsState()) {
     on<TagsEvent>((event, emit) {
       // TODO: implement event handler
     });

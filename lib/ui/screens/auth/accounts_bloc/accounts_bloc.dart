@@ -12,7 +12,7 @@ part 'accounts_state.dart';
 class AccountsBloc extends Bloc<AccountsEvent, AccountsState> {
   final AccountApiImpl accountApiImpl;
   final SharedPreferenceModule sharedPreferenceModule;
-  AccountsBloc(this.accountApiImpl, this.sharedPreferenceModule) : super(AccountsState()) {
+  AccountsBloc(this.accountApiImpl, this.sharedPreferenceModule) : super(const AccountsState()) {
     on<AccountsEvent>((event, emit) {
       // TODO: implement event handler
     });

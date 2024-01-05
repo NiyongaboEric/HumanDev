@@ -57,6 +57,7 @@ class _StudentsState extends State<Students> {
   ConnectivityResult _connectivityResult = ConnectivityResult.none;
   final Connectivity _connectivity = Connectivity();
   var preferences = sl<SharedPreferences>();
+  var prefs = sl<SharedPreferenceModule>();
   List<PersonModel> searchResults = [];
   List<PersonModel> students = [];
   List<PersonModel> selectedStudents = [];
@@ -85,9 +86,9 @@ class _StudentsState extends State<Students> {
             .toSet()
             .toList()
             .where((student) =>
-                student.firstName!.toLowerCase().contains(query) ||
+                student.firstName.toLowerCase().contains(query) ||
                 (student.middleName ?? "").toLowerCase().contains(query) ||
-                student.lastName1!.toLowerCase().contains(query) ||
+                student.lastName1.toLowerCase().contains(query) ||
                 (student.lastName2 ?? "").toLowerCase().contains(query))
             .toList();
       });
@@ -187,16 +188,24 @@ class _StudentsState extends State<Students> {
   // Create Journal Record
   void createJournalRecord() {
     // TODO: implement createJournalRecord
+    var accounts = prefs.getAccounts();
+    var space = prefs.getSpaces().first;
     context.read<JournalBloc>().add(
           AddNewReceivedMoneyJournalEvent(
             selectedStudents.map((student) {
               return ReceivedMoneyJournalRequest(
-                creditAccountId: 1,
-                debitAccountId: 1,
-                subaccountPersonId: 1,
+                creditAccountId: accounts
+                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .id,
+              debitAccountId: accounts
+                  .firstWhere((element) => element.name.name == "CASH")
+                  .id,
+                subaccountPersonId: student.relativeRelations!.first.id!,
                 amount: 85,
+                currency: space.currency ?? "GHS",
                 reason: "Feeding Fees",
                 sendSMS: false,
+                isInvoicePayment: false,
                 studentPersonId: student.id,
               );
             }).toList(),
@@ -214,10 +223,11 @@ class _StudentsState extends State<Students> {
 
   // Save Offline
   saveOffline() {
-    var prefs = sl<SharedPreferences>();
+    var accounts = prefs.getAccounts();
+    var space = prefs.getSpaces().first;
     List<OfflineModel> offlineTuitionFee = [];
     List<ReceivedMoneyJournalRequest> feedingFeesRequest = [];
-    String? value = prefs.getString("offlineFeedingFee");
+    String? value = preferences.getString("offlineFeedingFee");
     if (value != null) {
       List<dynamic> decodedValue = json.decode(value);
       offlineTuitionFee.addAll(
@@ -225,10 +235,15 @@ class _StudentsState extends State<Students> {
     }
     feedingFeesRequest.add(
       ReceivedMoneyJournalRequest(
-        creditAccountId: 1,
-        debitAccountId: 1,
-        subaccountPersonId: 1,
+        creditAccountId: accounts
+                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .id,
+              debitAccountId: accounts
+                  .firstWhere((element) => element.name.name == "CASH")
+                  .id,
+                subaccountPersonId: 1,
         amount: 85,
+        currency: space.currency ?? "GHS",
         reason: "Feeding Fees",
         sendSMS: false,
         studentPersonId: 1,
@@ -250,7 +265,7 @@ class _StudentsState extends State<Students> {
         status: UploadStatus.initial,
       ),
     );
-    prefs.setString(
+    preferences.setString(
       "offlineFeedingFee",
       json.encode(
         offlineTuitionFee.map((model) => model.toJson()).toList(),
@@ -459,7 +474,7 @@ class _StudentsState extends State<Students> {
 
   List<String> getFirstCharacters(List<PersonModel> students) {
     return students.map((student) {
-      return student.firstName!.substring(0, 1);
+      return student.firstName.substring(0, 1);
     }).toList();
   }
 
@@ -473,7 +488,7 @@ class _StudentsState extends State<Students> {
           }
         }
 
-        students.sort((a, b) => a.firstName!.compareTo(b.firstName!));
+        students.sort((a, b) => a.firstName.compareTo(b.firstName));
         return AlphabetListViewItemGroup(
           tag: alphabet,
           children: buildStudentListTiles(alphabet, students, isSelect),
@@ -485,7 +500,7 @@ class _StudentsState extends State<Students> {
   List<Widget> buildStudentListTiles(
       String alphabet, List<PersonModel> students, bool isSelect) {
     return students.map((student) {
-      if (student.firstName!.startsWith(alphabet)) {
+      if (student.firstName.startsWith(alphabet)) {
         return buildStudentTile(student, isSelect);
       }
       return Container();
@@ -500,8 +515,10 @@ class _StudentsState extends State<Students> {
             onStudentTileTap(student, isSelect, widget.option);
           },
           title: Text(
-            "${student.firstName!} ${student.lastName1}",
-            style: const TextStyle(fontSize: 20),
+            [student.firstName, student.middleName ?? "", student.lastName1, student.lastName2 ?? ""]
+                .join(" ")
+                .trim(),
+            style: TextStyle(fontSize: CustomFontSize.small, color: _secondaryColorSelection(widget.option)),
           ),
           trailing: isSelect
               ? Checkbox(
@@ -516,7 +533,7 @@ class _StudentsState extends State<Students> {
                 ),
         ),
         Divider(
-          color: Colors.grey.shade400,
+          color: _secondaryColorSelection(widget.option).withOpacity(0.2),
         ),
       ],
     );
@@ -548,7 +565,7 @@ class _StudentsState extends State<Students> {
     if (searchController.text.isNotEmpty) {
       searchResults.clear();
       for (var student in students) {
-        if (student.firstName!.toLowerCase().contains(searchController.text)) {
+        if (student.firstName.toLowerCase().contains(searchController.text)) {
           searchResults.add(student);
         }
       }
@@ -689,6 +706,10 @@ class _StudentsState extends State<Students> {
                     )
                   : Container(),
               CustomTextField(
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: _secondaryColorSelection(widget.option),
+            ),
                 color: _secondaryColorSelection(widget.option),
                 hintText: "Search...",
                 controller: searchController,

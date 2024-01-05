@@ -1,8 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/number_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 
 class SelectFee extends StatefulWidget {
@@ -18,21 +18,25 @@ class _SelectFeeState extends State<SelectFee> {
   TextEditingController priceController = TextEditingController();
   List<bool> isSelected = [true, false];
   List<Widget> children = [
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+    const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       child: Text("All",
           style: TextStyle(
             fontSize: CustomFontSize.medium,
           )),
     ),
-    Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+    const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
         child: Text(
           "Suggested for this student",
           style: TextStyle(fontSize: CustomFontSize.medium),
         )),
   ];
-  List selectedFees = [];
+  List<ItemFee> itemFees = [
+    ItemFee(id: 1, name: "Tuition Fee", price: 1000),
+    ItemFee(id: 2, name: "Feeding Fee", price: 85),
+  ];
+  List<ItemFee> selectedFees = [];
 
   // Update Selected Fee Option
   _updateSelectedFeeOption(int index) {
@@ -52,7 +56,7 @@ class _SelectFeeState extends State<SelectFee> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
         children: [
-          _buildFeeItem(),
+          ...itemFees.map((each) => _buildFeeItem(each)).toList(),
         ],
       ),
     );
@@ -96,7 +100,7 @@ class _SelectFeeState extends State<SelectFee> {
   // Build Preferred Size Widget
   PreferredSize _buildPreferredSize() {
     return PreferredSize(
-      preferredSize: Size.fromHeight(65),
+      preferredSize: const Size.fromHeight(65),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
@@ -109,11 +113,11 @@ class _SelectFeeState extends State<SelectFee> {
               },
               color: SecondaryColors.secondaryPurple,
               selectedColor: Colors.white,
-              fillColor: TertiaryColors.tertiaryPurple,
+              fillColor: LightInvoiceColors.dark,
               borderRadius: BorderRadius.circular(50),
               children: children,
             ),
-            SizedBox(
+            const SizedBox(
               height: 15,
             )
           ],
@@ -122,10 +126,10 @@ class _SelectFeeState extends State<SelectFee> {
     );
   }
 
-  Widget _buildFeeItem() {
+  Widget _buildFeeItem(ItemFee itemFee) {
     return ListTile(
         title: Text(
-          "Tuition Fee",
+          itemFee.name!,
           style: TextStyle(
             color: SecondaryColors.secondaryPurple,
             fontSize: CustomFontSize.medium,
@@ -135,16 +139,24 @@ class _SelectFeeState extends State<SelectFee> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "1000",
+              "${itemFee.price}",
               style: TextStyle(
                 color: SecondaryColors.secondaryPurple,
                 fontSize: CustomFontSize.medium,
               ),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Checkbox(
-              value: true,
-              onChanged: (bool? value) {},
+              value: selectedFees.contains(itemFee),
+              onChanged: (bool? value) {
+                setState(() {
+                  if (value == true) {
+                    selectedFees.add(itemFee);
+                  } else {
+                    selectedFees.remove(itemFee);
+                  }
+                });
+              },
               activeColor: SecondaryColors.secondaryPurple,
             ),
           ],
@@ -154,10 +166,13 @@ class _SelectFeeState extends State<SelectFee> {
   // Build Floating Action Button
   Widget _buildFloatingActionButton() {
     return FloatingActionButton.extended(
-        onPressed: () {},
-        backgroundColor: TertiaryColors.tertiaryPurple,
-        label: Text(
-          "Save",
+        key: const Key("save-item-fee"),
+        onPressed: () {
+          Navigator.pop(context, selectedFees);
+        },
+        backgroundColor: LightInvoiceColors.dark,
+        label: const Text(
+          "Select",
           style: TextStyle(
             color: Colors.white,
             fontSize: CustomFontSize.medium,
@@ -168,6 +183,7 @@ class _SelectFeeState extends State<SelectFee> {
   // Build New Item Dialog
   Widget _buildNewItemDialog() {
     return AlertDialog(
+      backgroundColor: PrimaryColors.primaryPurple,
       actionsAlignment: MainAxisAlignment.spaceBetween,
       title: Text(
         "Add new item",
@@ -184,22 +200,28 @@ class _SelectFeeState extends State<SelectFee> {
             controller: itemNameController,
             color: SecondaryColors.secondaryPurple,
           ),
-          SizedBox(height: 10),
-          // Row(
-          //   children: [
-          //     CustomTextField(
-          //       hintText: "Amount",
-          //       controller: amountController,
-          //       color: SecondaryColors.secondaryPurple,
-          //     ),
-          //     SizedBox(width: 10),
-          //     CustomTextField(
-          //       hintText: "Price",
-          //       controller: priceController,
-          //       color: SecondaryColors.secondaryPurple,
-          //     ),
-          //   ],
-          // ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              SizedBox(
+                width: 110,
+                child: CustomNumberField(
+                  hintText: "Amount",
+                  controller: amountController,
+                  color: SecondaryColors.secondaryPurple,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 110,
+                child: CustomNumberField(
+                  hintText: "Price",
+                  controller: priceController,
+                  color: SecondaryColors.secondaryPurple,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       actions: [
@@ -210,18 +232,35 @@ class _SelectFeeState extends State<SelectFee> {
           child: Text(
             "Cancel",
             style: TextStyle(
-              color: SecondaryColors.secondaryPurple,
+              color: TertiaryColors.tertiaryPurple,
               fontSize: CustomFontSize.medium,
             ),
           ),
         ),
         DefaultBtn(
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+              itemFees.add(ItemFee(
+                id: itemFees.length + 1,
+                name: itemNameController.text,
+                price: int.parse(priceController.text),
+              ));
+            });
+            Navigator.pop(context);
+          },
           text: "Add",
-          btnColor: SecondaryColors.secondaryPurple,
+          btnColor: TertiaryColors.tertiaryPurple,
           textColor: PrimaryColors.primaryPurple,
         ),
       ],
     );
   }
+}
+
+class ItemFee {
+  final int? id;
+  final String? name;
+  final int? price;
+
+  ItemFee({this.id, this.name, this.price});  
 }

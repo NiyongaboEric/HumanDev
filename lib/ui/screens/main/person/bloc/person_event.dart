@@ -27,6 +27,14 @@ final class AddPersonEvent extends PersonEvent {
 }
 
 final class UpdatePersonEvent extends PersonEvent {
-  final UpdatePersonRequest person;
-  const UpdatePersonEvent(this.person);
+  final List<UpdatePersonRequest> persons;
+  const UpdatePersonEvent(this.persons);
+}
+
+final class GetAdminEvent extends PersonEvent {
+  const GetAdminEvent();
+}
+
+final class GetStudentsWithPendingPaymentsEvent extends PersonEvent {
+  const GetStudentsWithPendingPaymentsEvent();
 }

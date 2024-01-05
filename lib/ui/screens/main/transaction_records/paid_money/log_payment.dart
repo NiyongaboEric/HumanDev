@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
-import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
@@ -68,18 +67,24 @@ class _LogPaymentState extends State<LogPayment> {
     var accounts = preferences.getAccounts();
     logger.i(journalData.personId);
     context.read<JournalBloc>().add(
-          AddNewPaidMoneyJournalEvent(
-            [PaidMoneyJournalRequest(
-              creditAccountId: accounts.firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE").id,
+          AddNewPaidMoneyJournalEvent([
+            PaidMoneyJournalRequest(
+              creditAccountId: accounts
+                  .firstWhere(
+                      (element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .id,
               debitAccountId: selectedPaymentMethod.id,
               subaccountPersonId: journalData.personId!,
               amount: int.parse(amountController.text),
+              currency: selectedCurrency,
               reason: journalData.description,
-              tags: journalData.tags!.isEmpty
-                  ? journalData.tags!.map((tag) => TagModel(name: tag)).toList()
+              tags: journalData.tags!.isNotEmpty
+                  ? journalData.tags!
+                      .map((tag) => TagModel(name: tag.name))
+                      .toList()
                   : null,
-            ),]
-          ),
+            ),
+          ]),
         );
   }
 
@@ -89,9 +94,9 @@ class _LogPaymentState extends State<LogPayment> {
       GFToast.showToast(
         state.successMessage,
         context,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
         toastDuration: 5,
         toastBorderRadius: 12.0,
         backgroundColor: Colors.green.shade700,
@@ -103,9 +108,9 @@ class _LogPaymentState extends State<LogPayment> {
       GFToast.showToast(
         state.errorMessage,
         context,
-        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
         toastDuration: 5,
         toastBorderRadius: 12.0,
         backgroundColor: CustomColor.red,
@@ -147,7 +152,8 @@ class _LogPaymentState extends State<LogPayment> {
                       GFToast.showToast(
                         "Please enter an amount",
                         context,
-                        toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                        toastPosition:
+                            MediaQuery.of(context).viewInsets.bottom != 0
                                 ? GFToastPosition.TOP
                                 : GFToastPosition.BOTTOM,
                         toastBorderRadius: 12.0,
@@ -178,9 +184,10 @@ class _LogPaymentState extends State<LogPayment> {
                             GFToast.showToast(
                               "Please enter an amount",
                               context,
-                              toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+                              toastPosition:
+                                  MediaQuery.of(context).viewInsets.bottom != 0
+                                      ? GFToastPosition.TOP
+                                      : GFToastPosition.BOTTOM,
                               toastBorderRadius: 12.0,
                               toastDuration: 5,
                               backgroundColor: Colors.red,
@@ -269,7 +276,8 @@ class _LogPaymentState extends State<LogPayment> {
                   const SizedBox(width: 5),
                   Expanded(
                     child: Text(
-                      state.journalData!.tags?.join('; ') ?? "",
+                      state.journalData?.tags?.map((e) => e.name).join("; ") ??
+                          "",
                       style: TextStyle(
                         fontSize: CustomFontSize.medium,
                         fontWeight: FontWeight.w500,
@@ -346,7 +354,10 @@ class _LogPaymentState extends State<LogPayment> {
               ),
               CustomDropDownMenu(
                 color: const Color(0xff410002),
-                options: ["Payment method", ...Constants.paymentMethods.map((e) => e.name.name)],
+                options: [
+                  "Payment method",
+                  ...Constants.paymentMethods.map((e) => e.name.name)
+                ],
                 value: selectedPaymentMethod.name.name,
                 onChanged: updatePaymentMethod,
               ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
-import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -26,12 +25,12 @@ class LogLetterReminder extends StatefulWidget {
 
 class _LogLetterReminderState extends State<LogLetterReminder> {
   DateTime date = DateTime.now();
-  final List<TagModel> financials = [];
-  final List<TagModel> warnings = [];
-  final List<TagModel> kids = [];
-  final List<TagModel> selectedFinancials = [];
-  final List<TagModel> selectedWarnings = [];
-  final List<TagModel> selectedKids = [];
+  final List<DefaultTagsSettings> financials = [];
+  final List<DefaultTagsSettings> warnings = [];
+  final List<DefaultTagsSettings> kids = [];
+  final List<DefaultTagsSettings> selectedFinancials = [];
+  final List<DefaultTagsSettings> selectedWarnings = [];
+  final List<DefaultTagsSettings> selectedKids = [];
 
   final TextEditingController noteController = TextEditingController();
 
@@ -95,7 +94,7 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
     });
   }
 
-  Widget buildTagSection(List<TagModel> tags, List<TagModel> selectedTags,
+  Widget buildTagSection(List<DefaultTagsSettings> tags, List<DefaultTagsSettings> selectedTags,
       String sectionTitle, IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,7 +124,7 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
           unselectedTextColor: SecondaryColors.secondaryBlue.withOpacity(0.5),
           addTag: (value) {
             setState(() {
-              selectedTags.add(value as TagModel);
+              selectedTags.add(value);
             });
           },
           removeTag: (value) {
@@ -141,38 +140,31 @@ class _LogLetterReminderState extends State<LogLetterReminder> {
   @override
   void initState() {
     // TODO: implement initState12
-        var tagValues = prefs.getTags();
-    if (tagValues.isEmpty) {
-      var paidMoneyTags =
-          tagValues.where((element) => element.isReminderTag == true);
+        var tagValues = prefs.getAdmin();
+    if (tagValues != null) {
+      var letterTags = tagValues.tagsSettings!.reminders!.letter;
+      if (letterTags == null)  return;
       setState(() {
         // Add non-existing values to tags
-        for (var tag in paidMoneyTags) {
-          if (tag != null) {
+        for (var tag in letterTags) {
             // if (tag.name!.startsWith("Location")) {
             //   var locationTag = tag.name!.split(":");
             //   logger.d(locationTag[0]);
             //   location.add(tag);
             // }
-            if (tag.name!.startsWith("Financial")) {
-              var financialTag = tag.name!.split(":");
-              if (financialTag.length > 1) {
-                financials.add(tag);
-              }
+            if (tag.name! == "Financials") {
+                financials.addAll(tag.tags!);
             }
-            if (tag.name!.startsWith("Warning")) {
-              var warningTag = tag.name!.split(":");
-              warnings.add(tag);
+            if (tag.name! == "Warnings") {
+              warnings.addAll(tag.tags!);
             }
-            if (tag.name!.startsWith("Kid")) {
-              var kidTag = tag.name!.split(":");
-              kids.add(tag);
+            if (tag.name! == "Kids") {
+              kids.addAll(tag.tags!);
             }
-            if (tag.name!.startsWith("Atmosphere")) {
-              var atmosphereTag = tag.name!.split(":");
-            }
+            // if (tag.name!.startsWith("Atmosphere")) {
+            //   var atmosphereTag = tag.name!.split(":");
+            // }
           }
-        }
       });
     }
     super.initState();

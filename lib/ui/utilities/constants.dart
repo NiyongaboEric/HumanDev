@@ -48,7 +48,7 @@ class Constants {
   static const currencyOptions = ["GHS", "USD", "NGN", "EUR", "INR", "Add "];
 
   // Gender Options
-  static const genders = ["Male", "Female", "Other"];
+  static const genders = ["MALE", "FEMALE", "OTHER"];
 
   // Default Person Types
   static const personTypes = ["Student", "Teacher", "Parent", "Supplier"];
@@ -73,7 +73,7 @@ class Constants {
   // Date Format Parser
   static String dateFormatParser(String date) {
     DateTime dateTime = DateTime.parse(date);
-    return DateFormat('dd MMM yy').format(dateTime);
+    return DateFormat('dd MMM yyyy').format(dateTime);
   }
 
   static List<String> selectedGroups = <String> [

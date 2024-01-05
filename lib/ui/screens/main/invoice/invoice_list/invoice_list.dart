@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
-import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_details.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -31,22 +34,23 @@ class _InvoiceListState extends State<InvoiceList> {
   final TextEditingController searchController = TextEditingController();
   var prefs = sl<SharedPreferenceModule>();
   List<InvoiceModel> invoices = [];
+  List<PersonModel> persons = [];
   List<bool> isToggleOptionSelected = [true, false, false, false];
   List<Widget> toggleOptions = [
     const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       child: Text("All"),
     ),
     const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       child: Text("By student"),
     ),
     const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       child: Text("By recipient"),
     ),
     const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18),
+      padding: EdgeInsets.symmetric(horizontal: 10),
       child: Text("By month"),
     ),
   ];
@@ -76,12 +80,18 @@ class _InvoiceListState extends State<InvoiceList> {
         .add(AuthEventRefresh(RefreshRequest(refresh: token.refreshToken)));
   }
 
+  // Get All Persons
+  void _getAllPersons() {
+    context.read<PersonBloc>().add(const GetAllPersonEvent());
+  }
+
   // Handle Invoice State Changes
   void _handleInvoiceStateChanges(BuildContext context, InvoiceState state) {
     if (state.status == InvoiceStateStatus.success) {
       setState(() {
         invoices = state.invoices!;
       });
+      _getAllPersons();
     } else if (state.status == InvoiceStateStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
         _refreshToken();
@@ -102,16 +112,36 @@ class _InvoiceListState extends State<InvoiceList> {
   void _handleRefreshStateChanges(BuildContext context, AuthState state) {
     if (state.status == AuthStateStatus.authenticated) {
       _getAllInvoices();
-    } else if (state.status == InvoiceStateStatus.error) {
+    } else if (state.status == AuthStateStatus.unauthenticated) {
       // Handle Error
       _handleLogout();
+    }
+  }
+
+  // Handle Person State Changes
+  void _handlePersonStateChanges(BuildContext context, PersonState state) {
+    if (state.status == PersonStatus.success) {
+      if (invoices.isEmpty) return;
+      // Handle Success
+      for (var person in state.persons) {
+        // Match person with invoice
+        for (var invoice in invoices) {
+          if (invoice.studentPersonId == person.id) {
+            setState(() {
+              persons.add(person);
+            });
+          }
+        }
+      }
+    } else if (state.status == PersonStatus.error) {
+      // Handle Error
     }
   }
 
   // Handle Logout
   void _handleLogout() {
     prefs.clear();
-    nextScreenAndRemoveAll(context: context, screen: LoginScreen());
+    nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
   }
 
   @override
@@ -128,14 +158,16 @@ class _InvoiceListState extends State<InvoiceList> {
     return VisibilityDetector(
       key: const Key("invoice_list"),
       onVisibilityChanged: (visibilityInfo) {
-        if (visibilityInfo.visibleFraction > 0.5) {
-          setState(() {
-            isCurrentPage = true;
-          });
-        } else {
-          setState(() {
-            isCurrentPage = false;
-          });
+        if (mounted) {
+          if (visibilityInfo.visibleFraction > 0.5) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          } else {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }
         }
       },
       child: BlocConsumer<InvoiceBloc, InvoiceState>(
@@ -155,31 +187,69 @@ class _InvoiceListState extends State<InvoiceList> {
                       type: GFLoaderType.ios,
                     ),
                   )
-                : invoices.isNotEmpty
+                : invoices.isNotEmpty || persons.isNotEmpty
                     ? ListView(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 20),
                         children: [
                           ...invoices.map(
-                            (element) => GestureDetector(
-                              onTap: () {
-                                if (element.isDraft) {
-                                  nextScreen(
-                                    context: context,
-                                    screen: InvoiceDetails(
-                                        invoiceType: InvoiceType.EDIT),
-                                  );
-                                }
-                              },
-                              child: InvoiceCard(
-                                name: "Diana Antonova",
-                                date: element.invoiceDate,
-                                amount: element.totalAmount.toString(),
-                                currency: element.currency,
-                                isVoid: element.isVoid,
-                                isPaid: element.isPaid,
-                                isDraft: element.isDraft,
-                              ),
+                            (element) => Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () async {
+                                    if (element.isDraft) {
+                                      bool reFetch = await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => InvoiceDetails(
+                                            key: const Key(
+                                                "invoice_details_edit"),
+                                            invoiceType: InvoiceType.EDIT,
+                                            invoice: element,
+                                            person: persons.isNotEmpty
+                                                ? persons.firstWhere((each) =>
+                                                    each.id ==
+                                                    element.studentPersonId)
+                                                : null,
+                                          ),
+                                        ),
+                                      ) ?? false;
+                                      if (reFetch) {
+                                        _getAllInvoices();
+                                      }
+                                      // nextScreen(
+                                      //   context: context,
+                                      //   screen: InvoiceDetails(
+                                      //     key: const Key("invoice_details_edit"),
+                                      //     invoiceType: InvoiceType.EDIT,
+                                      //     invoice: element,
+                                      //     person: persons.isNotEmpty
+                                      //         ? persons.firstWhere((each) =>
+                                      //             each.id ==
+                                      //             element.studentPersonId)
+                                      //         : null,
+                                      //   ),
+                                      // );
+                                    }
+                                  },
+                                  child: InvoiceCard(
+                                    name: persons.isNotEmpty
+                                        ? "${persons.firstWhere((each) => each.id == element.studentPersonId).firstName} ${persons.firstWhere((each) => each.id == element.studentPersonId).lastName1}"
+                                        : "",
+                                    date: element.invoiceDate,
+                                    amount: element.totalAmount.toString(),
+                                    currency: element.currency,
+                                    isVoid: element.isVoid,
+                                    isPaid: element.isPaid,
+                                    isDraft: element.isDraft,
+                                    paidAmount: element.paymentSchedules!
+                                        .map((e) => e.paidAmount)
+                                        .reduce((value, val) => value! + val!),
+                                    invoiceNumber: element.number,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                             ),
                           ),
                         ],
@@ -201,13 +271,32 @@ class _InvoiceListState extends State<InvoiceList> {
         // AuthBloc Listener
         BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            _handleRefreshStateChanges(context, state);
+            if (isCurrentPage && mounted) {
+              _handleRefreshStateChanges(context, state);
+            }
+          },
+          child: Container(),
+        ),
+        BlocListener<PersonBloc, PersonState>(
+          listener: (context, state) {
+            if (isCurrentPage && mounted) {
+              _handlePersonStateChanges(context, state);
+            }
           },
           child: Container(),
         ),
         IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.add_rounded),
+          onPressed: () {
+            nextScreen(
+                context: context,
+                screen: const PeopleListInvoice(
+                  personType: PersonType.STUDENT,
+                ));
+          },
+          icon: const Icon(
+            Icons.add_rounded,
+            size: 28,
+          ),
         ),
       ],
       bottom: _buildPreferredSizeWidget(context),
@@ -217,7 +306,7 @@ class _InvoiceListState extends State<InvoiceList> {
   // PreferredSize Widget
   PreferredSizeWidget _buildPreferredSizeWidget(BuildContext context) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(170),
+      preferredSize: const Size.fromHeight(150),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
@@ -234,18 +323,25 @@ class _InvoiceListState extends State<InvoiceList> {
   // Search Bar
   Widget _buildSearchBar() {
     return CustomTextField(
+      prefixIcon: Icon(
+        Icons.search_rounded,
+        color: SecondaryColors.secondaryPurple,
+      ),
       hintText: "Search",
       controller: searchController,
-      color: Colors.purple,
+      color: SecondaryColors.secondaryPurple,
     );
   }
 
   // Toggle Button Options
   Widget _buildToggleButtonOptions(BuildContext context) {
     return ToggleButtons(
+      textStyle: const TextStyle(
+        fontSize: CustomFontSize.small,
+      ),
       color: SecondaryColors.secondaryPurple,
       selectedColor: Colors.white,
-      fillColor: SecondaryColors.secondaryPurple,
+      fillColor: LightInvoiceColors.dark,
       isSelected: isToggleOptionSelected,
       borderRadius: BorderRadius.circular(50),
       onPressed: updateToggleOptionSelected,

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:seymo_pay_mobile_application/data/account/model/account_model.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
-import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -126,7 +125,23 @@ class SharedPreferenceModule {
     pref.setString("organizations", jsonString);
   }
 
+  // Save Admin to Shared Preferences
+  void saveAdmin(PersonModel admin) {
+    final jsonString = jsonEncode(admin.toJson());
+    pref.setString("admin", jsonString);
+  }
+
+  // Save Students with pending payments to Shared Preferences
+  void saveStudentsWithPendingPayments(List<PersonModel> students) {
+    final jsonString = jsonEncode(
+      students.map((student) => student.toJson()).toList(),
+    );
+    pref.setString("studentsWithPendingPayments", jsonString);
+  }
+
+////
 // Retrieve From LocalStorage/SharedPreferences
+////
 
   // Get user data from Shared Preferences
   TokenResponse? getToken() {
@@ -242,6 +257,26 @@ class SharedPreferenceModule {
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List)
           .map((e) => InvoiceModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Admin
+  PersonModel? getAdmin() {
+    final jsonString = pref.getString("admin");
+    if (jsonString != null) {
+      return PersonModel.fromJson(jsonDecode(jsonString));
+    }
+    return null;
+  }
+
+  // Get Students with pending payments
+  List<PersonModel> getStudentsWithPendingPayments() {
+    final jsonString = pref.getString("studentsWithPendingPayments");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
           .toList();
     }
     return [];

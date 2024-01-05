@@ -60,7 +60,7 @@ Future<void> init() async {
   // Blocs
   sl.registerFactory<AuthBloc>(
       () => AuthBloc(sl<SharedPreferenceModule>(), sl<AuthApiImpl>()));
-  sl.registerFactory<PersonBloc>(() => PersonBloc(sl<PersonApiImpl>()));
+  sl.registerFactory<PersonBloc>(() => PersonBloc(sl<PersonApiImpl>(), sl<SharedPreferenceModule>()));
   sl.registerFactory<JournalBloc>(() => JournalBloc(sl<JournalApiImpl>()));
   sl.registerFactory<AccountsBloc>(() => AccountsBloc(sl<AccountApiImpl>(), sl<SharedPreferenceModule>()));
   sl.registerFactory<TagsBloc>(() => TagsBloc(sl<TagApiImpl>(), sl<SharedPreferenceModule>()));

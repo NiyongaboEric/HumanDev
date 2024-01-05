@@ -80,7 +80,7 @@ class _ContactTypeState extends State<ContactType> {
           ),
           title: Text(
             type,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 20,
               fontWeight: FontWeight.bold,

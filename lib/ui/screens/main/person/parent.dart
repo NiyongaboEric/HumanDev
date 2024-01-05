@@ -9,7 +9,6 @@ import 'package:getwidget/getwidget.dart';
 import 'package:intl/intl.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/contact_type.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/person_details.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/send_sms.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/reminder/reminder_types/conversation/log_conversation.dart';
@@ -110,7 +109,7 @@ class _ParentsState extends State<Parents> {
   String allGroups = 'All groups';
 
   switchGroupSpace(String selectGroupSpace) {
-    switch(selectGroupSpace) {
+    switch (selectGroupSpace) {
       case 'All groups':
         return allPeople;
       case 'Student':
@@ -127,23 +126,43 @@ class _ParentsState extends State<Parents> {
         print('You are to Implement custom group.....');
     }
   }
-  
+
   void handleAddPersonForSendSMS(currentSelectedGroup, PersonModel person) {
     currentSelectedGroup == allGroups ? addAllPeopleSendSMS(person) : null;
-    currentSelectedGroup == Role.Student.name ? addStudentsSendSMS(person) : null;
-    currentSelectedGroup == Role.Relative.name ? addParentsSendSMS(person) : null;
-    currentSelectedGroup == Role.Teacher.name ? addTeachersSendSMS(person) : null;
-    currentSelectedGroup == Role.Supplier.name ? addSuppliersSendSMS(person) : null;
-    currentSelectedGroup == roleToString(Role.School_administrator) ? addSchoolAdministratorsSendSMS(person) : null;
+    currentSelectedGroup == Role.Student.name
+        ? addStudentsSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Relative.name
+        ? addParentsSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Teacher.name
+        ? addTeachersSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Supplier.name
+        ? addSuppliersSendSMS(person)
+        : null;
+    currentSelectedGroup == roleToString(Role.School_administrator)
+        ? addSchoolAdministratorsSendSMS(person)
+        : null;
   }
 
   void handleRemovePersonForSendSMS(currentSelectedGroup, PersonModel person) {
     currentSelectedGroup == allGroups ? removeAllPeopleSendSMS(person) : null;
-    currentSelectedGroup == Role.Student.name ? removeStudentsSendSMS(person) : null;
-    currentSelectedGroup == Role.Relative.name ? removeParentsSendSMS(person) : null;
-    currentSelectedGroup == Role.Teacher.name ? removeTeachersSendSMS(person) : null;
-    currentSelectedGroup == Role.Supplier.name ? removeSuppliersSendSMS(person) : null;
-    currentSelectedGroup == roleToString(Role.School_administrator) ? removeSchoolAdministratorsSendSMS(person) : null;
+    currentSelectedGroup == Role.Student.name
+        ? removeStudentsSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Relative.name
+        ? removeParentsSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Teacher.name
+        ? removeTeachersSendSMS(person)
+        : null;
+    currentSelectedGroup == Role.Supplier.name
+        ? removeSuppliersSendSMS(person)
+        : null;
+    currentSelectedGroup == roleToString(Role.School_administrator)
+        ? removeSchoolAdministratorsSendSMS(person)
+        : null;
   }
 
   void handleChangeDropdownItem(value) {
@@ -171,7 +190,6 @@ class _ParentsState extends State<Parents> {
       }
     });
   }
-
 
 // Search Function
   search(String query) {
@@ -220,7 +238,7 @@ class _ParentsState extends State<Parents> {
   searchSendSMS(String query) {
     query = query.toLowerCase();
     if (query.isEmpty) {
-       setState(() {
+      setState(() {
         showResults = false;
       });
     } else {
@@ -241,7 +259,8 @@ class _ParentsState extends State<Parents> {
       if (currentSelectedGroupSpace == Role.Supplier.name) {
         searchList = suppliers;
       }
-      if (currentSelectedGroupSpace == roleToString(Role.School_administrator)) {
+      if (currentSelectedGroupSpace ==
+          roleToString(Role.School_administrator)) {
         searchList = schoolAdministrators;
       }
 
@@ -343,7 +362,7 @@ class _ParentsState extends State<Parents> {
       selectedSuppliersSendSMS.remove(supplier);
     });
   }
-  
+
   void addSchoolAdministratorsSendSMS(PersonModel schoolAdministrator) {
     setState(() {
       selectedSchoolAdministratorsSendSMS.add(schoolAdministrator);
@@ -518,9 +537,56 @@ class _ParentsState extends State<Parents> {
     context.read<PersonBloc>().add(GetRelativesEvent(studentId));
   }
 
+  // Get Students with pending payments
+  getStudentsWithPendingPayments() {
+    context.read<PersonBloc>().add(GetStudentsWithPendingPaymentsEvent());
+  }
+
   // Logout
   void _logout() {
     context.read<AuthBloc>().add(const AuthEventLogout());
+  }
+
+  // Handle Student with pending payments State Change
+  _handleStudentsWithPendingPaymentsStateChange(
+      BuildContext context, PersonState state) {
+    if (state.status == PersonStatus.success) {
+      setState(() {
+        students.clear();
+        schoolAdministrators.clear();
+      });
+      for (var person in state.persons) {
+        if (person.role == Role.Student.name) {
+          if (!students.contains(person)) {
+            students.add(person);
+            if (person.childRelations != null) {
+              relatives.addAll(person.childRelations!);
+            }
+            randomNumbers.add((50 + Random().nextInt(150 - 50)));
+          }
+        }
+      }
+      allPeople = [...parents, ...teachers, ...suppliers];
+      preferences.saveStudentsWithPendingPayments(students);
+    }
+    if (state.status == PersonStatus.error) {
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        logger.e(state.errorMessage);
+        _refreshTokens();
+      } else {
+        GFToast.showToast(
+          state.errorMessage,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
   }
 
   // Handle Person State Change
@@ -614,10 +680,10 @@ class _ParentsState extends State<Parents> {
       );
     }).toList();
 
-    reminderRequests.forEach((element) {
+    for (var element in reminderRequests) {
       logger.d(element.fullName);
       logger.d(element.phoneNumber);
-    });
+    }
 
     List<String> recipients =
         selectedParents.map((e) => "${e.firstName} ${e.lastName1}").toList();
@@ -631,7 +697,6 @@ class _ParentsState extends State<Parents> {
   }
 
   saveDataSendSMS() {
-
     List<Map<String, String>> recipientsWithNameAndNumbers = [
       ...selectedAllPeopleSendSMS,
       ...selectedStudentsSendSMS,
@@ -640,13 +705,12 @@ class _ParentsState extends State<Parents> {
       ...selectedSuppliersSendSMS,
       ...selectedSchoolAdministratorsSendSMS
     ]
-    .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
-    .toList();
+        .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
+        .toList();
 
     ReminderRequest reminderRequest = ReminderRequest(
-      type: reminderType(widget.parentSection),
-      recipientsNameWithNumbers: recipientsWithNameAndNumbers
-    );
+        type: reminderType(widget.parentSection),
+        recipientsNameWithNumbers: recipientsWithNameAndNumbers);
 
     List<String> recipients = [
       ...selectedAllPeopleSendSMS,
@@ -657,14 +721,9 @@ class _ParentsState extends State<Parents> {
       ...selectedSchoolAdministratorsSendSMS
     ].map((e) => "${e.firstName} ${e.lastName1}").toList();
 
-    context
-      .read<SMSBloc>()
-      .add(
-        SaveDataSendSMSState(
-          reminderRequest,
-          recipients
-        ),
-      );
+    context.read<SMSBloc>().add(
+          SaveDataSendSMSState(reminderRequest, recipients),
+        );
   }
 
   void navigate(BuildContext context) {
@@ -802,18 +861,27 @@ class _ParentsState extends State<Parents> {
 
   @override
   void initState() {
-    var studentList = preferences.getStudents();
-    students.addAll(studentList);
+    // var studentList = preferences.getStudents();
+    // students.addAll(studentList);
     var parentList = preferences.getParents();
     parents.addAll(parentList);
     var teacherList = preferences.getTeachers();
     teachers.addAll(teacherList);
     var allPeopleList = preferences.getPersons();
     allPeople.addAll(allPeopleList);
-    getAllStudents();
+    if (widget.parentSection == ParentSection.sms) {
+      var studentList = preferences.getStudentsWithPendingPayments();
+      students.addAll(studentList);
+    } else {
+      var studentList = preferences.getStudents();
+      students.addAll(studentList);
+    }
+    widget.parentSection == ParentSection.sms
+        ? getStudentsWithPendingPayments()
+        : getAllStudents();
 
     String? groupValue = prefs.getString("groups");
-      if (groupValue != null) {
+    if (groupValue != null) {
       List<dynamic> groupData = json.decode(groupValue);
       try {
         List<Group> groupList = groupData.map((data) {
@@ -834,7 +902,6 @@ class _ParentsState extends State<Parents> {
           ...groupList
         ];
         currentSelectedGroupSpace = groupSpace.first.name!;
-
       } catch (e) {
         logger.f(groupData);
         logger.w(e);
@@ -850,7 +917,6 @@ class _ParentsState extends State<Parents> {
 
   @override
   Widget build(BuildContext context) {
-
     ParentSection parentSection = widget.parentSection;
     var toggleOptions = [
       SizedBox(
@@ -871,9 +937,7 @@ class _ParentsState extends State<Parents> {
       if (searchController.text.isNotEmpty) {
         searchResults.clear();
         for (var student in students) {
-          if (student.firstName!
-              .toLowerCase()
-              .contains(searchController.text)) {
+          if (student.firstName.toLowerCase().contains(searchController.text)) {
             searchResults.add(student);
           }
         }
@@ -888,7 +952,7 @@ class _ParentsState extends State<Parents> {
     var buildAlphabetListView = _buildAlphabetView();
     var buildSearchResultsAlphabetView = _buildSearchResultAlphabetView();
     var buildAlphabetListViewOptions = _buildAlphabetListViewOptions();
-  
+
     return VisibilityDetector(
       key: parentData,
       onVisibilityChanged: (visibilityInfo) {
@@ -908,7 +972,12 @@ class _ParentsState extends State<Parents> {
         listener: (context, state) {
           // TODO: implement listener
           if (isCurrentPage) {
-            _handlePersonStateChange(context, state);
+            if (widget.parentSection == ParentSection.sms) {
+              _handleStudentsWithPendingPaymentsStateChange(context, state);
+            } else {
+              _handlePersonStateChange(context, state);
+            }
+            // _handlePersonStateChange(context, state);
           }
         },
         builder: (context, state) {
@@ -930,10 +999,8 @@ class _ParentsState extends State<Parents> {
                               ...selectedSuppliersSendSMS,
                               ...selectedSchoolAdministratorsSendSMS
                             ].isEmpty
-
-                        ? Colors.blue.shade200
-                        : PrimaryColors.primaryDeepBlue
-
+                              ? Colors.blue.shade200
+                              : PrimaryColors.primaryDeepBlue
                           : parentSection == ParentSection.sms
                               ? selectedParents.isEmpty
                                   ? Colors.grey.shade300
@@ -1004,11 +1071,11 @@ class _ParentsState extends State<Parents> {
   }
 
   List<String> getFirstCharacters(List<PersonModel> people) {
-    return people.map((person) => person.firstName![0]).toList();
+    return people.map((person) => person.firstName[0]).toList();
   }
 
   List<String> getResultsFirstCharacters(List<PersonModel> people) {
-    return searchResults.map((person) => person.firstName![0]).toList();
+    return searchResults.map((person) => person.firstName[0]).toList();
   }
 
   List<PersonModel> getSelectedPersonState(ParentSection parentSection) {
@@ -1051,7 +1118,7 @@ class _ParentsState extends State<Parents> {
       setState(() {});
       List<PersonModel> selectedPeople =
           getSelectedPersonState(widget.parentSection);
-      selectedPeople.sort((a, b) => a.firstName!.compareTo(b.firstName!));
+      selectedPeople.sort((a, b) => a.firstName.compareTo(b.firstName));
 
       return _buildAlphabetListViewItemGroup(alphabet, selectedPeople);
     }).toList();
@@ -1059,7 +1126,7 @@ class _ParentsState extends State<Parents> {
 
   List<AlphabetListViewItemGroup> _buildSearchResultAlphabetView() {
     return getResultsFirstCharacters(searchResults).map((alphabet) {
-      searchResults.sort((a, b) => a.firstName!.compareTo(b.firstName!));
+      searchResults.sort((a, b) => a.firstName.compareTo(b.firstName));
       return _buildAlphabetListViewItemGroup(alphabet, searchResults);
     }).toList();
   }
@@ -1069,7 +1136,7 @@ class _ParentsState extends State<Parents> {
     return AlphabetListViewItemGroup(
       tag: alphabet,
       children: people.map((person) {
-        if (person.firstName!.startsWith(alphabet)) {
+        if (person.firstName.startsWith(alphabet)) {
           return _buildPersonListTile(person);
         }
         return const SizedBox();
@@ -1119,8 +1186,8 @@ class _ParentsState extends State<Parents> {
         symbol,
         style: TextStyle(
           color: widget.parentSection == ParentSection.sendSMS
-            ? SMSRecipientColors.primaryColor
-            : secondaryColorSelection(widget.parentSection),
+              ? SMSRecipientColors.primaryColor
+              : secondaryColorSelection(widget.parentSection),
           fontSize: CustomFontSize.small,
         ),
       ),
@@ -1181,7 +1248,9 @@ class _ParentsState extends State<Parents> {
           subtitle: _buildSubtitleRow(person),
           trailing: _buildCheckbox(person),
         ),
-        Divider(color: Colors.grey.shade300),
+        Divider(
+            color:
+                secondaryColorSelection(widget.parentSection).withOpacity(0.2)),
       ],
     );
   }
@@ -1189,16 +1258,22 @@ class _ParentsState extends State<Parents> {
   Function()? getOnTapFunction(PersonModel person) =>
       (widget.parentSection != ParentSection.sms &&
               widget.parentSection != ParentSection.sendSMS)
-          ? () {
-              widget.parentSection == ParentSection.students
-                  ? Navigator.pop(context, person)
-                  : (nextScreen(
-                      context: context,
-                      screen: destinationRoutes(
+          ? () async {
+              if (widget.parentSection == ParentSection.students) {
+                Navigator.pop(context, person);
+              } else {
+                bool? reload = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => destinationRoutes(
                         widget.parentSection,
                         personData: person,
                       ),
                     ));
+                if (reload != null && reload) {
+                  getAllStudents();
+                }
+              }
             }
           : null;
 
@@ -1207,11 +1282,10 @@ class _ParentsState extends State<Parents> {
           Text(
             fullName.length > 24 ? '${fullName.substring(0, 11)}...' : fullName,
             style: TextStyle(
-              color:
-              widget.parentSection == ParentSection.sendSMS 
-                ? SMSRecipientColors.primaryColor 
-                : secondaryColorSelection(widget.parentSection),
-                fontSize: CustomFontSize.medium),
+                color: widget.parentSection == ParentSection.sendSMS
+                    ? SMSRecipientColors.primaryColor
+                    : secondaryColorSelection(widget.parentSection),
+                fontSize: CustomFontSize.small),
           ),
           const SizedBox(width: 10),
           if (widget.parentSection == ParentSection.sendSMS)
@@ -1254,7 +1328,9 @@ class _ParentsState extends State<Parents> {
           : null;
 
   Widget _buildSubtitleText(PersonModel person) => Text(
-        "${DateFormat('dd MMM yy').format(date)} - Due: GHS ${50 + Random().nextInt(150 - 50)}",
+        person.studentInvoices != null
+            ? "${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}"
+            : "",
         style: TextStyle(
             fontSize: CustomFontSize.small,
             color:
@@ -1279,15 +1355,16 @@ class _ParentsState extends State<Parents> {
       (widget.parentSection == ParentSection.sms ||
               widget.parentSection == ParentSection.sendSMS)
           ? Checkbox(
-            side: widget.parentSection == ParentSection.sendSMS
-              ? (
-                  person.phoneNumber1 != null && person.phoneNumber1!.isNotEmpty ||
-                  person.phoneNumber2 != null && person.phoneNumber2!.isNotEmpty ||
-                  person.phoneNumber3 != null && person.phoneNumber3!.isNotEmpty
-                )
-                  ? const BorderSide(color: Colors.black)
-                  : BorderSide(color: Colors.black.withOpacity(0.2))
-              : const BorderSide(color: Colors.black),
+              side: widget.parentSection == ParentSection.sendSMS
+                  ? (person.phoneNumber1 != null &&
+                              person.phoneNumber1!.isNotEmpty ||
+                          person.phoneNumber2 != null &&
+                              person.phoneNumber2!.isNotEmpty ||
+                          person.phoneNumber3 != null &&
+                              person.phoneNumber3!.isNotEmpty)
+                      ? const BorderSide(color: Colors.black)
+                      : BorderSide(color: Colors.black.withOpacity(0.2))
+                  : const BorderSide(color: Colors.black),
               activeColor: getActiveColor(),
               value: getCheckboxValue(person),
               onChanged: (value) => onCheckboxChanged(person, value),
@@ -1308,30 +1385,27 @@ class _ParentsState extends State<Parents> {
       currentSelectedGroupSpace == allGroups
           ? selectedAllPeopleSendSMS
               .any((selectedAllPeople) => person.id == selectedAllPeople.id)
-
-            : currentSelectedGroupSpace == Role.Student.name
-                ? selectedStudentsSendSMS
-                    .any((selectedAllPeople) => person.id == selectedAllPeople.id)
-  
+          : currentSelectedGroupSpace == Role.Student.name
+              ? selectedStudentsSendSMS
+                  .any((selectedAllPeople) => person.id == selectedAllPeople.id)
               : currentSelectedGroupSpace == Role.Relative.name
                   ? selectedParentsSendSMS.any(
                       (selectedAllPeople) => person.id == selectedAllPeople.id)
-
-                    : currentSelectedGroupSpace == Role.Teacher.name
-                      ? selectedTeachersSendSMS.any(
-                          (selectedAllPeople) => person.id == selectedAllPeople.id)
-                   
+                  : currentSelectedGroupSpace == Role.Teacher.name
+                      ? selectedTeachersSendSMS.any((selectedAllPeople) =>
+                          person.id == selectedAllPeople.id)
                       : currentSelectedGroupSpace == Role.Supplier.name
-                        ? selectedSuppliersSendSMS.any(
-                            (selectedAllPeople) => person.id == selectedAllPeople.id)
+                          ? selectedSuppliersSendSMS.any((selectedAllPeople) =>
+                              person.id == selectedAllPeople.id)
 
-                        // : currentSelectedGroupSpace == schoolAdministrator
-                        //   ? selectedSchoolAdministratorsSendSMS.any(
-                        //     (selectedAllPeople) => person.id == selectedAllPeople.id)
+                          // : currentSelectedGroupSpace == schoolAdministrator
+                          //   ? selectedSchoolAdministratorsSendSMS.any(
+                          //     (selectedAllPeople) => person.id == selectedAllPeople.id)
 
-                  // Default target is school administrator
-                  : selectedSchoolAdministratorsSendSMS.any(
-                      (selectedAllPeople) => person.id == selectedAllPeople.id);
+                          // Default target is school administrator
+                          : selectedSchoolAdministratorsSendSMS.any(
+                              (selectedAllPeople) =>
+                                  person.id == selectedAllPeople.id);
 
   void onCheckboxChanged(PersonModel person, bool? value) {
     if (widget.parentSection == ParentSection.sms) {
@@ -1358,11 +1432,11 @@ class _ParentsState extends State<Parents> {
             .forEach(addParent);
 
         // Add Student if parent is selected
-        selectedParents.forEach((element) {
+        for (var element in selectedParents) {
           if (person.childRelations!.contains(element)) {
             addStudent(person);
           }
-        });
+        }
       } else {
         // Iterate over child relations and remove parents
         person.childRelations!
@@ -1376,11 +1450,11 @@ class _ParentsState extends State<Parents> {
             .forEach(removeParent);
 
         // Remove Student if parent is unselected
-        selectedParents.forEach((element) {
+        for (var element in selectedParents) {
           if (!person.childRelations!.contains(element)) {
             removeStudent(person);
           }
-        });
+        }
       }
     }
 
@@ -1430,8 +1504,7 @@ class _ParentsState extends State<Parents> {
     }
   }
 
-  AppBar _buildAppBar(
-      List<SizedBox> toggleOptions) {
+  AppBar _buildAppBar(List<SizedBox> toggleOptions) {
     return AppBar(
       title: _buildAppBarTitle(widget.parentSection),
       iconTheme: _buildAppBarIconTheme(),
@@ -1474,7 +1547,7 @@ class _ParentsState extends State<Parents> {
         );
       case ParentSection.students:
         return Text(
-          "Students",
+          "Select parent",
           style: TextStyle(
             color: secondaryColorSelection(parentSection),
           ),
@@ -1483,10 +1556,9 @@ class _ParentsState extends State<Parents> {
         return Text(
           "Select recipient",
           style: TextStyle(
-            color: SMSRecipientColors.primaryColor,
-            fontSize: 22,
-            fontWeight: FontWeight.bold
-          ),
+              color: SMSRecipientColors.primaryColor,
+              fontSize: 22,
+              fontWeight: FontWeight.bold),
         );
       case ParentSection.contacts:
         return Text(
@@ -1509,8 +1581,8 @@ class _ParentsState extends State<Parents> {
     return IconThemeData(
       size: 24,
       color: widget.parentSection == ParentSection.sendSMS
-        ? SMSRecipientColors.primaryColor
-        : secondaryColorSelection(widget.parentSection),
+          ? SMSRecipientColors.primaryColor
+          : secondaryColorSelection(widget.parentSection),
     );
   }
 
@@ -1564,12 +1636,18 @@ class _ParentsState extends State<Parents> {
   }
 
   Widget _buildAddButton() {
-    return widget.parentSection == ParentSection.students
+    return widget.parentSection == ParentSection.students ||
+            widget.parentSection == ParentSection.contacts
         ? IconButton(
             onPressed: () {
               nextScreen(
                 context: context,
-                screen: const PersonDetails(screenFunction: ScreenFunction.add, contactVariant: ContactVariant.student,),
+                screen: PersonDetails(
+                  screenFunction: ScreenFunction.add,
+                  contactVariant: widget.parentSection == ParentSection.students
+                      ? ContactVariant.student
+                      : ContactVariant.others,
+                ),
               );
             },
             icon: const Icon(Icons.add_rounded),
@@ -1577,8 +1655,7 @@ class _ParentsState extends State<Parents> {
         : Container();
   }
 
-  PreferredSizeWidget _buildAppBarBottom(
-      List<SizedBox> toggleOptions) {
+  PreferredSizeWidget _buildAppBarBottom(List<SizedBox> toggleOptions) {
     return PreferredSize(
       preferredSize: _buildPreferredSize(),
       child: _buildColumn(toggleOptions),
@@ -1588,16 +1665,15 @@ class _ParentsState extends State<Parents> {
   Size _buildPreferredSize() {
     return Size(
       double.infinity,
-      widget.parentSection == ParentSection.sendSMS ?
-        160 
-        : widget.parentSection == ParentSection.contacts
-          ? 170
-          : 80,
+      widget.parentSection == ParentSection.sendSMS
+          ? 160
+          : widget.parentSection == ParentSection.contacts
+              ? 170
+              : 80,
     );
   }
 
-  Padding _buildColumn(
-      List<SizedBox> toggleOptions) {
+  Padding _buildColumn(List<SizedBox> toggleOptions) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
@@ -1621,7 +1697,7 @@ class _ParentsState extends State<Parents> {
   Widget _buildDropDownGroups() {
     return CustomDropDownMenu(
       color: secondaryColorSelection(widget.parentSection),
-      options: ["Groups", "All people", ...Constants.personRoles],
+      options: const ["Groups", "All people", ...Constants.personRoles],
       onChanged: _updateSelectedContactType,
       value: selectedContactType,
     );
@@ -1630,6 +1706,10 @@ class _ParentsState extends State<Parents> {
   Widget _buildCustomTextField() {
     return widget.parentSection != ParentSection.sendSMS
         ? CustomTextField(
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: secondaryColorSelection(widget.parentSection),
+            ),
             color: secondaryColorSelection(widget.parentSection),
             hintText: "Search...",
             controller: searchController,
@@ -1640,113 +1720,107 @@ class _ParentsState extends State<Parents> {
 
   Widget _buildCustomGroups() {
     return widget.parentSection == ParentSection.sendSMS
-      ?
-      Container(
-        margin: const EdgeInsets.only(right: 4, left: 4),
-        padding: const EdgeInsets.only(top: 0, bottom: 6, left: 0, right: 0),
-        child:
-        GroupDropdownMenu(
-          groupSpace: groupSpace, 
-          handleChangeDropdownItem: handleChangeDropdownItem,
-          btnstyle: ButtonStyle(
-            foregroundColor: MaterialStatePropertyAll<Color>(SMSRecipientColors.primaryColor),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            enabledBorder: OutlineInputBorder(
-              gapPadding: 0,
-              borderRadius: BorderRadius.circular(10),
-              borderSide:  const BorderSide(
-                color: Color(0xFF031A38),
-                width: 1,
-              ),
-            ),
-          ),
-          leadingIcon: Icon(
-            Icons.filter_list_alt,
-            color: SMSRecipientColors.primaryColor
-          )
-        )
-      )
-      : Container();
+        ? Container(
+            margin: const EdgeInsets.only(right: 4, left: 4),
+            padding:
+                const EdgeInsets.only(top: 0, bottom: 6, left: 0, right: 0),
+            child: GroupDropdownMenu(
+                groupSpace: groupSpace,
+                handleChangeDropdownItem: handleChangeDropdownItem,
+                btnstyle: ButtonStyle(
+                  foregroundColor: MaterialStatePropertyAll<Color>(
+                      SMSRecipientColors.primaryColor),
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                  enabledBorder: OutlineInputBorder(
+                    gapPadding: 0,
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF031A38),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                leadingIcon: Icon(Icons.filter_list_alt,
+                    color: SMSRecipientColors.primaryColor)))
+        : Container();
   }
 
   Widget _buildCustomizeParentSelectionSendSMSSearch() {
     return widget.parentSection == ParentSection.sendSMS
-        ?
-        Container(
-          margin: const EdgeInsets.only(right: 4, left: 4),
-          padding: const EdgeInsets.only(top: 5, bottom: 0, left: 0, right: 0),
-        child: CustomTextField(
-          color: SMSRecipientColors.primaryColor,
-          fillColor: SMSRecipientColors.fifthColor,
-          hintText: "Search...",
-          controller: searchController,
-          onChanged: searchSendSMS,
-          )
-        )
+        ? Container(
+            margin: const EdgeInsets.only(right: 4, left: 4),
+            padding:
+                const EdgeInsets.only(top: 5, bottom: 0, left: 0, right: 0),
+            child: CustomTextField(
+              color: SMSRecipientColors.primaryColor,
+              fillColor: SMSRecipientColors.fifthColor,
+              hintText: "Search...",
+              controller: searchController,
+              onChanged: searchSendSMS,
+            ))
         : Container();
   }
 
   // Widget _selectALlButton(){
-    // return widget.parentSection == ParentSection.sendSMS
-    //     ? GFButton(
-    //         onPressed: () {
-    //           setState(() {
-    //             personSelectionSendSMS = [true, false, false, false];
-    //             selectedAllPeopleSendSMS = [...allPeople];
-    //             selectedStudentsSendSMS = [...students];
-    //             selectedParentsSendSMS = [...parents];
-    //             selectedTeachersSendSMS = [...teachers];
-    //           });
-    //         },
-    //         text: "Select all",
-    //         textStyle: TextStyle(
-    //           fontSize: CustomFontSize.small,
-    //           color: SMSRecipientColors.primaryColor,
-    //         ),
-    //         color: SMSRecipientColors.fifthColor,
-    //         size: GFSize.LARGE,
-    //         shape: GFButtonShape.pills,
-    //         type: GFButtonType.outline,
-    //         fullWidthButton: true,
-    //         icon: Icon(
-    //           Icons.check_circle_outline_rounded,
-    //           color: SMSRecipientColors.primaryColor,
-    //         ),
-    //         position: GFPosition.end,
-    //       )
-    //     : Container();
+  // return widget.parentSection == ParentSection.sendSMS
+  //     ? GFButton(
+  //         onPressed: () {
+  //           setState(() {
+  //             personSelectionSendSMS = [true, false, false, false];
+  //             selectedAllPeopleSendSMS = [...allPeople];
+  //             selectedStudentsSendSMS = [...students];
+  //             selectedParentsSendSMS = [...parents];
+  //             selectedTeachersSendSMS = [...teachers];
+  //           });
+  //         },
+  //         text: "Select all",
+  //         textStyle: TextStyle(
+  //           fontSize: CustomFontSize.small,
+  //           color: SMSRecipientColors.primaryColor,
+  //         ),
+  //         color: SMSRecipientColors.fifthColor,
+  //         size: GFSize.LARGE,
+  //         shape: GFButtonShape.pills,
+  //         type: GFButtonType.outline,
+  //         fullWidthButton: true,
+  //         icon: Icon(
+  //           Icons.check_circle_outline_rounded,
+  //           color: SMSRecipientColors.primaryColor,
+  //         ),
+  //         position: GFPosition.end,
+  //       )
+  //     : Container();
 
-    // Select All Radio Button
-    // return widget.parentSection == ParentSection.sendSMS
-    //     ? Row(
-    //         mainAxisAlignment: MainAxisAlignment.end,
-    //         children: [
-    //           Text(
-    //             "Select all",
-    //             style: TextStyle(
-    //               fontSize: CustomFontSize.small,
-    //               color: SMSRecipientColors.primaryColor,
-    //             ),
-    //           ),
-    //           Radio(
-    //             value: true,
-    //             groupValue: selectAll,
-    //             onChanged: (value) {
-    //               setState(() {
-    //                 selectAll = value as bool;
-    //                 personSelectionSendSMS = [true, false, false, false];
-    //                 selectedAllPeopleSendSMS = [...allPeople];
-    //                 selectedStudentsSendSMS = [...students];
-    //                 selectedParentsSendSMS = [...parents];
-    //                 selectedTeachersSendSMS = [...teachers];
-    //               });
-    //             },
-    //             activeColor: SMSRecipientColors.primaryColor,
-    //           ),
-    //         ],
-    //       )
-    //     : Container();
+  // Select All Radio Button
+  // return widget.parentSection == ParentSection.sendSMS
+  //     ? Row(
+  //         mainAxisAlignment: MainAxisAlignment.end,
+  //         children: [
+  //           Text(
+  //             "Select all",
+  //             style: TextStyle(
+  //               fontSize: CustomFontSize.small,
+  //               color: SMSRecipientColors.primaryColor,
+  //             ),
+  //           ),
+  //           Radio(
+  //             value: true,
+  //             groupValue: selectAll,
+  //             onChanged: (value) {
+  //               setState(() {
+  //                 selectAll = value as bool;
+  //                 personSelectionSendSMS = [true, false, false, false];
+  //                 selectedAllPeopleSendSMS = [...allPeople];
+  //                 selectedStudentsSendSMS = [...students];
+  //                 selectedParentsSendSMS = [...parents];
+  //                 selectedTeachersSendSMS = [...teachers];
+  //               });
+  //             },
+  //             activeColor: SMSRecipientColors.primaryColor,
+  //           ),
+  //         ],
+  //       )
+  //     : Container();
   // }
-
 }

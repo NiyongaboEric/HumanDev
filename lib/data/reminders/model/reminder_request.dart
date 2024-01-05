@@ -1,4 +1,4 @@
-import 'package:seymo_pay_mobile_application/data/tags/model/tag_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
 enum ReminderType { LETTER, SENT_SMS, CALL, F2F, OTHER }
 
@@ -9,7 +9,7 @@ class ReminderRequest {
   final String? note;
   final String? message;
   final String? scheduledTime;
-  final List<TagModel>? tags;
+  final List<DefaultTagsSettings>? tags;
   final List<Map<String, String>>? recipientsNameWithNumbers;
   final int? studentPersonId;
   final int? relativePersonId;
@@ -42,6 +42,15 @@ class ReminderRequest {
         'relativePersonId': relativePersonId,
       };
     }
+
+    if (type == ReminderType.LETTER || type == ReminderType.F2F) {
+      return {      'type': reminderEnumToString(type),
+      'note': note,
+      'tags': tags,
+      'personId': personId,
+      };      
+    }
+
     return {
       'type': reminderEnumToString(type),
       'note': note,

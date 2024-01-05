@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
@@ -12,11 +10,9 @@ import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/reminder_tags.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/toggle_tags.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../../data/constants/logger.dart';
 import '../../../../../../data/reminders/model/reminder_request.dart';
-import '../../../../../../data/tags/model/tag_model.dart';
 import '../../../../../widgets/inputs/text_area.dart';
 import '../../blocs/reminder_bloc.dart';
 
@@ -32,19 +28,19 @@ class LogConversation extends StatefulWidget {
 class _LogConversationState extends State<LogConversation> {
   var prefs = sl<SharedPreferenceModule>();
   DateTime date = DateTime.now();
-  final List<TagModel> location = [];
-  final List<TagModel> financials = [];
-  final List<TagModel> warnings = [];
-  final List<TagModel> kids = [];
+  final List<DefaultTagsSettings> location = [];
+  final List<DefaultTagsSettings> financials = [];
+  final List<DefaultTagsSettings> warnings = [];
+  final List<DefaultTagsSettings> kids = [];
   final List<ToggleTagComponents> atmosphere = [
     // ToggleTagComponents(positive: "Friendly", negative: "Hostile"),
     // ToggleTagComponents(positive: "Owning it", negative: "Excuses"),
   ];
-  final List<TagModel> selectedLocation = [];
-  final List<TagModel> selectedFinancials = [];
-  final List<TagModel> selectedWarnings = [];
-  final List<TagModel> selectedKids = [];
-  final List<TagModel> selectedAtmosphere = [];
+  final List<DefaultTagsSettings> selectedLocation = [];
+  final List<DefaultTagsSettings> selectedFinancials = [];
+  final List<DefaultTagsSettings> selectedWarnings = [];
+  final List<DefaultTagsSettings> selectedKids = [];
+  final List<DefaultTagsSettings> selectedAtmosphere = [];
 
   final TextEditingController noteController = TextEditingController();
 
@@ -108,11 +104,15 @@ class _LogConversationState extends State<LogConversation> {
     });
   }
 
-  Widget buildTagSection(List<TagModel> tags, List<TagModel> selectedTags,
-      String sectionTitle, IconData icon) {
+  Widget buildTagSection(
+      List<DefaultTagsSettings> tags,
+      List<DefaultTagsSettings> selectedTags,
+      String sectionTitle,
+      IconData icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SizedBox(height: 32),
         Row(
           children: [
             Icon(icon),
@@ -137,7 +137,7 @@ class _LogConversationState extends State<LogConversation> {
           unselectedTextColor: SecondaryColors.secondaryYellow.withOpacity(0.5),
           addTag: (value) {
             setState(() {
-              selectedTags.add(value as TagModel);
+              selectedTags.add(value);
             });
           },
           removeTag: (value) {
@@ -150,8 +150,11 @@ class _LogConversationState extends State<LogConversation> {
     );
   }
 
-  Widget buildToggleTagSection(List<ToggleTagComponents> toggleTags,
-      String sectionTitle, IconData icon, List<TagModel> selectedTags) {
+  Widget buildToggleTagSection(
+      List<ToggleTagComponents> toggleTags,
+      String sectionTitle,
+      IconData icon,
+      List<DefaultTagsSettings> selectedTags) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,37 +200,38 @@ class _LogConversationState extends State<LogConversation> {
   void initState() {
     // TODO: implement initState
     // Get Tags form Shared Preferences
-    var tagValues = prefs.getTags();
-    logger.d(tagValues.map((e) => e.isReminderTag).toList());
-    if (tagValues.isNotEmpty) {
-      var paidMoneyTags =
-          tagValues.where((element) => element.isReminderTag == true);
+    var tagValues = prefs.getAdmin();
+    if (tagValues != null) {
+      var conversationTags = tagValues.tagsSettings!.reminders!.conversation;
+      if (conversationTags == null) return;
       setState(() {
         // Add non-existing values to tags
-        for (var tag in paidMoneyTags) {
-          if (tag != null) {
-            if (tag.name!.startsWith("Location")) {
-              var locationTag = tag.name!.split(":");
-              logger.d(locationTag[0]);
-              location.add(tag);
-            }
-            if (tag.name!.startsWith("Financial")) {
-              var financialTag = tag.name!.split(":");
-              if (financialTag.length > 1) {
-                financials.add(tag);
-              }
-            }
-            if (tag.name!.startsWith("Warning")) {
-              var warningTag = tag.name!.split(":");
-              warnings.add(tag);
-            }
-            if (tag.name!.startsWith("Kid")) {
-              var kidTag = tag.name!.split(":");
-              kids.add(tag);
-            }
-            if (tag.name!.startsWith("Atmosphere")) {
-              var atmosphereTag = tag.name!.split(":");
-            }
+        for (var tag in conversationTags) {
+          if (tag.name! == "Location") {
+            location.addAll(tag.tags!.map((e) => DefaultTagsSettings.fromJson(e)));
+          }
+          if (tag.name! == "Financials") {
+            financials.addAll(tag.tags!.map((e) => DefaultTagsSettings.fromJson(e)));
+          }
+          if (tag.name! == "Warnings") {
+            warnings.addAll(tag.tags!.map((e) => DefaultTagsSettings.fromJson(e)));
+          }
+          if (tag.name! == "Kids") {
+            kids.addAll(tag.tags!.map((e) => DefaultTagsSettings.fromJson(e)));
+          }
+          if (tag.name! == "Atmosphere") {
+            logger.wtf(tag.tags!);
+            // atmosphere.addAll(tag.tags!.map((e) => ToggleTagComponents.fromJson(e)));
+            tag.tags!.forEach((e) {
+              logger.wtf(e);
+              atmosphere.add(ToggleTagComponents(
+                positive: DefaultTagsSettings.fromJson(e[0]), // TODO: Fix this
+                negative: DefaultTagsSettings.fromJson(e[1]), // TODO: Fix this
+              ));
+              (e as List).map((e) => logger.wtf(DefaultTagsSettings.fromJson(e)));
+              // atmosphere.add();
+            });
+            
           }
         }
       });
@@ -273,7 +277,7 @@ class _LogConversationState extends State<LogConversation> {
                           //   );
                           // } else {
                           // }
-                            _logReminder();
+                          _logReminder();
                         }
                       : null,
                   icon: const Icon(Icons.check))
@@ -341,12 +345,12 @@ class _LogConversationState extends State<LogConversation> {
               ),
               const SizedBox(height: 32),
               const Divider(),
-              // buildToggleTagSection(
-              //   atmosphere,
-              //   "Atmosphere",
-              //   Icons.scatter_plot_sharp,
-              //   selectedAtmosphere,
-              // ),
+              buildToggleTagSection(
+                atmosphere,
+                "Atmosphere",
+                Icons.scatter_plot_sharp,
+                selectedAtmosphere,
+              ),
               const SizedBox(height: 32),
               Row(
                 children: [
@@ -395,7 +399,7 @@ class _LogConversationState extends State<LogConversation> {
                           //   );
                           // } else {
                           // }
-                            _logReminder();
+                          _logReminder();
                         }
                       : null,
                   label: !state.isLoading
@@ -421,8 +425,8 @@ class _LogConversationState extends State<LogConversation> {
 }
 
 class ToggleTagComponents {
-  final TagModel positive;
-  final TagModel negative;
+  final DefaultTagsSettings positive;
+  final DefaultTagsSettings negative;
 
   ToggleTagComponents({
     required this.positive,

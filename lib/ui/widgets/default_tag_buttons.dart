@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
@@ -6,15 +7,15 @@ import '../utilities/custom_colors.dart';
 import 'inputs/text_field.dart';
 
 class DefaultTagButtons extends StatefulWidget {
-  final List<String> tags;
-  final List<String> selectedTags;
+  final List<DefaultTagsSettings> tags;
+  final List<DefaultTagsSettings> selectedTags;
   final Color? color;
   final Color textColor;
   final Color btnColor;
   final Color unselectedTag;
   final Color unselectedTagText;
-  final Function(String) addTag;
-  final Function(String) removeTag;
+  final Function(DefaultTagsSettings) addTag;
+  final Function(DefaultTagsSettings) removeTag;
   const DefaultTagButtons({
     super.key,
     this.color,
@@ -43,7 +44,7 @@ class _DefaultTagButtonsState extends State<DefaultTagButtons> {
     super.initState();
   }
 
-  void _toggleTag(bool selected, String tag) {
+  void _toggleTag(bool selected, DefaultTagsSettings tag) {
     setState(() {
       if (selected) {
         widget.selectedTags.add(tag);
@@ -55,7 +56,7 @@ class _DefaultTagButtonsState extends State<DefaultTagButtons> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> tags = List.from(widget.tags);
+    List<DefaultTagsSettings> tags = List.from(widget.tags);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -91,9 +92,9 @@ class _DefaultTagButtonsState extends State<DefaultTagButtons> {
           width: double.infinity,
           child: Wrap(
             children: [
-              ...tags.asMap().entries.map((entry) {
+              ...tags.map((tag) {
                 // int index = entry.key;
-                String tag = entry.value;
+                // String tag = entry.value;
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
@@ -121,8 +122,8 @@ class _DefaultTagButtonsState extends State<DefaultTagButtons> {
                               widget.removeTag(tag);
                             }
                           : null,
-                      key: Key(tag),
-                      label: Text(tag,
+                      key: Key(tag.name!),
+                      label: Text(tag.name!,
                           style: const TextStyle(fontSize: CustomFontSize.medium)),
                       backgroundColor: widget.selectedTags.contains(tag)
                           ? (widget.color ?? CustomColor.primaryLight)
@@ -180,7 +181,7 @@ class _DefaultTagButtonsState extends State<DefaultTagButtons> {
                                     child: FloatingActionButton.extended(
                                         backgroundColor: widget.btnColor,
                                         onPressed: () {
-                                          widget.addTag(tagController.text);
+                                          // widget.addTag(tagController.text);
                                           tagController.clear();
                                           Navigator.pop(context);
                                         },

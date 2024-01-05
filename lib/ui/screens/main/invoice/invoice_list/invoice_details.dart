@@ -1,28 +1,266 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:getwidget/getwidget.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
+import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
+import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_request.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/space/model/space_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/select_fee.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/third_party_invoice/batch_invoice_preview.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 
+import '../../../../widgets/inputs/number_field.dart';
 import '../../../../widgets/invoice/invoice_table.dart';
+import '../bloc/invoice_bloc.dart';
+
+var sl = GetIt.instance;
 
 enum InvoiceType { EDIT, CREATE }
 
 class InvoiceDetails extends StatefulWidget {
   final InvoiceType invoiceType;
-  const InvoiceDetails({super.key, required this.invoiceType});
+  final InvoiceModel? invoice;
+  final PersonModel? person;
+  final List<PersonModel>? persons;
+  const InvoiceDetails({
+    super.key,
+    required this.invoiceType,
+    this.invoice,
+    this.person,
+    this.persons,
+  });
 
   @override
   State<InvoiceDetails> createState() => _InvoiceDetailsState();
 }
 
 class _InvoiceDetailsState extends State<InvoiceDetails> {
+  var prefs = sl.get<SharedPreferenceModule>();
+  TextEditingController itemNameController = TextEditingController();
+  TextEditingController dueAmountController = TextEditingController();
+  TextEditingController paidAmountController = TextEditingController();
+  List<InvoiceItemRequest> invoiceItems = [];
+  List<PaymentScheduleRequest> paymentSchedules = [];
+  bool isItemEditable = false;
+  bool isPaymentScheduleEditable = false;
+  bool saveDraft = false;
   var date = DateTime.now();
   _updateDate(DateTime newDate) {
     setState(() {
       date = newDate;
     });
+  }
+
+  // Get Items Data
+  void _getItemsData(List<InvoiceItemRequest> data) {
+    // Save Items Data
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        invoiceItems = data;
+      });
+    });
+    // logger.d(invoiceItems);
+  }
+
+  // Get Payment Schedule Data
+  void _getPaymentScheduleData(List<PaymentScheduleRequest> data) {
+    // Save Payment Schedule Data
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          paymentSchedules = data;
+        });
+      }
+    });
+    // logger.d(paymentSchedules);
+  }
+
+  int? totalAmount() {
+    logger.d(paymentSchedules.first);
+    if (paymentSchedules.isNotEmpty && invoiceItems.isNotEmpty) {
+      // if Sum of all payment schedules due amounts equals sum of all invoice items total amounts return sum of one of the values
+      if (paymentSchedules
+              .map((e) => e.dueAmount)
+              .reduce((value, element) => value + element) ==
+          invoiceItems
+              .map((e) => e.total)
+              .reduce((value, element) => value + element)) {
+        logger.d(paymentSchedules
+            .map((e) => e.dueAmount)
+            .reduce((value, element) => value + element));
+        return paymentSchedules
+            .map((e) => e.dueAmount)
+            .reduce((value, element) => value + element);
+      } else {
+        // if Sum of all payment schedules due amounts does not equal sum of all invoice items total amounts return null
+        return invoiceItems
+            .map((e) => e.total)
+            .reduce((value, element) => value + element);
+      }
+    }
+    return null;
+  }
+
+  // Save as Draft
+  void _saveAsDraft() {
+    setState(() {
+      saveDraft = true;
+    });
+    // Save Invoice as Draft
+    Space space = prefs.getSpaces().first;
+    context.read<InvoiceBloc>().add(
+          widget.invoiceType == InvoiceType.CREATE
+              ? InvoiceEventCreateInvoice(
+                  InvoiceCreateRequest(
+                      invoiceePersonId: widget.person!.childRelations!.first.id,
+                      studentPersonId: widget.person!.id,
+                      invoiceDate: date.toIso8601String(),
+                      currency: space.currency ?? "GHS",
+                      invoiceItems: invoiceItems,
+                      paymentSchedules: paymentSchedules,
+                      totalAmount: totalAmount()!,
+                      isDraft: true,
+                      type: "NORMAL",
+                      creditNoteForInvoiceId: 1),
+                )
+              : InvoiceUpdateInvoice(
+                  InvoiceUpdateRequest(
+                      studentPersonId: widget.person!.id,
+                      invoiceePersonId: widget.person!.childRelations!.first.id,
+                      invoiceDate: date.toIso8601String(),
+                      currency: space.currency ?? "GHS",
+                      invoiceItems: invoiceItems,
+                      paymentSchedules: paymentSchedules,
+                      totalAmount: totalAmount()!,
+                      isDraft: true,
+                      type: "NORMAL",
+                      creditNoteForInvoiceId: 1),
+                  widget.invoice!.id.toString()),
+        );
+  }
+
+  // Commit Invoice
+  void _commitInvoice() {
+    setState(() {
+      saveDraft = false;
+    });
+    // Commit Invoice
+    Space space = prefs.getSpaces().first;
+    context.read<InvoiceBloc>().add(widget.invoiceType == InvoiceType.CREATE
+        ? InvoiceEventCreateInvoice(
+            InvoiceCreateRequest(
+              studentPersonId: widget.person!.id,
+              invoiceePersonId: widget.person!.childRelations!.first.id,
+              invoiceDate: date.toIso8601String(),
+              currency: space.currency ?? "GHS",
+              invoiceItems: invoiceItems,
+              paymentSchedules: paymentSchedules,
+              totalAmount: totalAmount()!,
+              transactionIds: [],
+              isDraft: false,
+              type: "NORMAL",
+              creditNoteForInvoiceId: 1,
+            ),
+          )
+        : InvoiceUpdateInvoice(
+            InvoiceUpdateRequest(
+              studentPersonId: widget.person!.id,
+              invoiceePersonId: widget.person!.childRelations!.first.id,
+              invoiceDate: date.toIso8601String(),
+              currency: space.currency ?? "GHS",
+              invoiceItems: invoiceItems,
+              paymentSchedules: paymentSchedules,
+              totalAmount: totalAmount()!,
+              transactionIds: [],
+              isDraft: false,
+              type: "NORMAL",
+              creditNoteForInvoiceId: 1,
+            ),
+            widget.invoice!.id.toString()));
+  }
+
+  // Get Tertiary Color
+  var tertiaryColor = MaterialColor(
+    TertiaryColors.tertiaryPurple.value,
+    <int, Color>{
+      50: TertiaryColors.tertiaryPurple,
+      100: TertiaryColors.tertiaryPurple,
+      200: TertiaryColors.tertiaryPurple,
+      300: TertiaryColors.tertiaryPurple,
+      400: TertiaryColors.tertiaryPurple,
+      500: TertiaryColors.tertiaryPurple,
+      600: TertiaryColors.tertiaryPurple,
+      700: TertiaryColors.tertiaryPurple,
+      800: TertiaryColors.tertiaryPurple,
+      900: TertiaryColors.tertiaryPurple,
+    },
+  );
+
+  // Handle Invoice State Change
+  void _handleInvoiceStateChange(BuildContext context, InvoiceState state) {
+    if (state.invoiceResponse != null &&
+        state.invoiceResponse!.isSuccess != null &&
+        state.invoiceResponse!.isSuccess!) {
+      GFToast.showToast(
+        state.successMessage ?? "Invoice created successfully",
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        toastDuration: 5,
+        backgroundColor: Colors.green,
+        toastBorderRadius: 12.0,
+      );
+      Navigator.pop(context, true);
+    }
+    if (state.invoiceResponse != null &&
+        state.invoiceResponse!.isSuccess != null &&
+        !state.invoiceResponse!.isSuccess!) {
+      GFToast.showToast(
+        state.invoiceResponse!.errorMessage,
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        toastDuration: 5,
+        backgroundColor: Colors.red,
+        toastBorderRadius: 12.0,
+      );
+    }
+    if (state.status == InvoiceStateStatus.success) {
+      GFToast.showToast(
+        state.successMessage ?? "Invoice created successfully",
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        toastDuration: 5,
+        backgroundColor: Colors.green,
+        toastBorderRadius: 12.0,
+      );
+      Navigator.pop(context, true);
+    }
+    if (state.status == InvoiceStateStatus.error) {
+      GFToast.showToast(
+        state.errorMessage ?? "Network Error",
+        context,
+        toastPosition: GFToastPosition.BOTTOM,
+        toastDuration: 5,
+        backgroundColor: Colors.red,
+        toastBorderRadius: 12.0,
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    date = widget.invoice != null
+        ? DateTime.parse(widget.invoice!.invoiceDate)
+        : DateTime.now();
+    super.initState();
   }
 
   @override
@@ -31,17 +269,28 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       backgroundColor: BackgroundColors.bgPurple,
       appBar: _buildAppBar(),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+        padding: const EdgeInsets.only(left: 12, right: 12, bottom: 20),
         children: [
-          _buildInvoiceDraft(),
-          SizedBox(height: 20),
-          _buildNames("ALex", "Diana"),
-          SizedBox(height: 20),
+          if (widget.invoice != null &&
+              widget.invoice!.number != null &&
+              widget.invoice!.number!.isNotEmpty)
+            _buildInvoiceDraft(),
+          const SizedBox(height: 20),
+          _buildNames(
+              widget.person != null
+                  ? "${widget.person?.childRelations?.first.firstName ?? ""} ${widget.person?.childRelations?.first.lastName1 ?? ""}"
+                  : "${widget.persons!.length.toString()} recipients",
+              widget.person != null
+                  ? "${widget.person?.firstName ?? ""} ${widget.person?.lastName1 ?? ""}"
+                  : "${widget.persons!.length.toString()} students"),
+          const SizedBox(height: 20),
           _buildDatePicker(),
-          SizedBox(height: 60),
+          const SizedBox(height: 20),
           _buildInvoiceItems(),
-          SizedBox(height: 60),
+          const SizedBox(height: 20),
           _buildPaymentSchedule(),
+          const SizedBox(height: 20),
+          _buildActionButtons(),
         ],
       ),
     );
@@ -63,46 +312,32 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
           color: SecondaryColors.secondaryPurple,
         ),
       ),
-      actions: [],
+      actions: const [],
     );
   }
 
-  // Build Invoice Details
-
-  // Build Invoice Title
   //Build Invoice Draft
   Widget _buildInvoiceDraft() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          width: 90,
-          height: 1,
-          decoration: BoxDecoration(
-            color: TertiaryColors.tertiaryPurple,
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-        Text(
-          widget.invoiceType == InvoiceType.CREATE
-              ? "Invoice draft"
-              : "Invoice draft",
-          style: TextStyle(
-            color: TertiaryColors.tertiaryPurple,
-            fontSize: CustomFontSize.large,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        Container(
-          width: 90,
-          height: 1,
-          decoration: BoxDecoration(
-            color: TertiaryColors.tertiaryPurple,
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
-      ],
-    );
+    return widget.invoiceType == InvoiceType.EDIT
+        ? Row(
+            children: [
+              Text(
+                "Invoice: ",
+                style: TextStyle(
+                  color: TertiaryColors.tertiaryPurple,
+                  fontSize: CustomFontSize.large,
+                ),
+              ),
+              Text(
+                widget.invoice!.number!,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: CustomFontSize.large,
+                ),
+              ),
+            ],
+          )
+        : Container();
   }
 
   // Names and Titles
@@ -121,7 +356,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
             ),
             Text(
               toName,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: CustomFontSize.large,
               ),
@@ -139,7 +374,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
             ),
             Text(
               forName,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.black,
                 fontSize: CustomFontSize.large,
               ),
@@ -151,59 +386,38 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
   }
 
   Widget _buildDatePicker() {
-    var tertiaryColor = MaterialColor(
-      TertiaryColors.tertiaryPurple.value,
-      <int, Color>{
-        50: TertiaryColors.tertiaryPurple,
-        100: TertiaryColors.tertiaryPurple,
-        200: TertiaryColors.tertiaryPurple,
-        300: TertiaryColors.tertiaryPurple,
-        400: TertiaryColors.tertiaryPurple,
-        500: TertiaryColors.tertiaryPurple,
-        600: TertiaryColors.tertiaryPurple,
-        700: TertiaryColors.tertiaryPurple,
-        800: TertiaryColors.tertiaryPurple,
-        900: TertiaryColors.tertiaryPurple,
-      },
-    );
-
-    return DatePicker(
-      onSelect: _updateDate,
-      date: date,
-      bgColor: BackgroundColors.bgPurple,
-      borderColor: SecondaryColors.secondaryPurple,
-      pickerColor: tertiaryColor,
-      pickerTimeLime: PickerTimeLime.both,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Invoice date",
+            style: TextStyle(
+              color: SecondaryColors.secondaryPurple,
+              fontSize: CustomFontSize.medium,
+            )),
+        DatePicker(
+          onSelect: _updateDate,
+          date: date,
+          bgColor: BackgroundColors.bgPurple,
+          borderColor: SecondaryColors.secondaryPurple,
+          pickerColor: tertiaryColor,
+          pickerTimeLime: PickerTimeLime.both,
+        ),
+      ],
     );
   }
 
   // Build Invoice Items
   Widget _buildInvoiceItems() {
+    List<InvoiceItemModel>? invoiceItems = [];
+    invoiceItems = widget.invoice?.invoiceItems;
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Items",
-              style: TextStyle(
-                color: TertiaryColors.tertiaryPurple,
-                fontSize: CustomFontSize.large,
-              ),
-            ),
-            const Spacer(),
-            FloatingActionButton.extended(
-              onPressed: () {},
-              label: Text("Add a standard item",
-                  style: TextStyle(
-                    color: TertiaryColors.tertiaryPurple,
-                    fontSize: CustomFontSize.small,
-                  )),
-              backgroundColor: PrimaryColors.primaryPurple,),
-          ],
+        InvoiceTable(
+          invoiceTableType: InvoiceTableType.ITEMS,
+          itemItems: invoiceItems,
+          isEditable: isItemEditable,
+          savedItems: _getItemsData,
         ),
-        SizedBox(height: 20),
-        InvoiceTable(invoiceTableType: InvoiceTableType.ITEMS,),
       ],
     );
   }
@@ -213,15 +427,134 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "Payment schedule",
-          style: TextStyle(
-            color: TertiaryColors.tertiaryPurple,
-            fontSize: CustomFontSize.large,
+        InvoiceTable(
+          invoiceTableType: InvoiceTableType.PAYMENT_SCHEDULE,
+          paymentSchedules: widget.invoice?.paymentSchedules,
+          isEditable: isPaymentScheduleEditable,
+          savedPaymentSchedules: _getPaymentScheduleData,
+        ),
+      ],
+    );
+  }
+
+  // BUild Action Buttons
+  Widget _buildActionButtons() {
+    return BlocConsumer<InvoiceBloc, InvoiceState>(
+      listener: (context, state) {
+        // TODO: implement listener
+        _handleInvoiceStateChange(context, state);
+      },
+      builder: (context, state) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            DefaultBtn(
+              isLoading: saveDraft ? state.isLoading : false,
+              key: const Key("save-as-draft"),
+              onPressed: () {
+                widget.persons != null && widget.persons!.isNotEmpty
+                    ? nextScreen(
+                        context: context, screen: BatchInvoicePreview())
+                    : _saveAsDraft();
+                _saveAsDraft();
+              },
+              text: "Save as draft",
+              btnColor: LightInvoiceColors.medium,
+              textColor: Colors.white,
+            ),
+            DefaultBtn(
+              isLoading: !saveDraft ? state.isLoading : false,
+              key: const Key("commit"),
+              onPressed: () {
+                widget.persons != null && widget.persons!.isNotEmpty
+                    ? nextScreen(
+                        context: context, screen: BatchInvoicePreview())
+                :_commitInvoice();
+              },
+              text: "Commit",
+              btnColor: LightInvoiceColors.dark,
+              textColor: Colors.white,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Build New Item Dialog
+  _buildPaymentScheduleDialog() {
+    var paymentScheduleDate = DateTime.now();
+    // onSelect Date
+    void onSelect(DateTime newDate) {
+      setState(() {
+        paymentScheduleDate = newDate;
+      });
+    }
+
+    return AlertDialog(
+      backgroundColor: PrimaryColors.primaryPurple,
+      actionsAlignment: MainAxisAlignment.spaceBetween,
+      title: Text(
+        "Add new item",
+        style: TextStyle(
+          color: SecondaryColors.secondaryPurple,
+          fontSize: CustomFontSize.medium,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DatePicker(
+            onSelect: onSelect,
+            date: paymentScheduleDate,
+            bgColor: BackgroundColors.bgPurple,
+            borderColor: SecondaryColors.secondaryPurple,
+            pickerColor: tertiaryColor,
+            pickerTimeLime: PickerTimeLime.both,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              SizedBox(
+                width: 110,
+                child: CustomNumberField(
+                  hintText: "Due",
+                  controller: dueAmountController,
+                  color: SecondaryColors.secondaryPurple,
+                ),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 110,
+                child: CustomNumberField(
+                  hintText: "Paid",
+                  controller: paidAmountController,
+                  color: SecondaryColors.secondaryPurple,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text(
+            "Cancel",
+            style: TextStyle(
+              color: TertiaryColors.tertiaryPurple,
+              fontSize: CustomFontSize.medium,
+            ),
           ),
         ),
-        SizedBox(height: 20),
-        InvoiceTable(invoiceTableType: InvoiceTableType.PAYMENT_SCHEDULE,),
+        DefaultBtn(
+          onPressed: () {},
+          text: "Add",
+          btnColor: LightInvoiceColors.dark,
+          textColor: PrimaryColors.primaryPurple,
+        ),
       ],
     );
   }

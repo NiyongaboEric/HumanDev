@@ -1,3 +1,5 @@
+import '../../person/model/person_model.dart';
+
 class JournalModel {
   final int? id;
   final int? spaceId;
@@ -7,7 +9,7 @@ class JournalModel {
   final String? currency;
   final String? reason;
   final String? description;
-  final List<String>? tags;
+  final List<DefaultTagsSettings>? tags;
   final int? recipientId;
   final String? recipientFirstName;
   final String? recipientLastName;
@@ -51,7 +53,7 @@ class JournalModel {
       currency: json['currency'],
       reason: json['reason'],
       description: json['description'],
-      tags: json['tags'] != null ? json['tags'] : null,
+      tags: json['tags'],
       recipientId: json['recipientId'],
       recipientFirstName: json['recipientFirstName'],
       recipientLastName: json['recipientLastName'],

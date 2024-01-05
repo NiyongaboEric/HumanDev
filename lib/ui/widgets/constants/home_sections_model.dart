@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_list.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/students.dart';
 
 import '../../screens/main/person/parent.dart';
@@ -226,7 +227,12 @@ List<HomeSection> homeSections(BuildContext context) {
           color: Colors.white,
         ),
       ),
-      onPressed: () {},
+      onPressed: () {
+        nextScreen(
+          context: context,
+          screen: const PeopleListInvoice(personType: PersonType.STUDENT),
+        );
+      },
     ),
     HomeButton(
       title: "Third Party Invoice",
@@ -238,7 +244,12 @@ List<HomeSection> homeSections(BuildContext context) {
           color: Colors.white,
         ),
       ),
-      onPressed: () {},
+      onPressed: () {
+        nextScreen(
+          context: context,
+          screen: const PeopleListInvoice(personType: PersonType.THIRD_PARTY),
+        );
+      },
     ),
   ];
 
