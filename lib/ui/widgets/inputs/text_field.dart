@@ -12,7 +12,10 @@ class CustomTextField extends StatefulWidget {
   final TextInputType? inputType;
   final Color? fillColor;
   final double? hintTextSize;
- 
+  final double? fontSize;
+  final bool? isDense;
+  final double? heightSize;
+
   const CustomTextField({
     super.key,
     this.obscureText,
@@ -23,7 +26,10 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     required this.color,
     this.fillColor,
-    this.hintTextSize
+    this.hintTextSize,
+    this.fontSize,
+    this.isDense,
+    this.heightSize,
   });
 
   @override
@@ -54,56 +60,67 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
-      child: TextFormField(
-        controller: widget.controller,
-        obscureText: textVisibility ?? false,
-        keyboardType: widget.inputType ?? TextInputType.text,
-        textCapitalization: TextCapitalization.sentences,
-        cursorColor: widget.color,
-        style: const TextStyle(fontSize: 24),
-        decoration: InputDecoration(
-          hintText: widget.hintText,
-          hintStyle: TextStyle(
-              color: Colors.grey.shade400, fontWeight: FontWeight.normal, fontSize: widget.hintTextSize),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-              color: widget.color.withOpacity(0.5),
+      height: widget.heightSize ?? 80,
+      child: SizedBox(
+        child: TextFormField(
+          controller: widget.controller,
+          obscureText: textVisibility ?? false,
+          keyboardType: widget.inputType ?? TextInputType.text,
+          textCapitalization: TextCapitalization.sentences,
+          cursorColor: widget.color,
+          style: TextStyle(fontSize: widget.fontSize ?? 24),
+          decoration: InputDecoration(
+            isDense: widget.isDense,
+            hintText: widget.hintText,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.normal,
+              fontSize: widget.hintTextSize,
             ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: widget.color.withOpacity(0.5),
+              ),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: widget.color.withOpacity(0.5),
+              ),
+            ),
+            disabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: widget.color.withOpacity(0.5),
+              ),
+            ),
+            errorBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: widget.color.withOpacity(0.5),
+              ),
+            ),
+            focusedErrorBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                color: widget.color.withOpacity(0.5),
+              ),
+            ),
+            filled: true,
+            fillColor: widget.fillColor ?? Colors.white.withOpacity(0.6),
+            suffixIcon: textVisibility != null
+                ? IconButton(
+                    onPressed: handleTextVisibility,
+                    icon: Icon(
+                      textVisibility!
+                          ? Icons.visibility_rounded
+                          : Icons.visibility_off_rounded,
+                      color: widget.color ?? CustomColor.primaryDark,
+                    ),
+                  )
+                : null,
           ),
-          focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-              color: widget.color.withOpacity(0.5),
-            ),),
-          disabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-              color: widget.color.withOpacity(0.5),
-            ),),
-          errorBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-              color: widget.color.withOpacity(0.5),
-            ),),
-          focusedErrorBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-              color: widget.color.withOpacity(0.5),
-            ),),
-          filled: true,
-          fillColor:  widget.fillColor ?? Colors.white.withOpacity(0.6),
-          suffixIcon: textVisibility != null
-              ? IconButton(
-                  onPressed: handleTextVisibility,
-                  icon: Icon(
-                    textVisibility!
-                        ? Icons.visibility_rounded
-                        : Icons.visibility_off_rounded,
-                        color: widget.color ?? CustomColor.primaryDark,
-                  ),
-                )
-              : null,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
         ),
-        validator: widget.validator,
-        onChanged: widget.onChanged,
       ),
     );
   }

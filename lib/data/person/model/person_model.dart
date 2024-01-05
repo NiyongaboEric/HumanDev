@@ -121,7 +121,7 @@ class PersonModel {
   final String? phoneNumber1;
   final String? phoneNumber2;
   final String? phoneNumber3;
-  final bool isActive;
+  // final bool isActive;
   final bool isLegal;
   final String? organizationName;
   final String createdAt;
@@ -162,7 +162,7 @@ class PersonModel {
     this.phoneNumber1,
     this.phoneNumber2,
     this.phoneNumber3,
-    required this.isActive,
+    // required this.isActive,
     required this.isLegal,
     this.organizationName,
     required this.createdAt,
@@ -195,7 +195,7 @@ class PersonModel {
       phoneNumber1: json['phoneNumber1'],
       phoneNumber2: json['phoneNumber2'],
       phoneNumber3: json['phoneNumber3'],
-      isActive: json['isActive'],
+      // isActive: json['isActive'],
       isLegal: json['isLegal'],
       organizationName: json['organizationName'],
       createdAt: json['createdAt'],
@@ -237,7 +237,7 @@ class PersonModel {
       'phoneNumber1': phoneNumber1,
       'phoneNumber2': phoneNumber2,
       'phoneNumber3': phoneNumber3,
-      'isActive': isActive,
+      // 'isActive': isActive,
       'isLegal': isLegal,
       'organizationName': organizationName,
       'createdAt': createdAt,
@@ -270,7 +270,7 @@ class ChildRelation {
   final int? spaceId;
   final bool? isLegal;
   final String? counterpartyName;
-  final bool? isActive;
+  // final bool? isActive;
   final String? createdAt;
   final String? updatedAt;
   final String? relation;
@@ -289,7 +289,7 @@ class ChildRelation {
     this.spaceId,
     this.isLegal,
     this.counterpartyName,
-    this.isActive,
+    // this.isActive,
     this.createdAt,
     this.updatedAt,
     this.relation,
@@ -310,7 +310,7 @@ class ChildRelation {
       spaceId: json['spaceId'],
       isLegal: json['isLegal'],
       counterpartyName: json['counterpartyName'],
-      isActive: json['isActive'],
+      // isActive: json['isActive'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       relation: json['relation'],
@@ -332,7 +332,7 @@ class ChildRelation {
       'spaceId': spaceId,
       'isLegal': isLegal,
       'counterpartyName': counterpartyName,
-      'isActive': isActive,
+      // 'isActive': isActive,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'relation': relation,
@@ -352,7 +352,7 @@ class RelativePerson {
   final int? spaceId;
   final bool? isLegal;
   final String? counterpartyName;
-  final bool? isActive;
+  // final bool? isActive;
   final String? createdAt;
   final String? updatedAt;
   final String? relation;
@@ -369,7 +369,7 @@ class RelativePerson {
     this.spaceId,
     this.isLegal,
     this.counterpartyName,
-    this.isActive,
+    // this.isActive,
     this.createdAt,
     this.updatedAt,
     this.relation,
@@ -388,7 +388,7 @@ class RelativePerson {
       spaceId: json['spaceId'],
       isLegal: json['isLegal'],
       counterpartyName: json['counterpartyName'],
-      isActive: json['isActive'],
+      // isActive: json['isActive'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       relation: json['relation'],
@@ -408,7 +408,7 @@ class RelativePerson {
       'spaceId': spaceId,
       'isLegal': isLegal,
       'counterpartyName': counterpartyName,
-      'isActive': isActive,
+      // 'isActive': isActive,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'relation': relation,

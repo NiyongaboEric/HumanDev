@@ -6,6 +6,7 @@ import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_auth.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/space_registration.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -189,8 +190,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextButton(
                           onPressed: () {
                             nextScreenAndReplace(
-                                context: context,
-                                screen: const RegistrationScreen());
+                              context: context,
+                              // screen: const RegistrationScreen(),
+                              screen: const SpaceRegistration(),
+                            );
                           },
                           child: Text(
                             'Register',

@@ -26,8 +26,12 @@ class AuthEventLogin extends AuthEvent {
 
 class AuthEventRegister extends AuthEvent {
   final RegistrationRequest registrationRequest;
+  final PersonSpaceRegistrationRequest personSpaceRegistrationRequest;
 
-  const AuthEventRegister(this.registrationRequest);
+  const AuthEventRegister(
+    this.registrationRequest,
+    this.personSpaceRegistrationRequest,
+  );
 }
 
 class AuthEventRefresh extends AuthEvent {

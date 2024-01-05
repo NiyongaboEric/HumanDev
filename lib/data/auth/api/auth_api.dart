@@ -12,7 +12,10 @@ var sl = GetIt.instance;
 
 abstract class AuthApi {
   // Registration
-  Future<String> register(RegistrationRequest registrationRequest);
+  Future<TokenResponse> register(RegistrationRequest registrationRequest);
+  Future<String> completeRegistration(
+      PersonSpaceRegistrationRequest completeRegistrationRequest);
+
   // Login
   Future<TokenResponse> login(LoginRequest loginRequest);
   // Refresh
@@ -23,12 +26,30 @@ abstract class AuthApi {
 
 class AuthApiImpl implements AuthApi {
   @override
-  Future<String> register(RegistrationRequest registrationRequest) async {
+  Future<TokenResponse> register(
+      RegistrationRequest registrationRequest) async {
     // TODO: implement register
     var interceptor = sl.get<RequestInterceptor>();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
     final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/registration",
         data: registrationRequest.toJson());
+    logger.e(res.data);
+    if (res.statusCode == 201) {
+      return TokenResponse.fromJson(res.data);
+    }
+    throw Exception(res.data["message"]);
+  }
+
+  @override
+  Future<String> completeRegistration(
+    PersonSpaceRegistrationRequest completeRegistrationRequest,
+  ) async {
+    var interceptor = sl.get<RequestInterceptor>();
+    var dio = sl.get<Dio>()..interceptors.add(interceptor);
+
+    final res = await dio.post("/auth/user-registration",
+        data: completeRegistrationRequest.toJson());
+
     logger.e(res.data);
     if (res.statusCode == 201) {
       return res.data.toString();

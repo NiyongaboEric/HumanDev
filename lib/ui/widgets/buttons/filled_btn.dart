@@ -50,12 +50,14 @@ class _FilledBtnState extends State<FilledBtn> {
     return ElevatedButton(
       onPressed: loading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ), backgroundColor: widget.color ?? CustomColor.primaryDark,
-          elevation: 5,
-          maximumSize:
-              getSize(btnSize) ?? const Size(double.infinity, double.infinity)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(6),
+        ),
+        backgroundColor: widget.color ?? CustomColor.primaryDark,
+        elevation: 5,
+        // maximumSize:
+        //     getSize(btnSize) ?? const Size(double.infinity, double.infinity),
+      ),
       // btnVariant == BtnVariant.primary
       //     ? CustomColor.primaryDark
       //     : btnVariant == BtnVariant.secondary

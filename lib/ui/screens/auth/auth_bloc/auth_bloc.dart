@@ -54,19 +54,31 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthEventRegister event, Emitter<AuthState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final message = await authApiImpl.register(event.registrationRequest);
+      final TokenResponse message =
+          await authApiImpl.register(event.registrationRequest);
+
+      sharedPreferenceModule.saveToken(message);
+
+      final registerUser = await authApiImpl
+          .completeRegistration(event.personSpaceRegistrationRequest);
+
+      // print('....pre last step... ${message} ... ${message.accessToken}');
+      print('....last step... $registerUser');
+
       emit(state.copyWith(
         status: AuthStateStatus.authenticated,
-        registrationMessage: message,
+        registrationMessage: 'Account space created successfully',
         isLoading: false,
       ));
-      // emit(state.copyWith(
-      //   status: AuthStateStatus.initial,
-      // ));
+      emit(state.copyWith(
+        status: AuthStateStatus.initial,
+      ));
     } on DioException catch (error) {
+      print('....... Error step:  $error,  ... ${error.response}');
       emit(state.copyWith(
         status: AuthStateStatus.unauthenticated,
-        registerFailure: error.response!.data['message'],
+        registerFailure: error
+            .response!.data['message'], //error.response!.data['message'][0],
         isLoading: false,
       ));
       emit(state.copyWith(
@@ -94,12 +106,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ));
     } finally {
       emit(state.copyWith(
-        status: AuthStateStatus.initial,
-        isLoading: false,
-        refreshFailure: null,
-        loginFailure: null,
-        tokenResponse: null
-      ));
+          status: AuthStateStatus.initial,
+          isLoading: false,
+          refreshFailure: null,
+          loginFailure: null,
+          tokenResponse: null));
     }
   }
 

@@ -3,10 +3,11 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/phone_number.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 
-class CustomPhoneNumberField extends StatelessWidget {
+class CustomCountryNameField extends StatelessWidget {
   final String? initialValue;
   final Function(PhoneNumber)? onChanged;
-  final void Function(dynamic)? onCountryChanged;
+  final String? Function(dynamic)? onValidate;
+  final Function(dynamic)? onCountryChanged;
   final TextEditingController controller;
   final Color? color;
   final Color? fillColor;
@@ -14,7 +15,7 @@ class CustomPhoneNumberField extends StatelessWidget {
   final bool? isDense;
   final double? heightSize;
 
-  const CustomPhoneNumberField({
+  const CustomCountryNameField({
     super.key,
     this.onChanged,
     this.initialValue,
@@ -25,6 +26,7 @@ class CustomPhoneNumberField extends StatelessWidget {
     this.isDense,
     this.heightSize,
     this.onCountryChanged,
+    this.onValidate,
   });
 
   @override
@@ -32,6 +34,7 @@ class CustomPhoneNumberField extends StatelessWidget {
     return SizedBox(
       height: heightSize ?? 80,
       child: IntlPhoneField(
+        // showCountryFlag: false,
         controller: controller,
         keyboardType: TextInputType.number,
         initialValue: initialValue,
@@ -40,7 +43,9 @@ class CustomPhoneNumberField extends StatelessWidget {
         decoration: InputDecoration(
           counterText: "",
           hintStyle: TextStyle(
-              color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+            color: Colors.grey.shade400,
+            fontWeight: FontWeight.normal,
+          ),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           enabledBorder: UnderlineInputBorder(
@@ -72,17 +77,9 @@ class CustomPhoneNumberField extends StatelessWidget {
           isDense: isDense,
           fillColor: fillColor ?? Colors.white.withOpacity(0.6),
         ),
-        initialCountryCode: 'GH',
+        // initialCountryCode: 'GH',
         onChanged: onChanged,
-        validator: (value) {
-          if (value!.number.isEmpty) {
-            return "Please enter your phone number";
-          }
-          if (!value.isValidNumber()) {
-            return "Please enter a valid phone number";
-          }
-          return null;
-        },
+        validator: onValidate,
         onCountryChanged: onCountryChanged,
       ),
     );
