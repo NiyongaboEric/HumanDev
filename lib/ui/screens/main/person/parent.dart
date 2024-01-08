@@ -1120,7 +1120,28 @@ class _ParentsState extends State<Parents> {
           getSelectedPersonState(widget.parentSection);
       selectedPeople.sort((a, b) => a.firstName.compareTo(b.firstName));
 
-      return _buildAlphabetListViewItemGroup(alphabet, selectedPeople);
+      bool isAlphabetMatch = false;
+      var result = selectedPeople.map((person) {
+        if (person.firstName.startsWith(alphabet)) {
+          isAlphabetMatch = true;
+          return _buildPersonListTile(person);
+        }
+        return const SizedBox();
+      }).toList();
+
+      if (isAlphabetMatch) {
+        return AlphabetListViewItemGroup(
+          tag: alphabet,
+          children: result,
+        );
+      } else {
+        return AlphabetListViewItemGroup(
+          tag: '',
+          children: [],
+        );
+      }
+
+      // return _buildAlphabetListViewItemGroup(alphabet, selectedPeople);
     }).toList();
   }
 
@@ -1307,9 +1328,10 @@ class _ParentsState extends State<Parents> {
         return const SizedBox();
       }
     } else {
-      if (person.phoneNumber1 == null &&
-          person.phoneNumber2 == null &&
-          person.phoneNumber3 == null) {
+      if (person.phoneNumber1 == null ||
+          person.phoneNumber1!.isEmpty && person.phoneNumber2 == null ||
+          person.phoneNumber1!.isEmpty && person.phoneNumber3 == null ||
+          person.phoneNumber1!.isEmpty) {
         return Image.asset("assets/icons/null_number.png",
             width: 20, height: 20, color: Colors.red);
       } else {
@@ -1490,9 +1512,10 @@ class _ParentsState extends State<Parents> {
             ? handleRemovePersonForSendSMS(currentSelectedGroupSpace, person)
             : null;
 
-    if (person.phoneNumber1 == null &&
-        person.phoneNumber2 == null &&
-        person.phoneNumber3 == null) {
+    if (person.phoneNumber1 == null ||
+        person.phoneNumber1!.isEmpty && person.phoneNumber2 == null ||
+        person.phoneNumber1!.isEmpty && person.phoneNumber3 == null ||
+        person.phoneNumber1!.isEmpty) {
       GFToast.showToast(
         "No phone number found",
         context,

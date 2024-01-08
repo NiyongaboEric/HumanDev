@@ -1,7 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/cli_commands.dart';
 
+import 'package:getwidget/getwidget.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/model/reminder_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/sms/bloc/sms_bloc.dart';
@@ -46,30 +48,36 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
     String message = messageController.text;
     String recipientsAsString = "";
 
-  	reminderRequest.recipientsNameWithNumbers?.forEach((element) {
-      var number = element.values.join().split('+')[1];
-      recipientsAsString += '$number;';
+    reminderRequest.recipientsNameWithNumbers?.forEach((element) {
+      String contact = element.values.toString();
+      // has plus sign
+      if (contact.split('').contains('+')) {
+        var number = element.values.join().split('+')[1];
+        recipientsAsString += '$number;';
+      } else {
+        // has not plus sign
+        var number = element.values.join().split('+')[0];
+        recipientsAsString += '$number;';
+      }
     });
 
     String? encodeQueryParameters(Map<String, String> params) {
       return params.entries
-        .map((e) => '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-        .join('&');
+          .map((e) =>
+              '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+          .join('&');
     }
 
     Uri smsUri = Uri(
       scheme: 'sms',
       path: recipientsAsString,
-      query: encodeQueryParameters(<String, String>{
-        'body': message
-      }),
+      query: encodeQueryParameters(<String, String>{'body': message}),
     );
 
     try {
       if (await canLaunchUrl(smsUri)) {
         await launchUrl(smsUri);
       }
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -139,13 +147,11 @@ class _SendSMSState extends State<StudentsParentsTeachersSendSMS> {
       SizedBox(
           width: (MediaQuery.of(context).size.width - 30) / 2,
           child: Center(
-            child: Text(
-              "Send now",
-              style: TextStyle(
-                fontSize: CustomFontSize.medium,
-                color: SMSRecipientColors.primaryColor,
-              )
-            ),
+            child: Text("Send now",
+                style: TextStyle(
+                  fontSize: CustomFontSize.medium,
+                  color: SMSRecipientColors.primaryColor,
+                )),
           )),
       SizedBox(
         width: (MediaQuery.of(context).size.width - 30) / 2,
