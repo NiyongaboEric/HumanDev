@@ -57,7 +57,7 @@ class GroupDropdownMenu extends StatelessWidget {
         ),
         leadingIcon: leadingIcon,
         inputDecorationTheme: inputDecorationTheme,
-        width: 390,
+        width: MediaQuery.of(context).size.width - 24,
         initialSelection: groupSpace.first.name,
         onSelected: (String? value) => handleChangeDropdownItem(value),  
         dropdownMenuEntries: groupSpace.map<DropdownMenuEntry<String>>((item) {

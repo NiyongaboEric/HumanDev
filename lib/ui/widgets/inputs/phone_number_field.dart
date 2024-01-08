@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/phone_number.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 
 class CustomPhoneNumberField extends StatefulWidget {
@@ -48,9 +49,9 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: widget.heightSize ?? 80,
+      // height: widget.heightSize ?? 80,
       child: IntlPhoneField(
-        controller: widget.controller,
+        // controller: widget.controller,
         keyboardType: TextInputType.number,
         initialValue: widget.initialValue,
         style: const TextStyle(fontSize: 24),
@@ -60,7 +61,7 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
           hintStyle: TextStyle(
               color: Colors.grey.shade400, fontWeight: FontWeight.normal),
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
               color: widget.color ?? CustomColor.primaryDark,

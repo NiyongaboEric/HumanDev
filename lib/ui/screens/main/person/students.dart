@@ -675,12 +675,24 @@ class _StudentsState extends State<Students> {
             child: Container()),
         if (widget.option == StudentOption.studentContact)
           IconButton(
-              onPressed: () {
-                nextScreen(
-                    context: context,
-                    screen: const PersonDetails(
+              onPressed: () async {
+                var refresh = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PersonDetails(
+                      screenFunction: ScreenFunction.add,
                       contactVariant: ContactVariant.student,
-                        screenFunction: ScreenFunction.add));
+                    ),
+                  ),
+                );
+                if (refresh != null && refresh) {
+                  _getAllStudents();
+                }
+                // nextScreen(
+                //     context: context,
+                //     screen: const PersonDetails(
+                //       contactVariant: ContactVariant.student,
+                //         screenFunction: ScreenFunction.add));
               },
               icon: const Icon(Icons.add_rounded, size: 28,))
       ],
@@ -742,7 +754,7 @@ class _StudentsState extends State<Students> {
                 ? searchResults.isEmpty
                     ? const Center(
                         child: Text(
-                          "No Results Found",
+                          "No results found",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
@@ -753,7 +765,18 @@ class _StudentsState extends State<Students> {
                         items: searchResultAlphabetView,
                         options: options,
                       )
-                : AlphabetListView(
+                : students.isEmpty
+                    ? const Center(
+                        child: Text(
+                          "No students found",
+                          style: TextStyle(
+                            // fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      )
+                    :
+                 AlphabetListView(
                     options: options,
                     items: studentAlphabetView,
                   );

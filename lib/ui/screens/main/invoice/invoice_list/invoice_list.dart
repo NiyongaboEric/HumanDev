@@ -4,8 +4,12 @@ import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_details.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -91,7 +95,6 @@ class _InvoiceListState extends State<InvoiceList> {
       setState(() {
         invoices = state.invoices!;
       });
-      _getAllPersons();
     } else if (state.status == InvoiceStateStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
         _refreshToken();
@@ -254,7 +257,15 @@ class _InvoiceListState extends State<InvoiceList> {
                           ),
                         ],
                       )
-                    : null,
+                    : Center(
+                        child: Text(
+                          "No invoices found",
+                          style: TextStyle(
+                            fontSize: CustomFontSize.medium,
+                            color: SecondaryColors.secondaryPurple,
+                          ),
+                        ),
+                      )
           );
         },
       ),

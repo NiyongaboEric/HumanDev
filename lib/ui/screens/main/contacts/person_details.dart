@@ -280,7 +280,18 @@ class _PersonDetailsState extends State<PersonDetails> {
       );
     } else if (state.status == PersonStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
-      } else {}
+      } else {
+        GFToast.showToast(
+          state.errorMessage!,
+          context,
+          toastDuration: 5,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          toastBorderRadius: 12.0,
+        );
+      }
     }
   }
 
@@ -349,6 +360,9 @@ class _PersonDetailsState extends State<PersonDetails> {
   int displayPhoneNumberField = 1;
   int displayEmailField = 1;
 
+  // Form Key
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<PersonBloc, PersonState>(
@@ -360,102 +374,107 @@ class _PersonDetailsState extends State<PersonDetails> {
         return Scaffold(
           backgroundColor: _backgroundColorSelection(),
           appBar: _buildAppBar(),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            children: [
-              const SizedBox(height: 20),
-              _buildCircleAvatar(),
-              const SizedBox(height: 20),
-              _buildTextField(firstNameController, "First name*"),
-              _buildTextField(middleNameController, "Middle name"),
-              _buildTextField(lastNameController, "Last name*"),
-              _buildDatePicker(),
-              const SizedBox(height: 20),
-              _buildGenderDropDown(),
-              const SizedBox(height: 20),
-              _buildSection(
-                  "Contacts",
-                  Icons.contact_page_rounded,
-                  [
-                    _buildPhoneNumberField(
-                        phoneNumberController, "Primary number"),
-                    if (displayPhoneNumberField >= 2)
+          body: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: [
+                const SizedBox(height: 20),
+                _buildCircleAvatar(),
+                const SizedBox(height: 20),
+                _buildTextField(firstNameController, "First name*"),
+                _buildTextField(middleNameController, "Middle name"),
+                _buildTextField(lastNameController, "Last name*"),
+                _buildDatePicker(),
+                const SizedBox(height: 20),
+                _buildGenderDropDown(),
+                const SizedBox(height: 20),
+                _buildSection(
+                    "Contacts",
+                    Icons.contact_page_rounded,
+                    [
                       _buildPhoneNumberField(
-                          phoneNumberController2, "Second number"),
-                    if (displayPhoneNumberField >= 3)
-                      _buildPhoneNumberField(
-                          phoneNumberController3, "Third number"),
-                    // SizedBox(height: 5),
-                    if (displayPhoneNumberField < 3)
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              if (displayPhoneNumberField < 3) {
-                                displayPhoneNumberField =
-                                    displayPhoneNumberField + 1;
-                              }
-                            });
-                          },
-                          child: Text(
-                            "Add another number",
-                            style: TextStyle(color: _secondaryColorSelection()),
-                          )),
-                    _buildEmailField(emailController, "Primary email"),
-                    if (displayEmailField >= 2)
-                      _buildEmailField(emailController2, "Second email"),
-                    if (displayEmailField >= 3)
-                      _buildEmailField(emailController3, "Third email"),
-                    if (displayEmailField < 3)
-                      TextButton(
-                          onPressed: () {
-                            setState(() {
-                              if (displayEmailField < 3) {
-                                displayEmailField = displayEmailField + 1;
-                              }
-                            });
-                          },
-                          child: Text(
-                            "Add another email",
-                            style: TextStyle(
-                              color: _secondaryColorSelection(),
-                              decoration: TextDecoration.underline,
-                            ),
-                          )),
-                  ],
-                  collapse: collapseContacts),
-              _buildSection(
-                  "Address",
-                  Icons.home_rounded,
+                          phoneNumberController, "Primary number"),
+                      if (displayPhoneNumberField >= 2)
+                        _buildPhoneNumberField(
+                            phoneNumberController2, "Second number"),
+                      if (displayPhoneNumberField >= 3)
+                        _buildPhoneNumberField(
+                            phoneNumberController3, "Third number"),
+                      // SizedBox(height: 5),
+                      if (displayPhoneNumberField < 3)
+                        TextButton(
+                            onPressed: () {
+                              setState(() {
+                                if (displayPhoneNumberField < 3) {
+                                  displayPhoneNumberField =
+                                      displayPhoneNumberField + 1;
+                                }
+                              });
+                            },
+                            child: Text(
+                              "Add another number",
+                              style:
+                                  TextStyle(color: _secondaryColorSelection()),
+                            )),
+                      _buildEmailField(emailController, "Primary email"),
+                      if (displayEmailField >= 2)
+                        _buildEmailField(emailController2, "Second email"),
+                      if (displayEmailField >= 3)
+                        _buildEmailField(emailController3, "Third email"),
+                      if (displayEmailField < 3)
+                        TextButton(
+                            onPressed: () {
+                              setState(() {
+                                if (displayEmailField < 3) {
+                                  displayEmailField = displayEmailField + 1;
+                                }
+                              });
+                            },
+                            child: Text(
+                              "Add another email",
+                              style: TextStyle(
+                                color: _secondaryColorSelection(),
+                                decoration: TextDecoration.underline,
+                              ),
+                            )),
+                    ],
+                    collapse: collapseContacts),
+                _buildSection(
+                    "Address",
+                    Icons.home_rounded,
+                    [
+                      _buildTextField(streetController, "Street"),
+                      _buildTextField(cityController, "City"),
+                      _buildTextField(stateController, "State"),
+                      _buildTextField(zipController, "Zip"),
+                    ],
+                    collapse: collapseAddress),
+                _buildPersonRelativeSection(),
+                _buildSection(
+                  "Groups",
+                  Icons.groups_2_rounded,
                   [
-                    _buildTextField(streetController, "Street"),
-                    _buildTextField(cityController, "City"),
-                    _buildTextField(stateController, "State"),
-                    _buildTextField(zipController, "Zip"),
+                    _buildGroupChip(),
                   ],
-                  collapse: collapseAddress),
-              _buildPersonRelativeSection(),
-              _buildSection(
-                "Groups",
-                Icons.groups_2_rounded,
-                [
-                  _buildGroupChip(),
-                ],
-                isAddButton: true,
-                btnAction: _updateGroupList,
-                collapse: collapseGroups,
-              ),
-              _buildTextArea(notesController, "Notes..."),
-              const SizedBox(height: 20),
-              _buildSection("Invoices", Icons.receipt, [],
-                  collapse: collapseInvoices),
-              _buildSection("Pending payments", Icons.attach_money_rounded, [],
-                  collapse: collapsePendingPayments),
-              const SizedBox(height: 20),
-              Divider(
-                color: _primaryColorSelection(),
-              ),
-              _buildSaveButton(saveData),
-            ],
+                  isAddButton: true,
+                  btnAction: _updateGroupList,
+                  collapse: collapseGroups,
+                ),
+                _buildTextArea(notesController, "Notes..."),
+                const SizedBox(height: 20),
+                _buildSection("Invoices", Icons.receipt, [],
+                    collapse: collapseInvoices),
+                _buildSection(
+                    "Pending payments", Icons.attach_money_rounded, [],
+                    collapse: collapsePendingPayments),
+                const SizedBox(height: 20),
+                Divider(
+                  color: _primaryColorSelection(),
+                ),
+                _buildSaveButton(saveData),
+              ],
+            ),
           ),
         );
       },
@@ -475,7 +494,23 @@ class _PersonDetailsState extends State<PersonDetails> {
           child: Container(),
         ),
         IconButton(
-          onPressed: saveData,
+          onPressed: (){
+            if (firstNameController.text.isNotEmpty || lastNameController.text.isNotEmpty || groupController.text.isNotEmpty) {
+                          saveData();
+                        } else {
+                          GFToast.showToast(
+                            "Please fill all required fields",
+                            context,
+                            toastDuration: 5,
+                            toastPosition:
+                                MediaQuery.of(context).viewInsets.bottom != 0
+                                    ? GFToastPosition.TOP
+                                    : GFToastPosition.BOTTOM,
+                            backgroundColor: Colors.red,
+                            toastBorderRadius: 12.0,
+                          );
+                        }
+          },
           icon: const Icon(Icons.check_rounded),
         ),
       ],
@@ -518,6 +553,13 @@ class _PersonDetailsState extends State<PersonDetails> {
       color: _secondaryColorSelection(),
       hintText: hintText,
       inputType: inputType,
+      // validator: (value) {
+      //   // if (value != null && value.endsWith("*")) return null;
+      //   if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
+      //     return "This field is required";
+      //   }
+      //   return null;
+      // },
     );
   }
 
@@ -570,6 +612,9 @@ class _PersonDetailsState extends State<PersonDetails> {
           initialValue: controller.text,
           controller: controller,
           color: _secondaryColorSelection(),
+          onChanged: (value) {
+            controller.text = value.completeNumber;
+          },
         ),
       ],
     );
@@ -747,7 +792,25 @@ class _PersonDetailsState extends State<PersonDetails> {
             children: [
               FloatingActionButton.extended(
                 backgroundColor: _primaryColorSelection(),
-                onPressed: state.isLoading ? null : onPressed,
+                onPressed: state.isLoading
+                    ? null
+                    : () {
+                        if (firstNameController.text.isNotEmpty || lastNameController.text.isNotEmpty || groupController.text.isNotEmpty) {
+                          onPressed!();
+                        } else {
+                          GFToast.showToast(
+                            "Please fill all required fields",
+                            context,
+                            toastDuration: 5,
+                            toastPosition:
+                                MediaQuery.of(context).viewInsets.bottom != 0
+                                    ? GFToastPosition.TOP
+                                    : GFToastPosition.BOTTOM,
+                            backgroundColor: Colors.red,
+                            toastBorderRadius: 12.0,
+                          );
+                        }
+                      },
                 label: !state.isLoading
                     ? Text(
                         "Save",

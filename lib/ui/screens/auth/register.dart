@@ -15,6 +15,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_aut
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_registration.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/filled_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/cards/upload_card.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/constants/upload_card_model.dart';
@@ -164,7 +165,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 email: emailOneController.text,
                 password: passwordController.text,
                 phoneNumber:
-                    "+${codeNumbercontrollerOne.text}${digitNumbercontrollerOne.text}",
+                    digitNumbercontrollerOne.text,
               ),
               // CompleteRegistrationRequest(
               //   firstName: firstNameController.text,
@@ -249,14 +250,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               : GFToastPosition.BOTTOM,
           backgroundColor: Colors.green,
         );
-        // login(context);
-        // nextScreen(
-        //   context: context,
-        //   screen: const HomePage(),
-        // );
         nextScreen(
           context: context,
-          screen: const LoginScreen(),
+          screen: const FullPageLoaderAuth(),
         );
         setState(() {
           handleAuth = false;
@@ -384,6 +380,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       },
     );
   }
+
+  int displayPhoneNumberField = 1;
+  int displayEmailField = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -594,230 +593,245 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             const SizedBox(height: 20),
                             const Divider(),
                             const SizedBox(height: 20),
-                            SizedBox(
-                              width: double.infinity,
+                            IconTitleSection(
+                              color: const Color(0XFF512300),
+                              icon1: Icons.alternate_email_outlined,
+                              icon2: showContactSection
+                                  ? const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                    )
+                                  : const Icon(
+                                      Icons.keyboard_arrow_right_rounded),
+                              text: " Contacts",
+                              showHideSection: () {
+                                setState(() {
+                                  showContactSection =
+                                      !showContactSection;
+                                  isVisibleContact = !isVisibleContact;
+                                });
+                              },
+                            ),
+                            Visibility(
+                              visible: isVisibleContact,
                               child: Column(
                                 children: [
-                                  IconTitleSection(
-                                    color: const Color(0XFF512300),
-                                    icon1: Icons.alternate_email_outlined,
-                                    icon2: showContactSection
-                                        ? const Icon(
-                                            Icons.keyboard_arrow_down_rounded,
-                                          )
-                                        : const Icon(
-                                            Icons.keyboard_arrow_right_rounded),
-                                    text: " Contacts",
-                                    showHideSection: () {
-                                      setState(() {
-                                        showContactSection =
-                                            !showContactSection;
-                                        isVisibleContact = !isVisibleContact;
-                                      });
-                                    },
-                                  ),
-                                  Visibility(
-                                    visible: isVisibleContact,
-                                    child: Column(
+                                  // Row(
+                                  //   mainAxisAlignment:
+                                  //       MainAxisAlignment.end,
+                                  //   children: [
+                                  //     RegistrationTextButton(
+                                  //       handleButton: () {
+                                  //         if (extendPhonenumberSize
+                                  //                 .length <
+                                  //             3) {
+                                  //           setState(() {
+                                  //             extendPhonenumberSize
+                                  //                 .add(true);
+                                  //           });
+                                  //         }
+                                  //       },
+                                  //       textName: '+ Add phone number',
+                                  //       style: const TextStyle(
+                                  //         decoration:
+                                  //             TextDecoration.underline,
+                                  //         color: Color.fromRGBO(
+                                  //             81, 35, 0, 0.80),
+                                  //         fontSize: 18,
+                                  //         fontWeight: FontWeight.bold,
+                                  //       ),
+                                  //     ),
+                                  //   ],
+                                  // ),
+                                  const SizedBox(height: 10),
+                                  // for (int i = 0;
+                                  //     i < extendPhonenumberSize.length;
+                                  //     i++)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            RegistrationTextButton(
-                                              handleButton: () {
-                                                if (extendPhonenumberSize
-                                                        .length <
-                                                    3) {
-                                                  setState(() {
-                                                    extendPhonenumberSize
-                                                        .add(true);
-                                                  });
-                                                }
+                                        // generateMultipleNumbers(
+                                        //   // countryCodecontroller:
+                                        //   //     selectPhonenumberController(
+                                        //   //         i)['countryCode'],
+                                        //   digitNumbercontroller:
+                                        //       selectPhonenumberController(
+                                        //           i)['digit'],
+                                        //   heightSize: heightSize,
+                                        //   onCountryChanged: (country) {
+                                        //     if (i == 0) {
+                                        //       setState(() {
+                                        //         countryCodeOne =
+                                        //             country.dialCode;
+                                        //         codeNumbercontrollerOne
+                                        //                 .text =
+                                        //             country.dialCode;
+                                        //       });
+                                        //     }
+                                        //     if (i == 1) {
+                                        //       setState(() {
+                                        //         countryCodeTwo =
+                                        //             country.dialCode;
+                                        //         codeNumbercontrollerTwo
+                                        //                 .text =
+                                        //             country.dialCode;
+                                        //       });
+                                        //     }
+                                        //     if (i == 2) {
+                                        //       setState(() {
+                                        //         countryCodeThree =
+                                        //             country.dialCode;
+                                        //         codeNumbercontrollerThree
+                                        //                 .text =
+                                        //             country.dialCode;
+                                        //       });
+                                        //     }
+                                        //   },
+                                        // ),
+                                        _buildPhoneNumberField(
+                                            digitNumbercontrollerOne, "Primary number"),
+                                        if (displayPhoneNumberField >= 2)
+                                          _buildPhoneNumberField(
+                                              digitNumbercontrollerTwo, "Second number"),
+                                        if (displayPhoneNumberField >= 3)
+                                          _buildPhoneNumberField(
+                                              digitNumbercontrollerThree, "Third number"),
+                                        if (displayPhoneNumberField < 3)
+                                          TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  if (displayPhoneNumberField < 3) {
+                                                    displayPhoneNumberField =
+                                                        displayPhoneNumberField + 1;
+                                                  }
+                                                });
                                               },
-                                              textName: '+ Add phone number',
-                                              style: const TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                color: Color.fromRGBO(
-                                                    81, 35, 0, 0.80),
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        for (int i = 0;
-                                            i < extendPhonenumberSize.length;
-                                            i++)
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              generateMultipleNumbers(
-                                                // countryCodecontroller:
-                                                //     selectPhonenumberController(
-                                                //         i)['countryCode'],
-                                                digitNumbercontroller:
-                                                    selectPhonenumberController(
-                                                        i)['digit'],
-                                                heightSize: heightSize,
-                                                onCountryChanged: (country) {
-                                                  if (i == 0) {
-                                                    setState(() {
-                                                      countryCodeOne =
-                                                          country.dialCode;
-                                                      codeNumbercontrollerOne
-                                                              .text =
-                                                          country.dialCode;
-                                                    });
-                                                  }
-                                                  if (i == 1) {
-                                                    setState(() {
-                                                      countryCodeTwo =
-                                                          country.dialCode;
-                                                      codeNumbercontrollerTwo
-                                                              .text =
-                                                          country.dialCode;
-                                                    });
-                                                  }
-                                                  if (i == 2) {
-                                                    setState(() {
-                                                      countryCodeThree =
-                                                          country.dialCode;
-                                                      codeNumbercontrollerThree
-                                                              .text =
-                                                          country.dialCode;
-                                                    });
-                                                  }
-                                                },
-                                              ),
-                                              if (i ==
-                                                  extendPhonenumberSize.length -
-                                                      1)
-                                                RegistrationTextButton(
-                                                  handleButton: () {
-                                                    if (extendPhonenumberSize
-                                                            .length >
-                                                        1) {
-                                                      setState(
-                                                        () {
-                                                          extendPhonenumberSize
-                                                              .removeAt(i);
-                                                        },
-                                                      );
-                                                    }
-                                                  },
-                                                  textName: 'Remove',
-                                                  style: const TextStyle(
-                                                    color: Colors.red,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        const SizedBox(height: 25),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            RegistrationTextButton(
-                                              handleButton: () {
-                                                if (extendEmailSize.length <
-                                                    3) {
-                                                  setState(() {
-                                                    extendEmailSize.add(true);
-                                                  });
-                                                }
-                                              },
-                                              textName: '+ Add email address',
-                                              style: const TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                color: Color.fromRGBO(
-                                                    81, 35, 0, 0.80),
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                        for (int i = 0;
-                                            i < extendEmailSize.length;
-                                            i++) ...{
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              const SizedBox(height: 10),
-                                              CustomTextField(
-                                                hintText: "Email",
-                                                controller: i == 0
-                                                    ? emailOneController
-                                                    : i == 1
-                                                        ? emailTwoController
-                                                        : i == 2
-                                                            ? emailThreeController
-                                                            : emailOneController,
-                                                heightSize: heightSizeEmail,
-                                                validator: (value) {
-                                                  const pattern =
-                                                      r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
-                                                      r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
-                                                      r'\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*'
-                                                      r'[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4]'
-                                                      r'[0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9]'
-                                                      r'[0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\'
-                                                      r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
-                                                  final regex = RegExp(pattern);
-                                                  if (value!.isEmpty) {
-                                                    setState(() {
-                                                      heightSizeEmail = 80;
-                                                    });
-                                                    return "Please enter your email ";
-                                                  } else if (!regex
-                                                      .hasMatch(value)) {
-                                                    return 'Enter a valid email address';
-                                                  } else {
-                                                    setState(() {
-                                                      heightSizeEmail = 55;
-                                                    });
-                                                  }
-                                                  return null;
-                                                },
-                                                color: const Color.fromRGBO(
-                                                    81, 35, 0, 0.80),
-                                                fillColor:
-                                                    const Color(0xFFF5EBD8),
-                                                hintTextSize: 20,
-                                              ),
-                                              if (i ==
-                                                  extendEmailSize.length - 1)
-                                                RegistrationTextButton(
-                                                  handleButton: () {
-                                                    if (extendEmailSize.length >
-                                                        1) {
-                                                      setState(() {
-                                                        extendEmailSize
-                                                            .removeAt(i);
-                                                      });
-                                                    }
-                                                  },
-                                                  textName: 'Remove',
-                                                  style: const TextStyle(
-                                                    color: Colors.red,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        }
+                                              child: Text(
+                                                "Add another number",
+                                                style: TextStyle(decoration: TextDecoration.underline),
+                                              )),
+                                        // if (i ==
+                                        //     extendPhonenumberSize.length -
+                                        //         1)
+                                        //   RegistrationTextButton(
+                                        //     handleButton: () {
+                                        //       if (extendPhonenumberSize
+                                        //               .length >
+                                        //           1) {
+                                        //         setState(
+                                        //           () {
+                                        //             extendPhonenumberSize
+                                        //                 .removeAt(i);
+                                        //           },
+                                        //         );
+                                        //       }
+                                        //     },
+                                        //     textName: 'Remove',
+                                        //     style: const TextStyle(
+                                        //       color: Colors.red,
+                                        //       fontSize: 15,
+                                        //       fontWeight: FontWeight.bold,
+                                        //     ),
+                                        //   ),
                                       ],
                                     ),
+                                  const SizedBox(height: 25),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.end,
+                                    children: [
+                                      RegistrationTextButton(
+                                        handleButton: () {
+                                          if (extendEmailSize.length <
+                                              3) {
+                                            setState(() {
+                                              extendEmailSize.add(true);
+                                            });
+                                          }
+                                        },
+                                        textName: '+ Add email address',
+                                        style: const TextStyle(
+                                          decoration:
+                                              TextDecoration.underline,
+                                          color: Color.fromRGBO(
+                                              81, 35, 0, 0.80),
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    ],
                                   ),
+                                  for (int i = 0;
+                                      i < extendEmailSize.length;
+                                      i++) ...{
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        const SizedBox(height: 10),
+                                        CustomTextField(
+                                          hintText: "Email",
+                                          controller: i == 0
+                                              ? emailOneController
+                                              : i == 1
+                                                  ? emailTwoController
+                                                  : i == 2
+                                                      ? emailThreeController
+                                                      : emailOneController,
+                                          heightSize: heightSizeEmail,
+                                          validator: (value) {
+                                            const pattern =
+                                                r"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"
+                                                r'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-'
+                                                r'\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*'
+                                                r'[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4]'
+                                                r'[0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9]'
+                                                r'[0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\'
+                                                r'x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])';
+                                            final regex = RegExp(pattern);
+                                            if (value!.isEmpty) {
+                                              setState(() {
+                                                heightSizeEmail = 80;
+                                              });
+                                              return "Please enter your email ";
+                                            } else if (!regex
+                                                .hasMatch(value)) {
+                                              return 'Enter a valid email address';
+                                            } else {
+                                              setState(() {
+                                                heightSizeEmail = 55;
+                                              });
+                                            }
+                                            return null;
+                                          },
+                                          color: const Color.fromRGBO(
+                                              81, 35, 0, 0.80),
+                                          fillColor:
+                                              const Color(0xFFF5EBD8),
+                                          hintTextSize: 20,
+                                        ),
+                                        if (i ==
+                                            extendEmailSize.length - 1)
+                                          RegistrationTextButton(
+                                            handleButton: () {
+                                              if (extendEmailSize.length >
+                                                  1) {
+                                                setState(() {
+                                                  extendEmailSize
+                                                      .removeAt(i);
+                                                });
+                                              }
+                                            },
+                                            textName: 'Remove',
+                                            style: const TextStyle(
+                                              color: Colors.red,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  }
                                 ],
                               ),
                             ),
@@ -1058,17 +1072,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               color: const Color.fromRGBO(81, 35, 0, 0.80),
                             ),
                             const SizedBox(height: 50),
-                            FilledBtn(
-                              btnSize: BtnSize.md,
-                              loading: state.isLoading,
+                            DefaultBtn(
+                              isLoading: state.isLoading,
                               text: "Save",
-                              color: Colors.grey,
+                              // color: Colors.grey,
                               onPressed: () {
                                 if (_formKey.currentState!.validate()) {
                                   register();
                                 }
                               },
-                              btnVariant: BtnVariant.primary,
                             ),
                             const SizedBox(height: 20),
                           ],
@@ -1082,6 +1094,46 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         );
       },
+    );
+  }
+
+    Widget _buildPhoneNumberField(TextEditingController controller, String text) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(text,
+                style: TextStyle(
+                  color: SecondaryColors.secondaryOrange,
+                  fontSize: CustomFontSize.extraSmall,
+                )),
+            Spacer(),
+            if (text.toLowerCase() != "primary number")
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      if (displayPhoneNumberField > 1) {
+                        displayPhoneNumberField = displayPhoneNumberField - 1;
+                      }
+                    });
+                  },
+                  child: Text(
+                    "Remove number",
+                    // style: TextStyle(color: _secondaryColorSelection(),),
+                  )),
+          ],
+        ),
+        const SizedBox(height: 5),
+        CustomPhoneNumberField(
+          initialValue: controller.text,
+          controller: controller,
+          color: SecondaryColors.secondaryOrange,
+          onChanged: (number){
+            controller.text = number.completeNumber;
+          },
+        ),
+      ],
     );
   }
 }
@@ -1177,53 +1229,16 @@ class generateMultipleNumbers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController nullTextEditingController = TextEditingController();
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: CustomPhoneNumberField(
-            heightSize: heightSize,
-            isDense: true,
-            fontSize: 20,
-            color: const Color.fromRGBO(81, 35, 0, 0.80),
-            fillColor: const Color(0xFFF5EBD8),
-            controller: nullTextEditingController,
-            onChanged: onChanged,
-            onCountryChanged: onCountryChanged,
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: CustomTextField(
-              heightSize: heightSize,
-              isDense: true,
-              hintText: "Number*",
-              inputType: TextInputType.number,
-              controller: digitNumbercontroller,
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return "Please enter your number";
-                }
-
-                String regexPattern = r'^(?:[1-9])?[0-9]{8,12}$';
-                var regExp = RegExp(regexPattern);
-                if (!regExp.hasMatch(value)) {
-                  return "Please enter a valid number";
-                }
-
-                return null;
-              },
-              fillColor: const Color(0xFFF5EBD8),
-              hintTextSize: 20,
-              fontSize: 20,
-              color: const Color.fromRGBO(81, 35, 0, 0.80),
-            ),
-          ),
-        ),
-      ],
+    // TextEditingController nullTextEditingController = TextEditingController();
+    return CustomPhoneNumberField(
+      heightSize: heightSize,
+      isDense: true,
+      fontSize: 20,
+      color: const Color.fromRGBO(81, 35, 0, 0.80),
+      fillColor: const Color(0xFFF5EBD8),
+      controller: digitNumbercontroller,
+      onChanged: onChanged,
+      onCountryChanged: onCountryChanged,
     );
   }
 }

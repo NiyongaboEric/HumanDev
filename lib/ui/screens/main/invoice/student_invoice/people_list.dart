@@ -570,7 +570,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                 ? searchResults.isEmpty
                     ? const Center(
                         child: Text(
-                          "No Results Found",
+                          "No results found",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
@@ -581,7 +581,17 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                         items: searchResultAlphabetView,
                         options: options,
                       )
-                : AlphabetListView(
+                : people.isEmpty ? 
+                  Center(
+                    child: Text(
+                      "No students found",
+                      style: TextStyle(
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ) :
+                AlphabetListView(
                     options: options,
                     items: personAlphabetView,
                   );

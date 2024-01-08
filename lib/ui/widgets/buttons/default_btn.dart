@@ -27,7 +27,7 @@ class _DefaultBtnState extends State<DefaultBtn> {
   Widget build(BuildContext context) {
     String text = widget.text ?? "";
     IconData? icon = widget.icon;
-    Color btnColor = widget.btnColor ?? Colors.black;
+    Color? btnColor = widget.btnColor;
     Color textColor = widget.textColor ?? Colors.white;
     bool isLoading = widget.isLoading ?? false;
     Function()? onPressed = widget.onPressed ?? () {};

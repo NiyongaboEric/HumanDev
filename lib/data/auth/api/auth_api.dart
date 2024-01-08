@@ -37,7 +37,7 @@ class AuthApiImpl implements AuthApi {
     if (res.statusCode == 201) {
       return TokenResponse.fromJson(res.data);
     }
-    throw Exception(res.data["message"]);
+    throw Exception(res.data["message"][0] ?? res.data["message"]);
   }
 
   @override

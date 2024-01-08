@@ -1047,7 +1047,11 @@ class _ParentsState extends State<Parents> {
                     ),
                   )
                 : null,
-            body: state.isLoading && students.isEmpty
+            body: state.isLoading &&
+                    (students.isEmpty ||
+                        parents.isEmpty ||
+                        teachers.isEmpty ||
+                        allPeople.isEmpty)
                 ? const Center(
                     child: GFLoader(type: GFLoaderType.ios),
                   )
@@ -1060,10 +1064,23 @@ class _ParentsState extends State<Parents> {
                             items: buildSearchResultsAlphabetView,
                             options: buildAlphabetListViewOptions,
                           )
-                    : AlphabetListView(
-                        items: buildAlphabetListView,
-                        options: buildAlphabetListViewOptions,
-                      ),
+                    : students.isEmpty ||
+                            parents.isEmpty ||
+                            teachers.isEmpty ||
+                            allPeople.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "No person found",
+                              style: TextStyle(
+                                fontSize: CustomFontSize.medium,
+                                // color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : AlphabetListView(
+                            items: buildAlphabetListView,
+                            options: buildAlphabetListViewOptions,
+                          ),
           );
         },
       ),
@@ -1662,16 +1679,30 @@ class _ParentsState extends State<Parents> {
     return widget.parentSection == ParentSection.students ||
             widget.parentSection == ParentSection.contacts
         ? IconButton(
-            onPressed: () {
-              nextScreen(
-                context: context,
-                screen: PersonDetails(
-                  screenFunction: ScreenFunction.add,
-                  contactVariant: widget.parentSection == ParentSection.students
-                      ? ContactVariant.student
-                      : ContactVariant.others,
-                ),
-              );
+            onPressed: () async {
+              var refresh = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PersonDetails(
+                      screenFunction: ScreenFunction.add,
+                      contactVariant:
+                          widget.parentSection == ParentSection.students
+                              ? ContactVariant.student
+                              : ContactVariant.others,
+                    ),
+                  ));
+              if (refresh != null && refresh) {
+                getAllStudents();
+              }
+              // nextScreen(
+              //   context: context,
+              //   screen: PersonDetails(
+              //     screenFunction: ScreenFunction.add,
+              //     contactVariant: widget.parentSection == ParentSection.students
+              //         ? ContactVariant.student
+              //         : ContactVariant.others,
+              //   ),
+              // );
             },
             icon: const Icon(Icons.add_rounded),
           )

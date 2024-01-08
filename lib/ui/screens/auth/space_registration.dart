@@ -7,6 +7,7 @@ import 'package:seymo_pay_mobile_application/data/constants/languages_countries.
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/register.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/elevated_button.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/filled_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
@@ -138,7 +139,7 @@ class SpaceRegistration extends StatelessWidget {
 }
 
 class SpaceRegistrationForm extends StatefulWidget {
-  SpaceRegistrationForm({super.key});
+  SpaceRegistrationForm({Key? key}) : super(key: key);
 
   @override
   State<SpaceRegistrationForm> createState() => _SpaceRegistrationFormState();
@@ -148,18 +149,12 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController schoolNameController = TextEditingController();
-  // TextEditingController countryNameController = TextEditingController();
-
-  // late String selectedCountry = "";
   TextEditingController selectedCountryController = TextEditingController();
-
-  // late String selectedCurrency = "";
   TextEditingController selectedCurrencyController = TextEditingController();
 
   String _timezone = 'Unknown';
   List<String> _availableTimezones = <String>[];
   late String dropdownValueTimezone;
-
   String dropdownValueLocalization = 'en - English';
 
   double heightSizeSchool = 55;
@@ -178,8 +173,9 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
     try {
       _timezone = await FlutterTimezone.getLocalTimezone();
     } catch (e) {
-      print('Could not get the local timezonee');
+      print('Could not get the local timezone');
     }
+
     try {
       _availableTimezones = await FlutterTimezone.getAvailableTimezones();
       _availableTimezones.sort();
@@ -187,6 +183,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
     } catch (e) {
       print('Could not get available timezones');
     }
+
     if (mounted) {
       setState(() {});
     }
@@ -195,314 +192,328 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          onPressed: () => {
-            nextScreen(
-              context: context,
-              screen: const SpaceRegistration(),
-            )
-          },
-          icon: const Icon(Icons.arrow_back),
-        ),
-        title: const Text(
-          'Create new school space',
-          style: TextStyle(
-            color: Color.fromRGBO(81, 35, 0, 0.80),
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 5),
-            child: IconButton(
-              onPressed: () => {},
-              icon: const Icon(Icons.check),
-            ),
-          ),
-        ],
-        backgroundColor: const Color(0xFFF5EBD8),
-      ),
+      appBar: _buildAppBar(),
       backgroundColor: const Color(0xFFFFF8D6),
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 15,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: <Widget>[
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          heightSize: heightSizeSchool,
-                          hintText: "School name*",
-                          controller: schoolNameController,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              setState(() {
-                                heightSizeSchool = 80;
-                              });
-                              return "Please enter your school name";
-                            } else {
-                              setState(() {
-                                heightSizeSchool = 55;
-                              });
-                            }
-                            return null;
-                          },
-                          fillColor: const Color.fromRGBO(245, 235, 216, 1),
-                          hintTextSize: 18,
-                          color: const Color.fromRGBO(77, 12, 43, 1),
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          height: heightSizeCountry,
-                          child: TextFormField(
-                            controller: selectedCountryController,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                setState(() {
-                                  heightSizeCountry = 80;
-                                });
-                                return "Select your country";
-                              } else {
-                                setState(() {
-                                  heightSizeCountry = 50;
-                                });
-                              }
-                              return null;
-                            },
-                            onTap: () => {
-                              showCountryPicker(
-                                context: context,
-                                showPhoneCode: false,
-                                onSelect: (Country country) {
-                                  setState(
-                                    () {
-                                      selectedCountryController.text =
-                                          country.name;
-                                    },
-                                  );
-                                },
-                              ),
-                            },
-                            showCursor: false,
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              label: const Text("Select Country"),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: const Color.fromRGBO(77, 12, 43, 1),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: const Color.fromRGBO(77, 12, 43, 1),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              alignLabelWithHint: true,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          height: heightSizeCurrency,
-                          child: TextFormField(
-                            controller: selectedCurrencyController,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                setState(() {
-                                  heightSizeCurrency = 80;
-                                });
-                                return "Select your Currency";
-                              } else {
-                                setState(() {
-                                  heightSizeCurrency = 50;
-                                });
-                              }
-                              return null;
-                            },
-                            onTap: () => {
-                              showCurrencyPicker(
-                                context: context,
-                                showFlag: true,
-                                showCurrencyName: true,
-                                showCurrencyCode: true,
-                                onSelect: (Currency currency) {
-                                  setState(() {
-                                    print(
-                                        " ...  currency.code ${currency.code}......");
-                                    selectedCurrencyController.text =
-                                        currency.code;
-                                  });
-                                },
-                              ),
-                            },
-                            showCursor: false,
-                            readOnly: true,
-                            decoration: InputDecoration(
-                              hintText: selectedCurrencyController.text,
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: const Color.fromRGBO(77, 12, 43, 1),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              border: OutlineInputBorder(
-                                borderSide: const BorderSide(
-                                  color: const Color.fromRGBO(77, 12, 43, 1),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              label: const Text("Select Currency"),
-                              alignLabelWithHint: true,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: const Color.fromRGBO(77, 12, 43, 1),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: const Color.fromRGBO(77, 12, 43, 1),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Select your timezone";
-                            }
-                            return null;
-                          },
-                          dropdownColor: const Color(0xfffffffff),
-                          value: _timezone.isNotEmpty
-                              ? _timezone
-                              : _availableTimezones.first,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              dropdownValueTimezone = newValue!;
-                            });
-                          },
-                          items:
-                              _availableTimezones.map<DropdownMenuItem<String>>(
-                            (String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                              );
-                            },
-                          ).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        DropdownButtonFormField(
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: const Color.fromRGBO(77, 12, 43, 1),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                color: const Color.fromRGBO(77, 12, 43, 1),
-                                width: 2,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Select laguage of your choice";
-                            }
-                            return null;
-                          },
-                          dropdownColor: const Color(0xfffffffff),
-                          value: dropdownValueLocalization,
-                          // onChanged: (String? newValue) {
-                          //   setState(() {
-                          //     dropdownValueLocalization = newValue!;
-                          //   });
-                          // },
-                          onChanged: null,
-                          items: kSetMaterialSupportedLanguages
-                              .map<DropdownMenuItem<String>>(
-                            (String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(
-                                  value,
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                              );
-                            },
-                          ).toList(),
-                        ),
-                        const SizedBox(height: 20),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: FilledBtn(
-                            btnSize: BtnSize.md,
-                            loading: false,
-                            text: "Next",
-                            color: Color(0xffDAC6A1),
-                            // color: _formKey.currentState!.validate()
-                            //     ? Color(0xffDAC6A1)
-                            //     : Colors.grey,
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                nextScreen(
-                                  context: context,
-                                  screen: RegistrationScreen(
-                                    spaceName: schoolNameController.text,
-                                    spaceCountry:
-                                        selectedCountryController.text,
-                                    spaceCurrency:
-                                        selectedCurrencyController.text,
-                                    spaceLanguage: dropdownValueLocalization,
-                                    spaceTimezone: _availableTimezones,
-                                  ),
-                                );
-                              }
-                            },
-                            btnVariant: BtnVariant.primary,
-                          ),
-                        ),
-                      ],
-                    ),
+      body: _buildBody(),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text(
+        'Create new school space',
+        style: TextStyle(
+          color: Color.fromRGBO(81, 35, 0, 0.80),
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+      actions: [
+        _buildCheckButton(),
+      ],
+      backgroundColor: const Color(0xFFF5EBD8),
+    );
+  }
+
+  IconButton _buildCheckButton() {
+    return IconButton(
+      onPressed: () => {},
+      icon: const Icon(Icons.check),
+    );
+  }
+
+  Widget _buildBody() {
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 15,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(height: 20),
+                      _buildSchoolNameField(),
+                      const SizedBox(height: 10),
+                      _buildCountryField(),
+                      const SizedBox(height: 20),
+                      _buildCurrencyField(),
+                      const SizedBox(height: 20),
+                      _buildTimezoneDropdown(),
+                      const SizedBox(height: 20),
+                      _buildLanguageDropdown(),
+                      const SizedBox(height: 20),
+                      _buildNextButton(),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSchoolNameField() {
+    return CustomTextField(
+      heightSize: heightSizeSchool,
+      hintText: "School name*",
+      controller: schoolNameController,
+      validator: (value) {
+        if (value!.isEmpty) {
+          setState(() {
+            heightSizeSchool = 80;
+          });
+          return "Please enter your school name";
+        } else {
+          setState(() {
+            heightSizeSchool = 55;
+          });
+        }
+        return null;
+      },
+      fillColor: const Color.fromRGBO(245, 235, 216, 1),
+      hintTextSize: 18,
+      color: const Color.fromRGBO(77, 12, 43, 1),
+    );
+  }
+
+  Widget _buildCountryField() {
+    return SizedBox(
+      height: heightSizeCountry,
+      child: TextFormField(
+        controller: selectedCountryController,
+        validator: (value) {
+          if (value!.isEmpty) {
+            setState(() {
+              heightSizeCountry = 80;
+            });
+            return "Select your country";
+          } else {
+            setState(() {
+              heightSizeCountry = 50;
+            });
+          }
+          return null;
+        },
+        onTap: () => _showCountryPicker(),
+        showCursor: false,
+        readOnly: true,
+        decoration: InputDecoration(
+          label: const Text("Select Country"),
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: const Color.fromRGBO(77, 12, 43, 1),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          border: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: const Color.fromRGBO(77, 12, 43, 1),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignLabelWithHint: true,
+        ),
       ),
     );
+  }
+
+  Widget _buildCurrencyField() {
+    return SizedBox(
+      height: heightSizeCurrency,
+      child: TextFormField(
+        controller: selectedCurrencyController,
+        validator: (value) {
+          if (value!.isEmpty) {
+            setState(() {
+              heightSizeCurrency = 80;
+            });
+            return "Select your Currency";
+          } else {
+            setState(() {
+              heightSizeCurrency = 50;
+            });
+          }
+          return null;
+        },
+        onTap: () => _showCurrencyPicker(),
+        showCursor: false,
+        readOnly: true,
+        decoration: InputDecoration(
+          hintText: selectedCurrencyController.text,
+          enabledBorder: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: const Color.fromRGBO(77, 12, 43, 1),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          border: OutlineInputBorder(
+            borderSide: const BorderSide(
+              color: const Color.fromRGBO(77, 12, 43, 1),
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          label: const Text("Select Currency"),
+          alignLabelWithHint: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimezoneDropdown() {
+    return DropdownButtonFormField(
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: const Color.fromRGBO(77, 12, 43, 1),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        border: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: const Color.fromRGBO(77, 12, 43, 1),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return "Select your timezone";
+        }
+        return null;
+      },
+      dropdownColor: const Color(0xfffffffff),
+      value: _timezone.isNotEmpty ? _timezone : _availableTimezones.first,
+      onChanged: (String? newValue) {
+        setState(() {
+          dropdownValueTimezone = newValue!;
+        });
+      },
+      items: _availableTimezones.map<DropdownMenuItem<String>>(
+        (String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 15),
+            ),
+          );
+        },
+      ).toList(),
+    );
+  }
+
+  Widget _buildLanguageDropdown() {
+    return DropdownButtonFormField(
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: const Color.fromRGBO(77, 12, 43, 1),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        border: OutlineInputBorder(
+          borderSide: const BorderSide(
+            color: const Color.fromRGBO(77, 12, 43, 1),
+            width: 2,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      validator: (value) {
+        if (value!.isEmpty) {
+          return "Select language of your choice";
+        }
+        return null;
+      },
+      dropdownColor: const Color(0xfffffffff),
+      value: dropdownValueLocalization,
+      onChanged: null,
+      items: kSetMaterialSupportedLanguages.map<DropdownMenuItem<String>>(
+        (String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 15),
+            ),
+          );
+        },
+      ).toList(),
+    );
+  }
+
+  Widget _buildNextButton() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: DefaultBtn(
+        text: "Next",
+        btnColor: const Color(0xffDAC6A1),
+        onPressed: () => _validateAndNavigate(),
+      ),
+    );
+  }
+
+  void _goBack() {
+    nextScreen(
+      context: context,
+      screen: const SpaceRegistration(),
+    );
+  }
+
+  void _showCountryPicker() {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: false,
+      onSelect: (Country country) {
+        setState(() {
+          selectedCountryController.text = country.name;
+        });
+      },
+    );
+  }
+
+  void _showCurrencyPicker() {
+    showCurrencyPicker(
+      context: context,
+      showFlag: true,
+      showCurrencyName: true,
+      showCurrencyCode: true,
+      onSelect: (Currency currency) {
+        setState(() {
+          selectedCurrencyController.text = currency.code;
+        });
+      },
+    );
+  }
+
+  void _validateAndNavigate() {
+    if (_formKey.currentState!.validate()) {
+      nextScreen(
+        context: context,
+        screen: RegistrationScreen(
+          spaceName: schoolNameController.text,
+          spaceCountry: selectedCountryController.text,
+          spaceCurrency: selectedCurrencyController.text,
+          spaceLanguage: dropdownValueLocalization,
+          spaceTimezone: _availableTimezones,
+        ),
+      );
+    }
   }
 }
