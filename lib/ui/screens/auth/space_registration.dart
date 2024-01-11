@@ -151,11 +151,50 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   TextEditingController schoolNameController = TextEditingController();
   TextEditingController selectedCountryController = TextEditingController();
   TextEditingController selectedCurrencyController = TextEditingController();
-
-  String _timezone = 'Unknown';
-  List<String> _availableTimezones = <String>[];
-  late String dropdownValueTimezone;
   String dropdownValueLocalization = 'en - English';
+
+  late String dropdownValueTimezone;
+  final List<String> _availableTimezones = <String>[
+    'EET',
+    'EST',
+    'EST 5 EDT',
+    'Etc/GMT',
+    'Etc/GMT0',
+    'Etc/GMT+0',
+    'Etc/GMT+1',
+    'Etc/GMT+2',
+    'Etc/GMT+3',
+    'Etc/GMT+4',
+    'Etc/GMT+5',
+    'Etc/GMT+6',
+    'Etc/GMT+7',
+    'Etc/GMT+8',
+    'Etc/GMT+9',
+    'Etc/GMT+10',
+    'Etc/GMT+11',
+    'Etc/GMT+12',
+    'Etc/GMT-0',
+    'Etc/GMT-1',
+    'Etc/GMT-2',
+    'Etc/GMT-3',
+    'Etc/GMT-4',
+    'Etc/GMT-5',
+    'Etc/GMT-6',
+    'Etc/GMT-7',
+    'Etc/GMT-8',
+    'Etc/GMT-9',
+    'Etc/GMT-10',
+    'Etc/GMT-11',
+    'Etc/GMT-12',
+    'Etc/GMT-13',
+    'Etc/GMT-14',
+    'MET',
+    'MST',
+    'MST 7 MDT',
+    'UCT',
+    'UTC',
+    'WET',
+  ];
 
   double heightSizeSchool = 55;
   double heightSizeCountry = 55;
@@ -166,27 +205,6 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   @override
   void initState() {
     super.initState();
-    _initData();
-  }
-
-  Future<void> _initData() async {
-    try {
-      _timezone = await FlutterTimezone.getLocalTimezone();
-    } catch (e) {
-      print('Could not get the local timezone');
-    }
-
-    try {
-      _availableTimezones = await FlutterTimezone.getAvailableTimezones();
-      _availableTimezones.sort();
-      dropdownValueTimezone = _availableTimezones.first;
-    } catch (e) {
-      print('Could not get available timezones');
-    }
-
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   @override
@@ -397,7 +415,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
         return null;
       },
       dropdownColor: const Color(0xfffffffff),
-      value: _timezone.isNotEmpty ? _timezone : _availableTimezones.first,
+      hint: const Text("Select your timezone"),
       onChanged: (String? newValue) {
         setState(() {
           dropdownValueTimezone = newValue!;
@@ -464,7 +482,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
       child: DefaultBtn(
         text: "Next",
         btnColor: const Color(0xffDAC6A1),
-        onPressed: () => _validateAndNavigate(),
+        onPressed: () => {_validateAndNavigate()},
       ),
     );
   }
@@ -511,7 +529,8 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
           spaceCountry: selectedCountryController.text,
           spaceCurrency: selectedCurrencyController.text,
           spaceLanguage: dropdownValueLocalization,
-          spaceTimezone: _availableTimezones,
+          spaceTimezone: dropdownValueTimezone,
+          // spaceTimezone: _availableTimezones,
         ),
       );
     }

@@ -59,11 +59,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       sharedPreferenceModule.saveToken(message);
 
-      final registerUser = await authApiImpl
+      await authApiImpl
           .completeRegistration(event.personSpaceRegistrationRequest);
-
-      // print('....pre last step... ${message} ... ${message.accessToken}');
-      print('....last step... $registerUser');
 
       emit(state.copyWith(
         status: AuthStateStatus.authenticated,
@@ -74,11 +71,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         status: AuthStateStatus.initial,
       ));
     } on DioException catch (error) {
-      print('....... Error step:  $error,  ... ${error.response}');
+      late String responseError;
+
+      /**
+       * Parse array of errors as string
+       * Accept string error format
+      */
+      if (error.response!.data['message'] is List) {
+        responseError = error.response!.data['message'][0];
+      } else {
+        responseError = error.response!.data['message'];
+      }
+
       emit(state.copyWith(
         status: AuthStateStatus.unauthenticated,
-        registerFailure: error
-            .response!.data['message'], //error.response!.data['message'][0],
+        registerFailure:
+            responseError, // error.response!.data['message'], //error.response!.data['message'][0],
         isLoading: false,
       ));
       emit(state.copyWith(

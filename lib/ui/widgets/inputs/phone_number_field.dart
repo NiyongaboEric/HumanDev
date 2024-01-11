@@ -40,7 +40,8 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
   void initState() {
     // TODO: implement initState
     if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
-      number = PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
+      number =
+          PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
       widget.controller.text = number!.number;
     }
     super.initState();
@@ -102,6 +103,84 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
           }
           return null;
         },
+        onCountryChanged: widget.onCountryChanged,
+      ),
+    );
+  }
+}
+
+class GenericPhoneNumberField extends StatefulWidget {
+  final String? initialValue;
+  final Function(PhoneNumber)? onChanged;
+  final void Function(dynamic)? onCountryChanged;
+  final Color? color;
+  final Color? fillColor;
+  final double? fontSize;
+  final bool? isDense;
+  final double? heightSize;
+
+  const GenericPhoneNumberField({
+    super.key,
+    this.onChanged,
+    this.initialValue,
+    this.color,
+    this.fillColor,
+    this.fontSize,
+    this.isDense,
+    this.heightSize,
+    this.onCountryChanged,
+  });
+
+  @override
+  State<GenericPhoneNumberField> createState() =>
+      _GenericPhoneNumberFieldState();
+}
+
+class _GenericPhoneNumberFieldState extends State<GenericPhoneNumberField> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      child: IntlPhoneField(
+        keyboardType: TextInputType.number,
+        initialValue: widget.initialValue,
+        style: const TextStyle(fontSize: 24),
+        dropdownTextStyle: const TextStyle(fontSize: 24),
+        decoration: InputDecoration(
+          counterText: "",
+          hintStyle: TextStyle(
+              color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: widget.color ?? CustomColor.primaryDark,
+            ),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: widget.color ?? CustomColor.primaryDark,
+            ),
+          ),
+          disabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: widget.color ?? CustomColor.primaryDark,
+            ),
+          ),
+          errorBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: widget.color ?? CustomColor.primaryDark,
+            ),
+          ),
+          focusedErrorBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+              color: widget.color ?? CustomColor.primaryDark,
+            ),
+          ),
+          filled: true,
+          isDense: widget.isDense,
+          fillColor: widget.fillColor ?? Colors.white.withOpacity(0.6),
+        ),
+        onChanged: widget.onChanged,
         onCountryChanged: widget.onCountryChanged,
       ),
     );
