@@ -168,13 +168,15 @@ class _HomePageState extends State<HomePage> {
       key: homePage,
       onVisibilityChanged: (visibilityInfo) {
         if (visibilityInfo.visibleFraction > 0.5) {
-          setState(() {
-            isCurrentPage = true;
-          });
+          if (mounted)
+            setState(() {
+              isCurrentPage = true;
+            });
         } else {
-          setState(() {
-            isCurrentPage = false;
-          });
+          if (mounted)
+            setState(() {
+              isCurrentPage = false;
+            });
         }
       },
       child: BlocConsumer<SpaceBloc, SpaceState>(

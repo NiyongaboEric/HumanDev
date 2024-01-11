@@ -24,7 +24,7 @@ abstract class PersonApi {
   // Get relatives
   Future<List<PersonModel>> getRelatives(String studentID);
   // Update Person
-  Future<List<PersonModel>> updatePerson(List<UpdatePersonRequest> person);
+  Future<PersonModel> updatePerson(UpdatePersonRequest person);
   // Delete Person
   // Get Admin
   Future<PersonModel> getAdmin();
@@ -178,16 +178,16 @@ class PersonApiImpl implements PersonApi {
   }
 
   @override
-  Future<List<PersonModel>> updatePerson(
-      List<UpdatePersonRequest> person) async {
+  Future<PersonModel> updatePerson(
+      UpdatePersonRequest person) async {
     try {
       // TODO: implement updatePerson
       var interceptor = sl.get<RequestInterceptor>();
       var dio = sl.get<Dio>()..interceptors.add(interceptor);
       var prefs = sl<SharedPreferenceModule>();
       var space = prefs.getSpaces().first;
-      final res = await dio.patch("/space/${space.id}/persons",
-          data: person.map((e) => e.toJson()).toList());
+      final res = await dio.patch("/space/${space.id}/person/${person.id}",
+          data: person.toJson());
       if (res.statusCode == 200) {
         var response = res.data;
 
@@ -196,10 +196,7 @@ class PersonApiImpl implements PersonApi {
           throw Exception(response['message']);
         }
         // logger.d(response);
-        List responseData = response;
-        final List<PersonModel> students =
-            responseData.map((data) => PersonModel.fromJson(data)).toList();
-        return students;
+        return PersonModel.fromJson(response);
       } else {
         // Handle non-200 status codes
         logger.e("Request failed with status: ${res.statusCode}");

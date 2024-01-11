@@ -565,8 +565,28 @@ class _ParentsState extends State<Parents> {
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
+        if (person.role == "Relative" || person.role == "Parent") {
+          if (!parents.contains(person)) {
+            parents.add(person);
+          }
+        }
+        if (person.role == "Teacher") {
+          if (!teachers.contains(person)) {
+            teachers.add(person);
+          }
+        }
+        if (person.role == "Supplier") {
+          if (!suppliers.contains(person)) {
+            suppliers.add(person);
+          }
+        }
+        if (person.role == "School administrator") {
+          if (!schoolAdministrators.contains(person)) {
+            schoolAdministrators.add(person);
+          }
+        }
       }
-      allPeople = [...parents, ...teachers, ...suppliers];
+      allPeople = [...state.persons];
       preferences.saveStudentsWithPendingPayments(students);
     }
     if (state.status == PersonStatus.error) {
@@ -601,7 +621,7 @@ class _ParentsState extends State<Parents> {
         schoolAdministrators.clear();
       });
       for (var person in state.persons) {
-        if (person.role == Role.Student.name) {
+        if (person.role == "Student") {
           if (!students.contains(person)) {
             students.add(person);
             if (person.childRelations != null) {
@@ -610,37 +630,40 @@ class _ParentsState extends State<Parents> {
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
-        if (person.role == Role.Relative.name) {
+        if (person.role == "Relative" || person.role == "Parent") {
           if (!parents.contains(person)) {
             parents.add(person);
           }
         }
-        if (person.role == Role.Teacher.name) {
+        if (person.role == "Teacher") {
           if (!teachers.contains(person)) {
             teachers.add(person);
           }
         }
-        if (person.role == Role.Supplier.name) {
+        if (person.role == "Supplier") {
           if (!suppliers.contains(person)) {
             suppliers.add(person);
           }
         }
-        if (person.role == roleToString(Role.School_administrator)) {
+        if (person.role == "School administrator") {
           if (!schoolAdministrators.contains(person)) {
             schoolAdministrators.add(person);
           }
         }
       }
 
-      allPeople = [...state.persons];
+      allPeople = widget.parentSection == ParentSection.contacts
+          ? state.persons
+          : [...parents, ...teachers, ...suppliers, ...schoolAdministrators];
 
       preferences.savePersons(allPeople);
-      preferences.saveStudents(students);
-      preferences.saveParents(parents);
-      preferences.saveTeachers(teachers);
+      if (students.isNotEmpty) preferences.saveStudents(students);
+      if (parents.isNotEmpty) preferences.saveParents(parents);
+      if (teachers.isNotEmpty) preferences.saveTeachers(teachers);
 
-      preferences.saveSuppliers(suppliers);
-      preferences.saveSchoolAdministrator(schoolAdministrators);
+      if (suppliers.isNotEmpty) preferences.saveSuppliers(suppliers);
+      if (schoolAdministrators.isNotEmpty)
+        preferences.saveSchoolAdministrator(schoolAdministrators);
     }
     if (state.status == PersonStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
@@ -971,7 +994,7 @@ class _ParentsState extends State<Parents> {
       child: BlocConsumer<PersonBloc, PersonState>(
         listener: (context, state) {
           // TODO: implement listener
-          if (isCurrentPage) {
+          if (isCurrentPage && mounted) {
             if (widget.parentSection == ParentSection.sms) {
               _handleStudentsWithPendingPaymentsStateChange(context, state);
             } else {
@@ -1064,9 +1087,9 @@ class _ParentsState extends State<Parents> {
                             items: buildSearchResultsAlphabetView,
                             options: buildAlphabetListViewOptions,
                           )
-                    : students.isEmpty ||
-                            parents.isEmpty ||
-                            teachers.isEmpty ||
+                    : students.isEmpty &&
+                            parents.isEmpty &&
+                            teachers.isEmpty &&
                             allPeople.isEmpty
                         ? const Center(
                             child: Text(
@@ -1131,7 +1154,7 @@ class _ParentsState extends State<Parents> {
   }
 
   List<AlphabetListViewItemGroup> _buildAlphabetView() {
-    return getFirstCharacters(students).map((alphabet) {
+    return getFirstCharacters(allPeople).map((alphabet) {
       setState(() {});
       List<PersonModel> selectedPeople =
           getSelectedPersonState(widget.parentSection);
@@ -1308,6 +1331,9 @@ class _ParentsState extends State<Parents> {
                         personData: person,
                       ),
                     ));
+
+                await Future.delayed(const Duration(seconds: 3));
+                logger.d(reload);
                 if (reload != null && reload) {
                   getAllStudents();
                 }
@@ -1691,6 +1717,8 @@ class _ParentsState extends State<Parents> {
                               : ContactVariant.others,
                     ),
                   ));
+
+              await Future.delayed(const Duration(seconds: 2));
               if (refresh != null && refresh) {
                 getAllStudents();
               }

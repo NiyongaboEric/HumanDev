@@ -187,14 +187,14 @@ class PersonModel {
   final List<InvoiceModel>? studentInvoices;
 
   // Get Role from 1st group
-  String get role {
+  String? get role {
     if (groups != null &&
         groups!.isNotEmpty &&
         groups!.first.isRole != null &&
         groups!.first.isRole!) {
       return groups!.first.name!;
     }
-    return "Student";
+    return null;
   }
 
   const PersonModel({
@@ -658,6 +658,10 @@ String roleToString(Enum value) {
       return "Supplier";
     case Role.School_administrator:
       return "School administrator";
+    case Role.Teacher:
+      return "Teacher";
+    case Role.Relative:
+      return "Parent";
     default:
       return "Student";
   }

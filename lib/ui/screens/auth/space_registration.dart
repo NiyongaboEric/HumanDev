@@ -7,10 +7,11 @@ import 'package:seymo_pay_mobile_application/data/constants/languages_countries.
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/register.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
-import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/elevated_button.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/filled_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
+
+import '../../widgets/buttons/default_btn.dart';
 
 class SpaceRegistration extends StatelessWidget {
   const SpaceRegistration({super.key});

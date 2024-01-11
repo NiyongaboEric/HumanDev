@@ -28,7 +28,6 @@ class Space {
   });
 
   factory Space.fromJson(Map<String, dynamic> json) {
-    logger.wtf("spaceSettings: ${json["spaceSettings"]}");
     // logger.wtf("spaceSettings: ${SpaceSettings.fromJson(json["spaceSettings"])}");
     return Space(
       id: json['id'],

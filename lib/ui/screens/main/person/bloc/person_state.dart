@@ -8,7 +8,7 @@ final class PersonState extends Equatable {
   final List<PersonModel> persons;
   final List<PersonModel> relatives;
   final PersonRequest? personRequest;
-  final List<PersonModel>? personResponse;
+  final PersonModel? personResponse;
   final PersonModel? schoolAdmin;
   final PersonStatus status;
   final String? successMessage;
@@ -31,7 +31,7 @@ final class PersonState extends Equatable {
     List<PersonModel>? persons,
     List<PersonModel>? relatives,
     PersonRequest? personRequest,
-    List<PersonModel>? personResponse,
+    PersonModel? personResponse,
     PersonModel? schoolAdmin,
     PersonStatus? status,
     String? successMessage,

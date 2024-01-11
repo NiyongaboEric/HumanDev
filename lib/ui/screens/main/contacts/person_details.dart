@@ -20,6 +20,7 @@ import 'package:seymo_pay_mobile_application/ui/widgets/inputs/phone_number_fiel
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_area.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../data/constants/shared_prefs.dart';
 import '../../../../data/groups/model/group_model.dart';
@@ -73,6 +74,8 @@ class _PersonDetailsState extends State<PersonDetails> {
   final groupController = TextEditingController();
   final countryController = TextEditingController();
   // final country = Constants.countries[0];
+
+  bool isCurrentPage = true;
 
   // Collapse Sections
   bool collapseContacts = false;
@@ -133,20 +136,36 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   // Parent List and update handler
-  List<String> parentList = [];
-  _addToParentList() async {
-    PersonModel parentData = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            const Parents(parentSection: ParentSection.students),
-      ),
-    );
-    parentList.add("${parentData.firstName} ${parentData.lastName1}");
-    setState(() {});
+  List<ParentObject> parentList = [];
+  _addToParentList() async{
+    try {
+      setState(() {
+        isCurrentPage = false;
+      });
+        PersonModel parentData = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const Parents(parentSection: ParentSection.students),
+          ),
+        );
+        parentList.add(ParentObject(
+          name: parentData.firstName + " " + parentData.lastName1,
+          relation: PersonChildRelation(
+            relativePersonId: parentData.id,
+            relation: "PARENT",
+          ),
+        ));
+        setState(() {
+          isCurrentPage = true;
+        });
+      setState(() {});
+    } catch (e) {
+      logger.e(e);
+    }
   }
 
-  _removeFromParentList(String parentName) {
+  _removeFromParentList(ParentObject parentName) {
     parentList.remove(parentName);
     setState(() {});
   }
@@ -175,16 +194,16 @@ class _PersonDetailsState extends State<PersonDetails> {
               email3: emailController3.text,
               dateOfBirth: selectedDate.toString(),
               groupIds: selectGroupList.map((e) => e.id!).toList(),
-              // role: widget.contactVariant == ContactVariant.student
-              //     ? Role.Student
-              // : stringToRole(widget.role!),
+              personChildRelations: parentList
+                  .map((e) => e.relation)
+                  .toList(),
               isLegal: false,
             )),
           );
     } else {
       try {
         context.read<PersonBloc>().add(
-              UpdatePersonEvent([
+              UpdatePersonEvent(
                 UpdatePersonRequest(
                   id: widget.person!.id,
                   firstName: firstNameController.text,
@@ -220,7 +239,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                   ),
                   isDeactivated: widget.person!.isDeactivated,
                 )
-              ]),
+              ),
             );
       } catch (e) {
         logger.e(e);
@@ -267,7 +286,6 @@ class _PersonDetailsState extends State<PersonDetails> {
   // Handle Person State Change
   void _onPersonStateChange(PersonState state) {
     if (state.status == PersonStatus.success) {
-      Navigator.pop(context, true);
       GFToast.showToast(
         state.successMessage,
         context,
@@ -278,6 +296,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         backgroundColor: Colors.green,
         toastBorderRadius: 12.0,
       );
+      if(state.personResponse != null) Navigator.pop(context, true);
     } else if (state.status == PersonStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
       } else {
@@ -326,6 +345,16 @@ class _PersonDetailsState extends State<PersonDetails> {
       emailController3.text = widget.person!.email3 ?? "";
       selectGroupList.addAll(widget.person!.groups!);
       selectedGender = widget.person?.gender ?? "Gender*";
+      parentList.addAll(widget.person!.childRelations!
+          .where((element) => element.relation == "PARENT")
+          .map((e) => ParentObject(
+                name: "${e.firstName!} ${e.lastName1!}",
+                relation: PersonChildRelation(
+                  relativePersonId: e.id,
+                  relation: "PARENT",
+                ),
+              ))
+          .toList());
       // logger.d(selectGroupList[0].name);
 
       selectedDate = widget.person!.dateOfBirth != null
@@ -365,119 +394,131 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<PersonBloc, PersonState>(
-      listener: (context, state) {
-        // TODO: implement listener
-        _onPersonStateChange(state);
+    return VisibilityDetector(
+      key: Key("person_details"),
+      onVisibilityChanged: (visibility) {
+        if (visibility.visibleFraction == 1) {
+          isCurrentPage = true;
+        } else {
+          isCurrentPage = false;
+        }
       },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: _backgroundColorSelection(),
-          appBar: _buildAppBar(),
-          body: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: [
-                const SizedBox(height: 20),
-                _buildCircleAvatar(),
-                const SizedBox(height: 20),
-                _buildTextField(firstNameController, "First name*"),
-                _buildTextField(middleNameController, "Middle name"),
-                _buildTextField(lastNameController, "Last name*"),
-                _buildDatePicker(),
-                const SizedBox(height: 20),
-                _buildGenderDropDown(),
-                const SizedBox(height: 20),
-                _buildSection(
-                    "Contacts",
-                    Icons.contact_page_rounded,
-                    [
-                      _buildPhoneNumberField(
-                          phoneNumberController, "Primary number"),
-                      if (displayPhoneNumberField >= 2)
+      child: BlocConsumer<PersonBloc, PersonState>(
+        listener: (context, state) {
+          // TODO: implement listener
+          if (isCurrentPage && mounted) {
+            _onPersonStateChange(state);
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: _backgroundColorSelection(),
+            appBar: _buildAppBar(),
+            body: Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  const SizedBox(height: 20),
+                  _buildCircleAvatar(),
+                  const SizedBox(height: 20),
+                  _buildTextField(firstNameController, "First name*"),
+                  _buildTextField(middleNameController, "Middle name"),
+                  _buildTextField(lastNameController, "Last name*"),
+                  _buildDatePicker(),
+                  const SizedBox(height: 20),
+                  _buildGenderDropDown(),
+                  const SizedBox(height: 20),
+                  _buildSection(
+                      "Contacts",
+                      Icons.contact_page_rounded,
+                      [
                         _buildPhoneNumberField(
-                            phoneNumberController2, "Second number"),
-                      if (displayPhoneNumberField >= 3)
-                        _buildPhoneNumberField(
-                            phoneNumberController3, "Third number"),
-                      // SizedBox(height: 5),
-                      if (displayPhoneNumberField < 3)
-                        TextButton(
-                            onPressed: () {
-                              setState(() {
-                                if (displayPhoneNumberField < 3) {
-                                  displayPhoneNumberField =
-                                      displayPhoneNumberField + 1;
-                                }
-                              });
-                            },
-                            child: Text(
-                              "Add another number",
-                              style:
-                                  TextStyle(color: _secondaryColorSelection()),
-                            )),
-                      _buildEmailField(emailController, "Primary email"),
-                      if (displayEmailField >= 2)
-                        _buildEmailField(emailController2, "Second email"),
-                      if (displayEmailField >= 3)
-                        _buildEmailField(emailController3, "Third email"),
-                      if (displayEmailField < 3)
-                        TextButton(
-                            onPressed: () {
-                              setState(() {
-                                if (displayEmailField < 3) {
-                                  displayEmailField = displayEmailField + 1;
-                                }
-                              });
-                            },
-                            child: Text(
-                              "Add another email",
-                              style: TextStyle(
-                                color: _secondaryColorSelection(),
-                                decoration: TextDecoration.underline,
-                              ),
-                            )),
-                    ],
-                    collapse: collapseContacts),
-                _buildSection(
-                    "Address",
-                    Icons.home_rounded,
+                            phoneNumberController, "Primary number"),
+                        if (displayPhoneNumberField >= 2)
+                          _buildPhoneNumberField(
+                              phoneNumberController2, "Second number"),
+                        if (displayPhoneNumberField >= 3)
+                          _buildPhoneNumberField(
+                              phoneNumberController3, "Third number"),
+                        // SizedBox(height: 5),
+                        if (displayPhoneNumberField < 3)
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (displayPhoneNumberField < 3) {
+                                    displayPhoneNumberField =
+                                        displayPhoneNumberField + 1;
+                                  }
+                                });
+                              },
+                              child: Text(
+                                "Add another number",
+                                style: TextStyle(
+                                    color: _secondaryColorSelection()),
+                              )),
+                        _buildEmailField(emailController, "Primary email"),
+                        if (displayEmailField >= 2)
+                          _buildEmailField(emailController2, "Second email"),
+                        if (displayEmailField >= 3)
+                          _buildEmailField(emailController3, "Third email"),
+                        if (displayEmailField < 3)
+                          TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (displayEmailField < 3) {
+                                    displayEmailField = displayEmailField + 1;
+                                  }
+                                });
+                              },
+                              child: Text(
+                                "Add another email",
+                                style: TextStyle(
+                                  color: _secondaryColorSelection(),
+                                  decoration: TextDecoration.underline,
+                                ),
+                              )),
+                      ],
+                      collapse: collapseContacts),
+                  _buildSection(
+                      "Address",
+                      Icons.home_rounded,
+                      [
+                        _buildTextField(streetController, "Street"),
+                        _buildTextField(cityController, "City"),
+                        _buildTextField(stateController, "State"),
+                        _buildTextField(zipController, "Zip"),
+                      ],
+                      collapse: collapseAddress),
+                  _buildPersonRelativeSection(),
+                  _buildSection(
+                    "Groups",
+                    Icons.groups_2_rounded,
                     [
-                      _buildTextField(streetController, "Street"),
-                      _buildTextField(cityController, "City"),
-                      _buildTextField(stateController, "State"),
-                      _buildTextField(zipController, "Zip"),
+                      _buildGroupChip(),
                     ],
-                    collapse: collapseAddress),
-                _buildPersonRelativeSection(),
-                _buildSection(
-                  "Groups",
-                  Icons.groups_2_rounded,
-                  [
-                    _buildGroupChip(),
-                  ],
-                  isAddButton: true,
-                  btnAction: _updateGroupList,
-                  collapse: collapseGroups,
-                ),
-                _buildTextArea(notesController, "Notes..."),
-                const SizedBox(height: 20),
-                _buildSection("Invoices", Icons.receipt, [],
-                    collapse: collapseInvoices),
-                _buildSection(
-                    "Pending payments", Icons.attach_money_rounded, [],
-                    collapse: collapsePendingPayments),
-                const SizedBox(height: 20),
-                Divider(
-                  color: _primaryColorSelection(),
-                ),
-                _buildSaveButton(saveData),
-              ],
+                    isAddButton: true,
+                    btnAction: _updateGroupList,
+                    collapse: collapseGroups,
+                  ),
+                  _buildTextArea(notesController, "Notes..."),
+                  const SizedBox(height: 20),
+                  _buildSection("Invoices", Icons.receipt, [],
+                      collapse: collapseInvoices),
+                  _buildSection(
+                      "Pending payments", Icons.attach_money_rounded, [],
+                      collapse: collapsePendingPayments),
+                  const SizedBox(height: 20),
+                  Divider(
+                    color: _primaryColorSelection(),
+                  ),
+                  _buildSaveButton(saveData),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -494,22 +535,23 @@ class _PersonDetailsState extends State<PersonDetails> {
           child: Container(),
         ),
         IconButton(
-          onPressed: (){
-            if (firstNameController.text.isNotEmpty || lastNameController.text.isNotEmpty || groupController.text.isNotEmpty) {
-                          saveData();
-                        } else {
-                          GFToast.showToast(
-                            "Please fill all required fields",
-                            context,
-                            toastDuration: 5,
-                            toastPosition:
-                                MediaQuery.of(context).viewInsets.bottom != 0
-                                    ? GFToastPosition.TOP
-                                    : GFToastPosition.BOTTOM,
-                            backgroundColor: Colors.red,
-                            toastBorderRadius: 12.0,
-                          );
-                        }
+          onPressed: () {
+            if (firstNameController.text.isNotEmpty ||
+                lastNameController.text.isNotEmpty ||
+                groupController.text.isNotEmpty) {
+              saveData();
+            } else {
+              GFToast.showToast(
+                "Please fill all required fields",
+                context,
+                toastDuration: 5,
+                toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+                    ? GFToastPosition.TOP
+                    : GFToastPosition.BOTTOM,
+                backgroundColor: Colors.red,
+                toastBorderRadius: 12.0,
+              );
+            }
           },
           icon: const Icon(Icons.check_rounded),
         ),
@@ -795,7 +837,9 @@ class _PersonDetailsState extends State<PersonDetails> {
                 onPressed: state.isLoading
                     ? null
                     : () {
-                        if (firstNameController.text.isNotEmpty || lastNameController.text.isNotEmpty || groupController.text.isNotEmpty) {
+                        if (firstNameController.text.isNotEmpty ||
+                            lastNameController.text.isNotEmpty ||
+                            groupController.text.isNotEmpty) {
                           onPressed!();
                         } else {
                           GFToast.showToast(
@@ -873,7 +917,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildParentListTile(String parentName) {
+  Widget _buildParentListTile(ParentObject parent) {
     return Column(
       children: [
         Container(
@@ -890,7 +934,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               ]),
           child: ListTile(
             title: Text(
-              parentName,
+              parent.name,
               style: TextStyle(
                 color: _secondaryColorSelection(),
                 fontSize: CustomFontSize.large,
@@ -898,7 +942,7 @@ class _PersonDetailsState extends State<PersonDetails> {
             ),
             trailing: IconButton(
               onPressed: () {
-                _removeFromParentList(parentName);
+                _removeFromParentList(parent);
               },
               icon: Icon(
                 Icons.clear_rounded,
@@ -969,4 +1013,22 @@ class _PersonDetailsState extends State<PersonDetails> {
               ]);
         });
   }
+}
+
+
+class ParentObject {
+  final String name;
+  final PersonChildRelation relation;
+
+  ParentObject({
+    required this.name,
+    required this.relation,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'relation': relation,
+    };
+  }  
 }

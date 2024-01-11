@@ -27,29 +27,27 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     Emitter<PersonState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
-    try {  
+    try {
       final persons = await studentApiImpl.getAllPersons();
       emit(
         state.copyWith(
           persons: persons,
           isLoading: false,
           status: PersonStatus.success,
-          successMessage: "Request successful",
+          // successMessage: "Request successful",
         ),
       );
-      emit(state.copyWith(
-        status: PersonStatus.initial,
-        successMessage: null,
-      ));
     } catch (error) {
       emit(state.copyWith(
         errorMessage: error.toString(),
         isLoading: false,
         status: PersonStatus.error,
       ));
+    } finally {
       emit(state.copyWith(
         status: PersonStatus.initial,
         errorMessage: null,
+        successMessage: null,
       ));
     }
   }
@@ -66,7 +64,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
           // student: student,
           isLoading: false,
           status: PersonStatus.success,
-          successMessage: "Request Successful",
+          // successMessage: "Request Successful",
         ),
       );
     } catch (error) {
@@ -94,7 +92,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
           relatives: relatives,
           isLoading: false,
           status: PersonStatus.success,
-          successMessage: "Request Successful",
+          // successMessage: "Request Successful",
         ),
       );
     } catch (error) {
@@ -121,7 +119,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       emit(state.copyWith(
         isLoading: false,
         status: PersonStatus.success,
-        personResponse: [person],
+        personResponse: person,
         successMessage: "Person created successfully",
       ));
     } catch (error) {
@@ -149,17 +147,29 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     emit(state.copyWith(isLoading: true));
     try {
       final persons = await studentApiImpl.updatePerson(event.persons);
+      Future.delayed(Duration(seconds: 2));
       emit(state.copyWith(
         isLoading: false,
         status: PersonStatus.success,
         personResponse: persons,
         successMessage: "Person updated successfully",
       ));
+      emit(state.copyWith(
+        status: PersonStatus.initial,
+        errorMessage: null,
+        successMessage: null,
+        personRequest: null,
+      ));
     } catch (error) {
       emit(state.copyWith(
         errorMessage: error.toString(),
         isLoading: false,
         status: PersonStatus.error,
+      ));
+      emit(state.copyWith(
+        status: PersonStatus.initial,
+        errorMessage: null,
+        successMessage: null,
       ));
     } finally {
       emit(state.copyWith(
@@ -185,7 +195,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         isLoading: false,
         status: PersonStatus.success,
         schoolAdmin: admin,
-        successMessage: "Request Successful",
+        // successMessage: "Request Successful",
       ));
     } catch (error) {
       emit(state.copyWith(
@@ -213,7 +223,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
           persons: students,
           isLoading: false,
           status: PersonStatus.success,
-          successMessage: "Request Successful",
+          // successMessage: "Request Successful",
         ),
       );
     } catch (error) {

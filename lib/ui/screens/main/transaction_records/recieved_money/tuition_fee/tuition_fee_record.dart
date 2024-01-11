@@ -138,7 +138,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
                   .id,
               debitAccountId: selectedPaymentMethod.id,
-              subaccountPersonId: widget.student.childRelations!.first.id,
+              subaccountPersonId: widget.student.id,
               currency: selectedCurrency,
               amount: int.parse(amountController.text),
               reason: descriptionController.text,

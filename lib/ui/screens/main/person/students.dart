@@ -195,12 +195,13 @@ class _StudentsState extends State<Students> {
             selectedStudents.map((student) {
               return ReceivedMoneyJournalRequest(
                 creditAccountId: accounts
-                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
-                  .id,
-              debitAccountId: accounts
-                  .firstWhere((element) => element.name.name == "CASH")
-                  .id,
-                subaccountPersonId: student.relativeRelations!.first.id!,
+                    .firstWhere(
+                        (element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                    .id,
+                debitAccountId: accounts
+                    .firstWhere((element) => element.name.name == "CASH")
+                    .id,
+                subaccountPersonId: student.id,
                 amount: 85,
                 currency: space.currency ?? "GHS",
                 reason: "Feeding Fees",
@@ -236,12 +237,11 @@ class _StudentsState extends State<Students> {
     feedingFeesRequest.add(
       ReceivedMoneyJournalRequest(
         creditAccountId: accounts
-                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
-                  .id,
-              debitAccountId: accounts
-                  .firstWhere((element) => element.name.name == "CASH")
-                  .id,
-                subaccountPersonId: 1,
+            .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+            .id,
+        debitAccountId:
+            accounts.firstWhere((element) => element.name.name == "CASH").id,
+        subaccountPersonId: 1,
         amount: 85,
         currency: space.currency ?? "GHS",
         reason: "Feeding Fees",
@@ -436,7 +436,6 @@ class _StudentsState extends State<Students> {
 
     // options = getAlphabetListViewOptions();
 
-
     return VisibilityDetector(
       key: studentData,
       onVisibilityChanged: (visibilityInfo) {
@@ -515,10 +514,15 @@ class _StudentsState extends State<Students> {
             onStudentTileTap(student, isSelect, widget.option);
           },
           title: Text(
-            [student.firstName, student.middleName ?? "", student.lastName1, student.lastName2 ?? ""]
-                .join(" ")
-                .trim(),
-            style: TextStyle(fontSize: CustomFontSize.small, color: _secondaryColorSelection(widget.option)),
+            [
+              student.firstName,
+              student.middleName ?? "",
+              student.lastName1,
+              student.lastName2 ?? ""
+            ].join(" ").trim(),
+            style: TextStyle(
+                fontSize: CustomFontSize.small,
+                color: _secondaryColorSelection(widget.option)),
           ),
           trailing: isSelect
               ? Checkbox(
@@ -540,7 +544,7 @@ class _StudentsState extends State<Students> {
   }
 
   void onStudentTileTap(
-      PersonModel student, bool isSelect, StudentOption option) {
+      PersonModel student, bool isSelect, StudentOption option) async {
     if (!isSelect) {
       if (option == StudentOption.tuition) {
         nextScreen(
@@ -549,14 +553,29 @@ class _StudentsState extends State<Students> {
         );
       }
       if (option == StudentOption.studentContact) {
-        nextScreen(
-          context: context,
-          screen: PersonDetails(
-            screenFunction: ScreenFunction.edit,
-            contactVariant: ContactVariant.student,
-            person: student,
+        bool? refresh = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PersonDetails(
+              screenFunction: ScreenFunction.edit,
+              contactVariant: ContactVariant.student,
+              person: student,
+            ),
           ),
         );
+        await Future.delayed(const Duration(seconds: 2));
+        logger.d("Update Refresh: $refresh");
+        if (refresh != null && refresh) {
+          _getAllStudents();
+        }
+        // nextScreen(
+        //   context: context,
+        //   screen: PersonDetails(
+        //     screenFunction: ScreenFunction.edit,
+        //     contactVariant: ContactVariant.student,
+        //     person: student,
+        //   ),
+        // );
       }
     }
   }
@@ -685,6 +704,8 @@ class _StudentsState extends State<Students> {
                     ),
                   ),
                 );
+                await Future.delayed(const Duration(seconds: 2));
+                logger.d("Create Refresh: $refresh");
                 if (refresh != null && refresh) {
                   _getAllStudents();
                 }
@@ -694,7 +715,10 @@ class _StudentsState extends State<Students> {
                 //       contactVariant: ContactVariant.student,
                 //         screenFunction: ScreenFunction.add));
               },
-              icon: const Icon(Icons.add_rounded, size: 28,))
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 28,
+              ))
       ],
       backgroundColor: primaryColorSelection(widget.option).shade100,
       bottom: PreferredSize(
@@ -718,10 +742,10 @@ class _StudentsState extends State<Students> {
                     )
                   : Container(),
               CustomTextField(
-            prefixIcon: Icon(
-              Icons.search_rounded,
-              color: _secondaryColorSelection(widget.option),
-            ),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: _secondaryColorSelection(widget.option),
+                ),
                 color: _secondaryColorSelection(widget.option),
                 hintText: "Search...",
                 controller: searchController,
@@ -775,11 +799,10 @@ class _StudentsState extends State<Students> {
                           ),
                         ),
                       )
-                    :
-                 AlphabetListView(
-                    options: options,
-                    items: studentAlphabetView,
-                  );
+                    : AlphabetListView(
+                        options: options,
+                        items: studentAlphabetView,
+                      );
   }
 
   Widget _buildBottomNavigationBar(bool isSelect) {

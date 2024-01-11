@@ -83,7 +83,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
         Navigator.pop(
           context,
           RecipientModel(
-            id: state.personResponse?.first.id,
+            id: state.personResponse?.id,
             firstName: recipientFirstNameController.text,
             lastName: recipientLastNameController.text,
             role: role.isNotEmpty ? role : null,
@@ -94,7 +94,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
         Navigator.pop(
           context,
           RecipientModel(
-            id: state.personResponse?.first.id,
+            id: state.personResponse?.id,
             companyName: companyNameController.text,
             supplier: supplier,
             isPerson: false,

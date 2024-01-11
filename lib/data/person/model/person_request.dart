@@ -18,6 +18,8 @@ class PersonRequest {
   final String? taxId;
   final String?  VATId;
   final bool isLegal;
+  final List<PersonRelativeRelation>? personRelativeRelations;
+  final List<PersonChildRelation>? personChildRelations;
   final String? organizationName;
   final List<int>? groupIds;
 
@@ -39,13 +41,14 @@ class PersonRequest {
     this.taxId,
     this.dateOfBirth,
     required this.isLegal,
+    this.personRelativeRelations,
+    this.personChildRelations,
     this.organizationName,
     this.groupIds,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'firstName': firstName,
       'middleName': middleName,
       'lastName1': lastName1,
@@ -61,6 +64,8 @@ class PersonRequest {
       "taxId": taxId,
       "VATId": VATId,      
       'isLegal': isLegal,
+      'personRelativeRelations': personRelativeRelations?.map((e) => e.toJson()).toList(),
+      "personChildRelations": personChildRelations?.map((e) => e.toJson()).toList(),
       'organizationName': organizationName,
       'groupIds': groupIds,
     };
@@ -88,9 +93,9 @@ class UpdatePersonRequest {
   final String? organizationName;
   final List<int>? connectGroupIds;
   final List<int>? disconnectGroupIds;
-  final List<ConnectedPersonRelativeRelation>? connectPersonRelativeRelations;
+  final List<PersonRelativeRelation>? connectPersonRelativeRelations;
   final List<int>? disconnectPersonRelativeRelations;
-  final List<ConnectedPersonChildRelation>? connectPersonChildRelations;
+  final List<PersonChildRelation>? connectPersonChildRelations;
   final List<int>? disconnectPersonChildRelations;
   final bool isDeactivated;
 
@@ -124,7 +129,7 @@ class UpdatePersonRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      // 'id': id,
       'firstName': firstName,
       'middleName': middleName,
       'lastName1': lastName1,
@@ -176,11 +181,11 @@ class Address {
   }
 }
 
-class ConnectedPersonRelativeRelation {
+class PersonRelativeRelation {
   final int? childPersonId;
   final String? relation;
 
-  const ConnectedPersonRelativeRelation({
+  const PersonRelativeRelation({
     this.childPersonId,
     this.relation,
   });
@@ -193,11 +198,11 @@ class ConnectedPersonRelativeRelation {
   }
 }
 
-class ConnectedPersonChildRelation {
+class PersonChildRelation {
   final int? relativePersonId;
   final String? relation;
 
-  const ConnectedPersonChildRelation({
+  const PersonChildRelation({
     this.relativePersonId,
     this.relation,
   });
