@@ -39,16 +39,21 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
   @override
   void initState() {
     // TODO: implement initState
-    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
-      number =
-          PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
-      widget.controller.text = number!.number;
-    }
+    // if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+    //   number =
+    //       PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
+    //   widget.controller.text = number!.number;
+    // }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    // if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+    //   number =
+    //       PhoneNumber.fromCompleteNumber(completeNumber: widget.initialValue!);
+    //   widget.controller.text = number!.number;
+    // }
     return SizedBox(
       // height: widget.heightSize ?? 80,
       child: IntlPhoneField(
@@ -99,6 +104,10 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
             return "Please enter your phone number";
           }
           if (!value.isValidNumber()) {
+            return "Please enter a valid phone number";
+          }
+          // Validate if it contains only numbers 0-9
+          if(!RegExp(r'^[0-9]+$').hasMatch(value.number)){
             return "Please enter a valid phone number";
           }
           return null;

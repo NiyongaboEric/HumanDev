@@ -1711,10 +1711,7 @@ class _ParentsState extends State<Parents> {
                   MaterialPageRoute(
                     builder: (context) => PersonDetails(
                       screenFunction: ScreenFunction.add,
-                      contactVariant:
-                          widget.parentSection == ParentSection.students
-                              ? ContactVariant.student
-                              : ContactVariant.others,
+                      contactVariant: ContactVariant.others,
                     ),
                   ));
 

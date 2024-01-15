@@ -179,6 +179,15 @@ class Address {
       'zip': zip,
     };
   }
+
+  factory Address.fromJson(Map<String, dynamic> json) {
+    return Address(
+      street: json['street'],
+      city: json['city'],
+      state: json['state'],
+      zip: json['zip'],
+    );
+  }
 }
 
 class PersonRelativeRelation {

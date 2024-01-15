@@ -131,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     CustomTextField(
                       hintText: "Email or Phone number",
                       controller: emailOrPhoneNumberController,
+                      textCapitalization: TextCapitalization.none,
                       validator: (value) {
                         if (value!.isEmpty) {
                           return "Please enter your email or phone number";

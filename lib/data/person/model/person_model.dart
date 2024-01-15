@@ -1,6 +1,7 @@
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
 
 import '../../groups/model/group_model.dart';
+import 'person_request.dart';
 
 var schema = {
   "id": 150,
@@ -173,6 +174,7 @@ class PersonModel {
   final String? phoneNumber1;
   final String? phoneNumber2;
   final String? phoneNumber3;
+  final Address? address;
   final bool isLegal;
   final String? organizationName;
   final String createdAt;
@@ -217,6 +219,7 @@ class PersonModel {
     this.phoneNumber1,
     this.phoneNumber2,
     this.phoneNumber3,
+    this.address,
     required this.isLegal,
     this.organizationName,
     required this.createdAt,
@@ -254,6 +257,9 @@ class PersonModel {
       phoneNumber1: json['phoneNumber1'],
       phoneNumber2: json['phoneNumber2'],
       phoneNumber3: json['phoneNumber3'],
+      address: json['address'] != null
+          ? Address.fromJson(json['address'] as Map<String, dynamic>)
+          : null,
       isLegal: json['isLegal'],
       organizationName: json['organizationName'],
       createdAt: json['createdAt'],
@@ -300,6 +306,7 @@ class PersonModel {
       'phoneNumber1': phoneNumber1,
       'phoneNumber2': phoneNumber2,
       'phoneNumber3': phoneNumber3,
+      'address': address != null ? address!.toJson() : null,
       'isLegal': isLegal,
       'organizationName': organizationName,
       'createdAt': createdAt,

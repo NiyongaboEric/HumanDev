@@ -21,6 +21,7 @@ import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_area.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../data/constants/shared_prefs.dart';
 import '../../../../data/groups/model/group_model.dart';
@@ -285,7 +286,7 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   // Handle Person State Change
   void _onPersonStateChange(PersonState state) {
-    if (state.status == PersonStatus.success) {
+    if (state.status == PersonStatus.success  && state.successMessage != null) {
       GFToast.showToast(
         state.successMessage,
         context,
@@ -356,7 +357,10 @@ class _PersonDetailsState extends State<PersonDetails> {
               ))
           .toList());
       // logger.d(selectGroupList[0].name);
-
+      streetController.text = widget.person!.address?.street ?? "";
+      cityController.text = widget.person!.address?.city ?? "";
+      stateController.text = widget.person!.address?.state ?? "";
+      zipController.text = widget.person!.address?.zip ?? "";
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();

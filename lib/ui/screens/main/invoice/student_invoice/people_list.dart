@@ -237,19 +237,34 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     super.initState();
   }
 
+  void updateSelectionState() {
+    if (isSelect) {
+      setState(() {
+        isSelect = false;
+      });
+      logger.d("isSelect: $isSelect");
+    } else {
+      setState(() {
+        isSelect = true;
+      });
+      logger.d("isSelect: $isSelect");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     isSelect = widget.personType == PersonType.THIRD_PARTY;
 
     // Initialize the AlphabetListViewOptions
-    final AlphabetListViewOptions options = _buildAlphabetListViewOptions();
+    final AlphabetListViewOptions options =
+        _buildAlphabetListViewOptions(updateSelectionState);
     List<String> firstCharacters = getFirstCharacters(people);
     List<String> searchResultsFirstCharacters =
         getFirstCharacters(searchResults);
 
     personAlphabetView = buildAlphabetView(firstCharacters, people);
-    searchResultAlphabetView = buildAlphabetView(
-        searchResultsFirstCharacters, searchResults);
+    searchResultAlphabetView =
+        buildAlphabetView(searchResultsFirstCharacters, searchResults);
 
     searchController.addListener(() {
       updateSearchResults();
@@ -281,7 +296,10 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
           return Scaffold(
             backgroundColor: BackgroundColors.bgPurple,
             appBar: _buildAppBar(),
-            floatingActionButton: widget.personType == PersonType.THIRD_PARTY || isSelect ? _buildFloatingActionButton() : Container(),
+            floatingActionButton:
+                widget.personType == PersonType.THIRD_PARTY || isSelect
+                    ? _buildFloatingActionButton()
+                    : Container(),
             body: _buildBody(options, state),
           );
         },
@@ -334,8 +352,12 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                 }
               : null,
           title: Text(
-            [person.firstName, person.middleName ?? "", person.lastName1, person.lastName2 ?? ""]
-                .join(" "),
+            [
+              person.firstName,
+              person.middleName ?? "",
+              person.lastName1,
+              person.lastName2 ?? ""
+            ].join(" "),
             style: TextStyle(
                 fontSize: CustomFontSize.small,
                 color: SecondaryColors.secondaryPurple),
@@ -357,10 +379,17 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     );
   }
 
-  void onPersonTileTap(
-      PersonModel student, PersonType personType) {
+  void onPersonTileTap(PersonModel student, PersonType personType) {
     if (personType == PersonType.STUDENT) {
       try {
+        if (student.childRelations == null || student.childRelations!.isEmpty) {
+          GFToast.showToast("No assigned relative", context,
+              toastPosition: GFToastPosition.BOTTOM,
+              toastBorderRadius: 12.0,
+              toastDuration: 6,
+              backgroundColor: Colors.red);
+          return;
+        }
         nextScreen(
             context: context,
             screen: InvoiceDetails(
@@ -394,23 +423,25 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     }
   }
 
-  AlphabetListViewOptions _buildAlphabetListViewOptions() {
+  AlphabetListViewOptions _buildAlphabetListViewOptions(
+      Function updateSelectionState) {
     return AlphabetListViewOptions(
-      listOptions: _buildListOptions(),
+      listOptions: _buildListOptions(updateSelectionState),
       scrollbarOptions: _buildScrollbarOptions(),
       overlayOptions: _buildOverlayOptions(),
     );
   }
 
-  ListOptions _buildListOptions() {
+  ListOptions _buildListOptions(Function updateSelectionState) {
     return ListOptions(
       beforeList: Padding(
         padding: const EdgeInsets.all(12.0),
         child: InkWell(
           onTap: () {
-            setState(() {
-              isSelect = !isSelect;
-            });
+            // setState(() {
+            //   isSelect = !isSelect;
+            // });
+            updateSelectionState();
           },
           child: Text(isSelect ? "Single selection" : "Batch creation",
               style: TextStyle(
@@ -511,11 +542,17 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   // Build PreferredSize Widget
   PreferredSizeWidget _buildPreferredSizeWidget(BuildContext context) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(160),
+      preferredSize: widget.personType == PersonType.THIRD_PARTY
+          ? Size.fromHeight(160)
+          : Size.fromHeight(80),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
-          children: [_buildDropDownOptions(context), _buildSearchBar()],
+          children: [
+            if (widget.personType == PersonType.THIRD_PARTY)
+              _buildDropDownOptions(context),
+            _buildSearchBar()
+          ],
         ),
       ),
     );
@@ -581,20 +618,20 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                         items: searchResultAlphabetView,
                         options: options,
                       )
-                : people.isEmpty ? 
-                  Center(
-                    child: Text(
-                      "No students found",
-                      style: TextStyle(
-                        // fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ) :
-                AlphabetListView(
-                    options: options,
-                    items: personAlphabetView,
-                  );
+                : people.isEmpty
+                    ? Center(
+                        child: Text(
+                          "No students found",
+                          style: TextStyle(
+                            // fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      )
+                    : AlphabetListView(
+                        options: options,
+                        items: personAlphabetView,
+                      );
   }
 
   // Floating Action Button
@@ -622,5 +659,4 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       ),
     );
   }
-
 }

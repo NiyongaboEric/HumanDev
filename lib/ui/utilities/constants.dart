@@ -51,7 +51,7 @@ class Constants {
   static const genders = ["MALE", "FEMALE", "OTHER"];
 
   // Default Person Types
-  static const personTypes = ["Student", "Teacher", "Parent", "Supplier"];
+  static const personTypes = ["Student", "Teacher", "Relative", "Supplier"];
 
   // Dynamic Person Types
   static const dynamicPersonTypes = ["Other people", "Other organization"];
@@ -62,7 +62,7 @@ class Constants {
   // Person Roles
   static const personRoles = [
     // "Student",
-    "Parent",
+    "Relative",
     "Teacher",
     "Supplier",
   ];

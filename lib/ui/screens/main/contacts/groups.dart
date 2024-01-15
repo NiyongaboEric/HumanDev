@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/group_bloc/groups_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
@@ -43,6 +44,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
   // Get Groups
   _getGroups() {
     sl<GroupsBloc>().add(const GroupsEventGetGroups());
+  }
+
+  // Create Group
+  _createGroup() {
+    sl<GroupsBloc>().add(GroupsEventCreateGroup(GroupRequest(name: groupNameController.text)));
   }
 
   // Refresh Tokens
@@ -166,7 +172,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
       return Scaffold(
         backgroundColor: _backgroundColorSelection(),
         appBar: _buildAppBar(),
-        body: _buildListView(),
+        body: _buildListView(state),
       );
     });
   }
@@ -194,11 +200,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
         ]);
   }
 
-  void _addGroup(Group group) {
-    setState(() {
-      groups.add(group);
-    });
-  }
+  // void _addGroup(Group group) {
+  //   setState(() {
+  //     groups.add(group);
+  //   });
+  // }
 
   Color primaryColorSelection(ContactSelection contactSelection) {
     switch (contactSelection) {
@@ -218,10 +224,13 @@ class _GroupsScreenState extends State<GroupsScreen> {
     }
   }
 
-  ListView _buildListView() {
+  ListView _buildListView(GroupsState state) {
     return ListView(
       children: [
         for (var group in groups) _buildGroupListTile(group),
+        state.isLoading
+            ? const Center(child: GFLoader(type: GFLoaderType.ios,))
+            : Container(),        
       ],
     );
   }
@@ -268,12 +277,12 @@ class _GroupsScreenState extends State<GroupsScreen> {
             ),
           ),
           DefaultBtn(
+            btnColor: primaryColorSelection(widget.contactSelection),
+            textColor: secondaryColorSelection(widget.contactSelection),
             text: "Create",
             onPressed: () {
               if (groupNameController.text.isNotEmpty) {
-                _addGroup(Group(
-                  name: groupNameController.text,
-                ));
+                _createGroup();
               }
             }
           ),

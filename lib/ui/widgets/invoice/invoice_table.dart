@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:get_it/get_it.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_request.dart';
@@ -12,8 +13,11 @@ import 'package:seymo_pay_mobile_application/ui/widgets/invoice/payment_schedule
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 
+import '../../../data/constants/shared_prefs.dart';
 import '../../screens/main/invoice/invoice_list/select_fee.dart';
 import '../../utilities/navigation.dart';
+
+var sl = GetIt.instance;
 
 enum InvoiceTableType { ITEMS, PAYMENT_SCHEDULE }
 
@@ -55,6 +59,8 @@ class _InvoiceTableState extends State<InvoiceTable> {
   late ItemsDataSource itemsDataSource;
   late PaymentScheduleDataSource paymentScheduleDataSource;
   Timer? _timer;
+
+  var prefs = sl<SharedPreferenceModule>();
 
   var isEditable = false;
 
@@ -214,7 +220,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
           if (widget.invoiceTableType == InvoiceTableType.ITEMS) {
-            itemsDataSource.rows.add( DataGridRow(cells: [
+            itemsDataSource.rows.add(DataGridRow(cells: [
               DataGridCell<String>(columnName: 'items', value: 'New item'),
               DataGridCell<String>(columnName: 'quantity', value: '0'),
               DataGridCell<String>(columnName: 'price', value: '0'),
@@ -229,7 +235,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         setState(() {
           if (widget.invoiceTableType == InvoiceTableType.PAYMENT_SCHEDULE) {
-            paymentScheduleDataSource.rows.add( DataGridRow(cells: [
+            paymentScheduleDataSource.rows.add(DataGridRow(cells: [
               DataGridCell<String>(columnName: 'date', value: 'New date'),
               DataGridCell<String>(columnName: 'due', value: '0'),
               DataGridCell<String>(columnName: 'paid', value: '0'),
@@ -273,6 +279,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
 
   @override
   Widget build(BuildContext context) {
+    var space = prefs.getSpaces().first;
     return Column(
       children: [
         Row(
@@ -282,7 +289,9 @@ class _InvoiceTableState extends State<InvoiceTable> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  widget.invoiceTableType == InvoiceTableType.ITEMS ? "Items" : "Payment Schedule",
+                  widget.invoiceTableType == InvoiceTableType.ITEMS
+                      ? "Items"
+                      : "Payment Schedule",
                   style: TextStyle(
                     color: TertiaryColors.tertiaryPurple,
                     fontSize: CustomFontSize.medium,
@@ -303,42 +312,53 @@ class _InvoiceTableState extends State<InvoiceTable> {
               ],
             ),
             const Spacer(),
-            widget.invoiceTableType == InvoiceTableType.ITEMS ? FloatingActionButton.extended(
-              key: widget.invoiceTableType == InvoiceTableType.ITEMS ? const Key("add-standard-item") : const Key("add-payment-schedule"),
-              heroTag: widget.invoiceTableType == InvoiceTableType.ITEMS ? "add-standard-item" : "add-payment-schedule",
-              onPressed: () async {
-                // nextScreen(context: context, screen: SelectFee());
-                List<ItemFee> result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SelectFee()));
-                if (result.isNotEmpty) {
-                  setState(() {
-                      itemsDataSource.rows.addAll(
-                        result.map((e) => DataGridRow(cells: [
-                          DataGridCell<String>(columnName: 'items', value: e.name),
-                          DataGridCell<String>(columnName: 'quantity', value: '1'),
-                          DataGridCell<String>(columnName: 'price', value: '${e.price}'),
-                          DataGridCell<String>(columnName: 'total', value: '${e.price}'),
-                        ]))
-                      );
-                    // invoiceItems?.addAll(result.map((e) => InvoiceItemModel(
-                    //       invoiceId: widget.invoice?.id,
-                    //       price: e.price,
-                    //       quantity: 1,
-                    //       createdAt: DateTime.now().toString(),
-                    //       updatedAt: DateTime.now().toString(),
-                    //     )));
-                  });
-                }
-              },
-              label: Text("Add std item",
-                  style: TextStyle(
-                    color: TertiaryColors.tertiaryPurple,
-                    fontSize: CustomFontSize.small,
-                  )),
-              backgroundColor: PrimaryColors.primaryPurple,
-            ) : const SizedBox(),
+            widget.invoiceTableType == InvoiceTableType.ITEMS
+                ? FloatingActionButton.extended(
+                    key: widget.invoiceTableType == InvoiceTableType.ITEMS
+                        ? const Key("add-standard-item")
+                        : const Key("add-payment-schedule"),
+                    heroTag: widget.invoiceTableType == InvoiceTableType.ITEMS
+                        ? "add-standard-item"
+                        : "add-payment-schedule",
+                    onPressed: () async {
+                      // nextScreen(context: context, screen: SelectFee());
+                      List<ItemFee> result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SelectFee()));
+                      if (result.isNotEmpty) {
+                        setState(() {
+                          itemsDataSource.rows
+                              .addAll(result.map((e) => DataGridRow(cells: [
+                                    DataGridCell<String>(
+                                        columnName: 'items', value: e.name),
+                                    DataGridCell<String>(
+                                        columnName: 'quantity', value: '1'),
+                                    DataGridCell<String>(
+                                        columnName: 'price',
+                                        value: '${e.price}'),
+                                    DataGridCell<String>(
+                                        columnName: 'total',
+                                        value: '${e.price}'),
+                                  ])));
+                          // invoiceItems?.addAll(result.map((e) => InvoiceItemModel(
+                          //       invoiceId: widget.invoice?.id,
+                          //       price: e.price,
+                          //       quantity: 1,
+                          //       createdAt: DateTime.now().toString(),
+                          //       updatedAt: DateTime.now().toString(),
+                          //     )));
+                        });
+                      }
+                    },
+                    label: Text("Add std item",
+                        style: TextStyle(
+                          color: TertiaryColors.tertiaryPurple,
+                          fontSize: CustomFontSize.small,
+                        )),
+                    backgroundColor: PrimaryColors.primaryPurple,
+                  )
+                : const SizedBox(),
           ],
         ),
         const SizedBox(height: 20),
@@ -474,7 +494,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                         setState(() {
                           if (widget.invoiceTableType ==
                               InvoiceTableType.ITEMS) {
-                            itemsDataSource.rows.add( DataGridRow(cells: [
+                            itemsDataSource.rows.add(DataGridRow(cells: [
                               DataGridCell<String>(
                                   columnName: 'items', value: 'New item'),
                               DataGridCell<String>(
@@ -487,7 +507,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                             itemsDataSource.buildRow(itemsDataSource.rows.last);
                           } else {
                             paymentScheduleDataSource.rows
-                                .add( DataGridRow(cells: [
+                                .add(DataGridRow(cells: [
                               DataGridCell<String>(
                                   columnName: 'date', value: 'New date'),
                               DataGridCell<String>(
@@ -512,42 +532,52 @@ class _InvoiceTableState extends State<InvoiceTable> {
           ),
         ),
         // Overall Total Price
-        widget.invoiceTableType == InvoiceTableType.ITEMS 
-        ? Row(
-          children: [
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.all(8.0),
-              decoration: BoxDecoration(
-              ),
-              child: Row(
+        widget.invoiceTableType == InvoiceTableType.ITEMS
+            ? Row(
                 children: [
-                  Text(
-                    "GHS ",
-                    style: TextStyle(
-                      color: TertiaryColors.tertiaryPurple,
-                      fontSize: CustomFontSize.medium,
-                    ),
-                  ),
-                  SizedBox(width: 5),
-                  Text(
-                    itemsDataSource.rows.length == 1?
-                    itemsDataSource.rows.first.getCells()[3].value.toString():
-                    itemsDataSource.rows
-                        .map((e) => double.parse(e.getCells()[3].value.toString()))
-                        .toList()
-                        .reduce((value, element) => value + element)
-                        .toString(),
-                    style: TextStyle(
-                      color: SecondaryColors.secondaryPurple,
-                      fontSize: CustomFontSize.medium,
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(),
+                    child: Row(
+                      children: [
+                        Text(
+                          "${space.currency ?? "GHS"} ",
+                          style: TextStyle(
+                            color: TertiaryColors.tertiaryPurple,
+                            fontSize: CustomFontSize.medium,
+                          ),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          itemsDataSource.rows.length == 1
+                              ? itemsDataSource.rows.first
+                                          .getCells()[1]
+                                          .value
+                                          .toString() ==
+                                      "New item"
+                                  ? "0"
+                                  : itemsDataSource.rows.first
+                                      .getCells()[3]
+                                      .value
+                                      .toString()
+                              : itemsDataSource.rows
+                                  .map((e) => double.parse(
+                                      e.getCells()[3].value.toString()))
+                                  .toList()
+                                  .reduce((value, element) => value + element)
+                                  .toString(),
+                          style: TextStyle(
+                            color: SecondaryColors.secondaryPurple,
+                            fontSize: CustomFontSize.medium,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ): const SizedBox(),
+              )
+            : const SizedBox(),
       ],
     );
   }

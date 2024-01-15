@@ -11,6 +11,7 @@ class CustomTextField extends StatefulWidget {
   final Function(String)? onChanged;
   final TextEditingController controller;
   final TextInputType? inputType;
+  final TextCapitalization? textCapitalization;
   final Color? fillColor;
   final double? hintTextSize;
   final double? fontSize;
@@ -24,6 +25,7 @@ class CustomTextField extends StatefulWidget {
     required this.controller,
     this.validator,
     this.inputType,
+    this.textCapitalization,
     this.onChanged,
     required this.color,
     this.fillColor,
@@ -67,7 +69,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         controller: widget.controller,
         obscureText: textVisibility ?? false,
         keyboardType: widget.inputType ?? TextInputType.text,
-        textCapitalization: TextCapitalization.sentences,
+        textCapitalization: widget.textCapitalization ?? TextCapitalization.sentences,
         cursorColor: widget.color,
         style: const TextStyle(fontSize: 24),
         decoration: InputDecoration(

@@ -39,7 +39,7 @@ class _DatePickerState extends State<DatePicker> {
         showDatePicker(
             context: context,
             initialDate: DateTime.now(),
-            firstDate: DateTime(2000),
+            firstDate: DateTime(1900),
             lastDate: DateTime(2101),
             builder: (context, child) {
               return Theme(
