@@ -1050,7 +1050,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   });
                                   return "Please enter your password";
                                 } else if (!regex.hasMatch(value)) {
-                                  return 'Password should have a minimum of eight characters, at least one uppercase letter, lowercase letter, number and special character';
+                                  return 'Password should have a minimum of eight characters, \nat least one uppercase letter, lowercase letter, number \nand special character';
                                 } else {
                                   setState(() {
                                     heightSizePassword = 55;

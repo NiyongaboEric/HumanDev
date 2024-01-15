@@ -3,6 +3,7 @@ import 'package:currency_picker/currency_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:seymo_pay_mobile_application/data/constants/languages_countries.dart';
+import 'package:seymo_pay_mobile_application/data/constants/timezones.dart';
 
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/register.dart';
@@ -155,47 +156,6 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   String dropdownValueLocalization = 'en - English';
 
   late String dropdownValueTimezone;
-  final List<String> _availableTimezones = <String>[
-    'EET',
-    'EST',
-    'EST 5 EDT',
-    'Etc/GMT',
-    'Etc/GMT0',
-    'Etc/GMT+0',
-    'Etc/GMT+1',
-    'Etc/GMT+2',
-    'Etc/GMT+3',
-    'Etc/GMT+4',
-    'Etc/GMT+5',
-    'Etc/GMT+6',
-    'Etc/GMT+7',
-    'Etc/GMT+8',
-    'Etc/GMT+9',
-    'Etc/GMT+10',
-    'Etc/GMT+11',
-    'Etc/GMT+12',
-    'Etc/GMT-0',
-    'Etc/GMT-1',
-    'Etc/GMT-2',
-    'Etc/GMT-3',
-    'Etc/GMT-4',
-    'Etc/GMT-5',
-    'Etc/GMT-6',
-    'Etc/GMT-7',
-    'Etc/GMT-8',
-    'Etc/GMT-9',
-    'Etc/GMT-10',
-    'Etc/GMT-11',
-    'Etc/GMT-12',
-    'Etc/GMT-13',
-    'Etc/GMT-14',
-    'MET',
-    'MST',
-    'MST 7 MDT',
-    'UCT',
-    'UTC',
-    'WET',
-  ];
 
   double heightSizeSchool = 55;
   double heightSizeCountry = 55;
@@ -326,7 +286,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
         showCursor: false,
         readOnly: true,
         decoration: InputDecoration(
-          label: const Text("Select Country"),
+          label: const Text("Select country"),
           enabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(
               color: const Color.fromRGBO(77, 12, 43, 1),
@@ -357,7 +317,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
             setState(() {
               heightSizeCurrency = 80;
             });
-            return "Select your Currency";
+            return "Select your currency";
           } else {
             setState(() {
               heightSizeCurrency = 50;
@@ -384,7 +344,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
             ),
             borderRadius: BorderRadius.circular(10),
           ),
-          label: const Text("Select Currency"),
+          label: const Text("Select currency"),
           alignLabelWithHint: true,
         ),
       ),
@@ -410,19 +370,22 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
         ),
       ),
       validator: (value) {
-        if (value!.isEmpty) {
+        // if (value!.isEmpty) {
+        // return "Select your timezone";
+        // }
+        if (value == null) {
           return "Select your timezone";
         }
         return null;
       },
       dropdownColor: const Color(0xfffffffff),
-      hint: const Text("Select your timezone"),
+      hint: const Text("Select timezone"),
       onChanged: (String? newValue) {
         setState(() {
           dropdownValueTimezone = newValue!;
         });
       },
-      items: _availableTimezones.map<DropdownMenuItem<String>>(
+      items: availableTimezones.map<DropdownMenuItem<String>>(
         (String value) {
           return DropdownMenuItem<String>(
             value: value,
@@ -523,6 +486,9 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
 
   void _validateAndNavigate() {
     if (_formKey.currentState!.validate()) {
+      String convertTimezone =
+          '${availableTimezonesConversion[dropdownValueTimezone]}';
+
       nextScreen(
         context: context,
         screen: RegistrationScreen(
@@ -530,7 +496,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
           spaceCountry: selectedCountryController.text,
           spaceCurrency: selectedCurrencyController.text,
           spaceLanguage: dropdownValueLocalization,
-          spaceTimezone: dropdownValueTimezone,
+          spaceTimezone: convertTimezone,
           // spaceTimezone: _availableTimezones,
         ),
       );
