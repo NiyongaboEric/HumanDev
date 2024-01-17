@@ -496,7 +496,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                       collapse: collapseAddress),
                   _buildPersonRelativeSection(),
                   _buildSection(
-                    "Groups",
+                    "Groups *",
                     Icons.groups_2_rounded,
                     [
                       _buildGroupChip(),
@@ -540,9 +540,9 @@ class _PersonDetailsState extends State<PersonDetails> {
         ),
         IconButton(
           onPressed: () {
-            if (firstNameController.text.isNotEmpty ||
-                lastNameController.text.isNotEmpty ||
-                groupController.text.isNotEmpty) {
+            if (firstNameController.text.isNotEmpty &&
+                lastNameController.text.isNotEmpty &&
+                selectGroupList.isNotEmpty) {
               saveData();
             } else {
               GFToast.showToast(
@@ -745,10 +745,16 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildSection(String title, IconData icon, List<Widget> children,
-      {bool isAddButton = false,
-      Function()? btnAction,
-      bool collapse = false}) {
+  Widget _buildSection(
+    String title, 
+    IconData icon,
+    List<Widget> children,
+      {
+        bool isAddButton = false,
+        Function()? btnAction,
+        bool collapse = false
+      }
+    ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -841,9 +847,9 @@ class _PersonDetailsState extends State<PersonDetails> {
                 onPressed: state.isLoading
                     ? null
                     : () {
-                        if (firstNameController.text.isNotEmpty ||
-                            lastNameController.text.isNotEmpty ||
-                            groupController.text.isNotEmpty) {
+                        if (firstNameController.text.isNotEmpty  &&
+                            lastNameController.text.isNotEmpty  &&
+                            selectGroupList.isNotEmpty) {
                           onPressed!();
                         } else {
                           GFToast.showToast(
