@@ -786,6 +786,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         const SizedBox(height: 10),
                                         CustomTextField(
                                           hintText: "Email",
+                                          textCapitalization: TextCapitalization.none,
                                           controller: i == 0
                                               ? emailOneController
                                               : i == 1
@@ -1038,6 +1039,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               heightSize: heightSizePassword,
                               hintText: "Password",
                               controller: passwordController,
+                              textCapitalization: TextCapitalization.none,
                               obscureText: true,
                               validator: (value) {
                                 const pattern =
@@ -1067,6 +1069,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               heightSize: heightSizeConfirmPassword,
                               hintText: "Confirm Password",
                               controller: confirmPasswordController,
+                              textCapitalization: TextCapitalization.none,
                               obscureText: true,
                               validator: (value) {
                                 if (value!.isEmpty) {

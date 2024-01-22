@@ -152,6 +152,7 @@ enum Role {
   Relative,
   Supplier,
   School_administrator,
+  Parent
 }
 
 class PersonModel {

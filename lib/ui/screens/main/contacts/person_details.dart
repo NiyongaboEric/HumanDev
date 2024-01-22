@@ -194,7 +194,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               email2: emailController2.text,
               email3: emailController3.text,
               dateOfBirth: selectedDate.toString(),
-              groupIds: selectGroupList.map((e) => e.id!).toList(),
+              groupIds: selectGroupList.map((e) => e.id!).toList().toSet().toList(),
               personChildRelations: parentList
                   .map((e) => e.relation)
                   .toList(),
@@ -203,45 +203,47 @@ class _PersonDetailsState extends State<PersonDetails> {
           );
     } else {
       try {
-        context.read<PersonBloc>().add(
-              UpdatePersonEvent(
-                UpdatePersonRequest(
-                  id: widget.person!.id,
-                  firstName: firstNameController.text,
-                  middleName: middleNameController.text,
-                  lastName1: lastNameController.text,
-                  gender: selectedGender != "Gender*" ? selectedGender : null,
-                  phoneNumber1: phoneNumberController.text,
-                  phoneNumber2: phoneNumberController2.text,
-                  phoneNumber3: phoneNumberController3.text,
-                  email1: emailController.text,
-                  email2: emailController2.text,
-                  email3: emailController3.text,
-                  dateOfBirth: selectedDate.toString(),
-                  connectGroupIds: selectGroupList
-                      .where((element) => !widget.person!.groups!
-                          .map((e) => e.id)
-                          .toList()
-                          .contains(element.id))
-                      .map((e) => e.id!)
-                      .toList(),
-                  disconnectGroupIds: widget.person!.groups!
-                      .where((element) => !selectGroupList.contains(element))
-                      .map((e) => e.id!)
-                      .toList(),
-                  isLegal: widget.person!.isLegal,
-                  VATId: widget.person!.VATId,
-                  taxId: widget.person!.taxId,
-                  address: Address(
-                    street: streetController.text,
-                    city: cityController.text,
-                    state: stateController.text,
-                    zip: zipController.text,
-                  ),
-                  isDeactivated: widget.person!.isDeactivated,
-                )
-              ),
-            );
+        if (widget.screenFunction == ScreenFunction.edit) {
+          context.read<PersonBloc>().add(
+                UpdatePersonEvent(
+                  UpdatePersonRequest(
+                    id: widget.person!.id,
+                    firstName: firstNameController.text,
+                    middleName: middleNameController.text,
+                    lastName1: lastNameController.text,
+                    gender: selectedGender != "Gender*" ? selectedGender : null,
+                    phoneNumber1: phoneNumberController.text,
+                    phoneNumber2: phoneNumberController2.text,
+                    phoneNumber3: phoneNumberController3.text,
+                    email1: emailController.text,
+                    email2: emailController2.text,
+                    email3: emailController3.text,
+                    dateOfBirth: selectedDate.toString(),
+                    connectGroupIds: selectGroupList
+                        .where((element) => !widget.person!.groups!
+                            .map((e) => e.id)
+                            .toList()
+                            .contains(element.id))
+                        .map((e) => e.id!)
+                        .toList(),
+                    disconnectGroupIds: widget.person!.groups!
+                        .where((element) => !selectGroupList.contains(element))
+                        .map((e) => e.id!)
+                        .toList(),
+                    isLegal: widget.person!.isLegal,
+                    VATId: widget.person!.VATId,
+                    taxId: widget.person!.taxId,
+                    address: Address(
+                      street: streetController.text,
+                      city: cityController.text,
+                      state: stateController.text,
+                      zip: zipController.text,
+                    ),
+                    isDeactivated: widget.person!.isDeactivated,
+                  )
+                ),
+              );
+        }
       } catch (e) {
         logger.e(e);
       }
@@ -368,7 +370,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     List<Group> groups = prefs.getGroups();
     for (var group in groups) {
       groupList.add(group);
-    }
+    }    
     super.initState();
   }
 
@@ -898,30 +900,41 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   Widget _buildGroupChip() {
+    List<String> filterGroups = [];
     return SizedBox(
       width: double.infinity,
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
         children: [
-          ...selectGroupList.map((group) => Chip(
-                label: Text(
-                  group.name!,
-                  style: TextStyle(
-                    color: _secondaryColorSelection(),
-                    fontSize: CustomFontSize.medium,
-                    fontWeight: FontWeight.normal,
-                  ),
-                ),
-                backgroundColor: _primaryColorSelection(),
-                deleteIconColor: _secondaryColorSelection(),
-                onDeleted: () {
-                  setState(() {
-                    selectGroupList.remove(group);
-                    disconnectedGroupList.add(group);
-                  });
-                },
-              )),
+          ...selectGroupList.map((group)  {            
+            if (filterGroups.contains(group.name)) {
+              return Container();
+            } else {
+              filterGroups.add("${group.name}");
+              return Chip(
+                    label: Text(
+                      group.name!,
+                      style: TextStyle(
+                        color: _secondaryColorSelection(),
+                        fontSize: CustomFontSize.medium,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    backgroundColor: _primaryColorSelection(),
+                    deleteIconColor: _secondaryColorSelection(),
+                    onDeleted: () {
+                      setState(() {
+                        selectGroupList.remove(group);
+                        disconnectedGroupList.add(group);
+                      });
+                    },
+                  );
+            }
+
+
+          }
+            ),
         ],
       ),
     );
@@ -966,7 +979,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPersonRelativeSection() {
+  Widget _buildPersonRelativeSection() {    
     if (widget.contactVariant == ContactVariant.student ||
         widget.person != null && widget.person!.role == "Student") {
       return _buildSection(
@@ -977,6 +990,9 @@ class _PersonDetailsState extends State<PersonDetails> {
         btnAction: _addToParentList,
       );
     } else {
+      if (widget.contactVariant == ContactVariant.student) {
+        _addToParentList();
+      }
       return Container();
     }
   }

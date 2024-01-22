@@ -144,6 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     CustomTextField(
                       hintText: "Password",
                       controller: passwordController,
+                      textCapitalization: TextCapitalization.none,
                       obscureText: true,
                       validator: (value) {
                         if (value!.isEmpty) {

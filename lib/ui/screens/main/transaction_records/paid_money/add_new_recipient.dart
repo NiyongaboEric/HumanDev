@@ -1,8 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:seymo_pay_mobile_application/data/account/api/account_api.dart';
+import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
+import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
+import 'package:seymo_pay_mobile_application/ui/widgets/inputs/group_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../../data/constants/logger.dart';
 import '../../../../../data/person/model/person_request.dart';
@@ -19,18 +26,67 @@ class AddNewRecipient extends StatefulWidget {
 }
 
 class _AddNewRecipientState extends State<AddNewRecipient> {
+  var prefs = sl<SharedPreferences>();
+  var preferences = sl<SharedPreferenceModule>();
+
   List<bool> isSelected = [true, false];
 
   // Form Keys
   final _personFormKey = GlobalKey<FormState>();
   final _companyFormKey = GlobalKey<FormState>();
+
   final recipientFirstNameController = TextEditingController();
   final recipientLastNameController = TextEditingController();
   String role = "";
-  List<String> roleOptions = ["Student", "Parent"];
+  // List<String> roleOptions = ["Student", "Parent"];
   final companyNameController = TextEditingController();
   String supplier = "";
   List<String> supplierOptions = ["Retail", "WholeSale"];
+
+  List<Group> groupSpace = [];
+  
+  String currentSelectedGroupSpace = 'Student';
+  bool formHasErrors = false;
+  // String allGroups = 'Role';
+  // Text textErrors = const Text('Remember to fill details person and company section');
+
+  @override
+  void initState() {
+    String? groupValue = prefs.getString("groups");
+    if (groupValue != null) {
+      List<dynamic> groupData = json.decode(groupValue);
+      try {
+        List<Group> groupList = groupData.map((data) {
+          return Group.fromJson(data);
+        }).toList();
+        logger.d(groupList);
+
+        // Attach all groups as a default in group space
+        groupSpace = [
+          // Group.fromJson({
+          //   "id": 0,
+          //   "name": allGroups,
+          //   "isRole": false,
+          //   "isActive": false,
+          //   "spaceId": 00,
+          // }),
+          ...groupList
+        ];
+      } catch (e) {
+        logger.f(groupData);
+        logger.w(e);
+      }
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    recipientFirstNameController.dispose();
+    recipientLastNameController.dispose();
+    companyNameController.dispose();
+  }
 
   // Toggle Forms
   void toggleForm(int index) {
@@ -48,7 +104,8 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   // Update Role
   void updateRole(value) {
     setState(() {
-      role = value;
+      // role = value;
+      currentSelectedGroupSpace = value;
     });
   }
 
@@ -111,6 +168,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   Widget _buildPersonForm(PersonState state) {
     return Form(
       key: _personFormKey,
+      // key: _personCompanyFormKey,
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -137,12 +195,31 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                 return null;
               }),
           const SizedBox(height: 20),
-          CustomDropDownMenu(
-            color: SecondaryColors.secondaryRed,
-            options: ["Role", ...roleOptions],
-            value: "Role",
-            onChanged: updateRole,
+          
+          GroupDropdownMenu(
+            groupSpace: groupSpace,
+            handleChangeDropdownItem: updateRole,
+            btnstyle: const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              enabledBorder: OutlineInputBorder(
+                gapPadding: 0,
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: SecondaryColors.secondaryRed,
+                  width: 1,
+                ),
+              ),
+            ),
+            leadingIcon: Icon(Icons.filter_list_alt,
+                color: SMSRecipientColors.primaryColor),
+            menuStyle: const MenuStyle(
+              backgroundColor: MaterialStatePropertyAll<Color>(
+                  Color.fromARGB(255, 255, 255, 255)),
+            ),
           ),
+          // formHasErrors ? textErrors : Container(),
           const SizedBox(height: 75),
           Row(
             children: [
@@ -152,9 +229,19 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                   onPressed: state.isLoading
                       ? null
                       : () {
-                          if (_personFormKey.currentState!.validate() &&
-                              role.isNotEmpty) {
+                          if (
+                              _personFormKey.currentState!.validate()
+                              && currentSelectedGroupSpace.isNotEmpty
+                              //  &&
+                              // currentSelectedGroupSpace.isNotEmpty &&
+                              // companyNameController.text.isNotEmpty
+                            ) {
+                            formHasErrors = false;
                             _createPerson();
+                          }  else {
+                            setState(() {
+                              formHasErrors = true;
+                            });
                           }
                         },
                   label: !state.isLoading
@@ -180,6 +267,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   Widget _buildCompanyForm(PersonState state) {
     return Form(
       key: _companyFormKey,
+      // key: _personCompanyFormKey,
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -193,6 +281,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
               }
               return null;
             },
+    
           ),
           const SizedBox(height: 20),
           // CustomDropDownMenu(
@@ -201,6 +290,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
           //   onChanged: updateSupplier,
           //   value: "Supplier",
           // ),
+          // formHasErrors ? textErrors : Container(),
           const SizedBox(height: 75),
           Row(
             children: [
@@ -210,8 +300,18 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                   onPressed: state.isLoading
                       ? null
                       : () {
-                          if (_companyFormKey.currentState!.validate()) {
+                          if (_companyFormKey.currentState!.validate() 
+                          // &&
+                          //   currentSelectedGroupSpace.isNotEmpty &&
+                          //   recipientFirstNameController.text.isNotEmpty &&
+                          //   recipientLastNameController.text.isNotEmpty
+                           ) {
+                            formHasErrors = false;
                             _createPerson();
+                          } else {
+                            setState(() {
+                              formHasErrors = true;
+                            });
                           }
                         },
                   label: !state.isLoading
@@ -226,7 +326,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                           color: SecondaryColors.secondaryRed,
                         ),
                 ),
-              )
+              ),
             ],
           )
         ],
