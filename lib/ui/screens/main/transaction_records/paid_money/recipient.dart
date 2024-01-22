@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:pinput/pinput.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -38,12 +40,18 @@ class _RecipientState extends State<Recipient> {
   TextEditingController recipientNameController = TextEditingController();
   var preferences = sl<SharedPreferences>();
   var prefs = sl<SharedPreferences>();
+  var prefsModule =  sl<SharedPreferenceModule>();
   List<RecipientModel> recipientOptions = [];
   List<RecipientModel> selectedRecipients = [];
   List<RecipientModel> searchResults = [];
   List<RecipientModel> parents = [];
+  List<PersonModel> allPeople = [];
+  List<PersonModel> searchResultsAllPeople = [];
+  // List<PersonModel> recipientOptionsAllPeople = [];
+  bool showResultsAllPeople = false;
   bool showResults = false;
   List<bool> isSelected = [true, false];
+  bool isCurrentPage = false;
 
   String selectedOption = 'Option 1'; // Initialize the selected option
 
@@ -114,8 +122,57 @@ class _RecipientState extends State<Recipient> {
             (recipient.firstName ?? "").toLowerCase().contains(query) ||
             (recipient.lastName ?? "").toLowerCase().contains(query)));
       });
+
+      // print("****************** 1 ************************************** ${query}");
+      // setState(() {
+      //   showResults = true;
+      //   var result = allPeople
+      //     .toSet()
+      //     .toList()
+      //     .where(
+      //       (recipient) =>
+      //           // (recipient.companyName ?? "").toLowerCase().contains(query) ||
+      //           (recipient.firstName ?? "").toLowerCase().contains(query) ||
+      //           (recipient.lastName1 ?? "").toLowerCase().contains(query),
+      //     )
+      //     .toList();
+      //   // searchResultsAllPeople = result;
+      //   // print(';;;;;;;;;;;;;;;;; ${searchResultsAllPeople.length}');
+      //   // print("____STEP____ ${searchResultsAllPeople.length}____${allPeople.length}");
+      //   searchResultsAllPeople.addAll(result.toSet().toList().where((recipient) =>
+      //       (recipient.firstName ?? "").toLowerCase().contains(query) ||
+      //       (recipient.lastName1 ?? "").toLowerCase().contains(query)));
+      // });
     }
   }
+
+  // searchAllPeople(String query) {
+  //   // Search for recipient options and also parents
+  //   query = query.toLowerCase();
+  //   if (query.isEmpty) {
+  //     setState(() {
+  //       showResults = false;
+  //     });
+  //   } else {
+  //     print("****************** 1 **************************************");
+  //     setState(() {
+  //       showResults = true;
+  //       searchResultsAllPeople = searchResultsAllPeople
+  //           .toSet()
+  //           .toList()
+  //           .where(
+  //             (recipient) =>
+  //                 // (recipient.companyName ?? "").toLowerCase().contains(query) ||
+  //                 (recipient.firstName ?? "").toLowerCase().contains(query) ||
+  //                 (recipient.lastName1 ?? "").toLowerCase().contains(query),
+  //           )
+  //           .toList();
+  //       searchResultsAllPeople.addAll(allPeople.toSet().toList().where((recipient) =>
+  //           (recipient.firstName ?? "").toLowerCase().contains(query) ||
+  //           (recipient.lastName1 ?? "").toLowerCase().contains(query)));
+  //     });
+  //   }
+  // }
 
   Widget iconSelector(bool isPerson) {
     if (isPerson) {
@@ -149,30 +206,31 @@ class _RecipientState extends State<Recipient> {
       });
       // Handle Success
       for (var person in state.persons) {
-        if (!parents.contains(person)) {
-          parents.add(RecipientModel(
-            id: person.id,
-            firstName: person.firstName,
-            lastName: person.lastName1,
-            role: person.role == Role.Relative.name
-                ? "parent"
-                : person.role!.toLowerCase(),
-            isPerson: true,
-          ));
-        } else {
-          parents.remove(RecipientModel(
-            id: person.id,
-            isPerson: true,
-            firstName: person.firstName,
-            lastName: person.lastName1,
-            role: person.role == Role.Relative.name
-                ? "parent"
-                : person.role!.toLowerCase(),
-          ));
-        }
+        allPeople.add(person);
+        // if (!parents.contains(person)) {
+        //   parents.add(RecipientModel(
+        //     id: person.id,
+        //     firstName: person.firstName,
+        //     lastName: person.lastName1,
+        //     role: person.role == Role.Relative.name
+        //         ? "parent"
+        //         : person.role!.toLowerCase(),
+        //     isPerson: true,
+        //   ));
+        // } else {
+        //   parents.remove(RecipientModel(
+        //     id: person.id,
+        //     isPerson: true,
+        //     firstName: person.firstName,
+        //     lastName: person.lastName1,
+        //     role: person.role == Role.Relative.name
+        //         ? "parent"
+        //         : person.role!.toLowerCase(),
+        //   ));
+        // }
       }
-      var offlineStudentList = json.encode(parents);
-      preferences.setString("recipientsParents", offlineStudentList);
+      // var offlineStudentList = json.encode(parents);
+      // preferences.setString("recipientsParents", offlineStudentList);
     }
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
@@ -226,59 +284,59 @@ class _RecipientState extends State<Recipient> {
     super.initState();
   }
 
+  addRecipient() async {
+    RecipientModel? recipient = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddNewRecipient(),
+      ),
+    );
+    if (recipient != null) {
+      setState(() {
+        recipientOptions.add(recipient);
+      });
+    }
+  }
+
+  navigate(
+    BuildContext context,
+    JournalState state,
+    RecipientModel recipient,
+  ) {
+    var paymentRequest = JournalModel(
+      recipientFirstName: recipient.firstName,
+      recipientLastName: recipient.lastName,
+      companyName: recipient.companyName,
+      recipientRole: recipient.role,
+      supplier: recipient.supplier,
+      tags: state.journalData?.tags,
+      amount: state.journalData?.amount,
+      accountantId: state.journalData?.accountantId,
+      recipientId: recipient.id,
+      createdAt: state.journalData?.createdAt,
+      updatedAt: state.journalData?.updatedAt,
+      currency: state.journalData?.currency,
+      description: state.journalData?.description,
+      // images: state.journalData?.images,
+      spaceId: state.journalData?.spaceId,
+      id: state.journalData?.id,
+      creditAccountId: state.journalData?.creditAccountId,
+      debitAccountId: state.journalData?.debitAccountId,
+      personId: recipient.id
+    );
+    try {
+      var recipients = json.encode(recipientOptions);
+      prefs.setString("recipients", recipients);
+      context.read<JournalBloc>().add(
+            SaveDataJournalState(paymentRequest),
+          );
+    } catch (e) {
+      logger.e(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    addRecipient() async {
-      RecipientModel? recipient = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AddNewRecipient(),
-        ),
-      );
-      if (recipient != null) {
-        setState(() {
-          recipientOptions.add(recipient);
-        });
-      }
-    }
-
-    navigate(
-      BuildContext context,
-      JournalState state,
-      RecipientModel recipient,
-    ) {
-      var paymentRequest = JournalModel(
-        recipientFirstName: recipient.firstName,
-        recipientLastName: recipient.lastName,
-        companyName: recipient.companyName,
-        recipientRole: recipient.role,
-        supplier: recipient.supplier,
-        tags: state.journalData?.tags,
-        amount: state.journalData?.amount,
-        accountantId: state.journalData?.accountantId,
-        recipientId: recipient.id,
-        createdAt: state.journalData?.createdAt,
-        updatedAt: state.journalData?.updatedAt,
-        currency: state.journalData?.currency,
-        description: state.journalData?.description,
-        // images: state.journalData?.images,
-        spaceId: state.journalData?.spaceId,
-        id: state.journalData?.id,
-        creditAccountId: state.journalData?.creditAccountId,
-        debitAccountId: state.journalData?.debitAccountId,
-        personId: recipient.id
-      );
-      try {
-        var recipients = json.encode(recipientOptions);
-        prefs.setString("recipients", recipients);
-        context.read<JournalBloc>().add(
-              SaveDataJournalState(paymentRequest),
-            );
-      } catch (e) {
-        logger.e(e);
-      }
-    }
-
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
         // TODO: implement listener
@@ -383,6 +441,35 @@ class _RecipientState extends State<Recipient> {
                                   // ),
                                 ),
                               ),
+
+                              // ...searchResultsAllPeople.map(
+                              //   (recipient) => ListTile(
+                              //     onTap: () {
+                              //       navigate(context, state, RecipientModel(
+                              //       id: recipient.id,
+                              //       firstName: recipient.firstName,
+                              //       lastName: recipient.lastName1,
+                              //       isPerson: true,
+                              //     ));
+                              //     },
+                              //     leading: iconSelector(true),
+                              //     title: Text(
+                              //       "${recipient.firstName} ${recipient.lastName1} (${recipient.role?.toLowerCase()})",
+                              //       style: TextStyle(
+                              //         fontSize: CustomFontSize.large,
+                              //         color: SecondaryColors.secondaryRed,
+                              //       ),
+                              //     ),
+                              //     // trailing: IconButton(
+                              //     //   onPressed: () {
+                              //     //     setState(() {
+                              //     //       searchResults.remove(recipient);
+                              //     //     });
+                              //     //   },
+                              //     //   icon: Icon(Icons.clear),
+                              //     // ),
+                              //   ),
+                              // ),
                             ],
                           ),
                         )
@@ -391,28 +478,70 @@ class _RecipientState extends State<Recipient> {
                         shrinkWrap: true,
                         children: [
                           ...recipientOptions.map(
-                            (recipient) => ListTile(
-                              onTap: () {
-                                navigate(context, state, recipient);
-                              },
-                              leading: iconSelector(recipient.isPerson),
-                              title: Text(
-                                recipient.companyName ??
-                                    "${recipient.firstName} ${recipient.lastName}",
-                                style: TextStyle(
-                                  fontSize: CustomFontSize.large,
-                                  color: SecondaryColors.secondaryRed,
-                                ),
-                              ),
-                              // trailing: IconButton(
-                              //     onPressed: () {
-                              //       setState(() {
-                              //         recipientOptions.remove(recipient);
-                              //       });
-                              //     },
-                              //     icon: Icon(Icons.clear)),
-                            ),
+                            (recipient) {
+                              if (recipient.id != null) {
+                                return ListTile(
+                                  onTap: () {
+                                    navigate(context, state, recipient);
+                                  },
+                                  leading: iconSelector(recipient.isPerson),
+                                  title: Text(
+                                    recipient.companyName ??
+                                        "${recipient.firstName} ${recipient.lastName}",
+                                    style: TextStyle(
+                                      fontSize: CustomFontSize.large,
+                                      color: SecondaryColors.secondaryRed,
+                                    ),
+                                  ),
+                                  // trailing: IconButton(
+                                  //     onPressed: () {
+                                  //       setState(() {
+                                  //         recipientOptions.remove(recipient);
+                                  //       });
+                                  //     },
+                                  //     icon: Icon(Icons.clear)),
+                                );
+                              } else {
+                                return Container();
+                              }
+                            }
                           ),
+
+
+
+
+
+                          ...allPeople.map(
+                            (recipient) {
+                              return ListTile(
+                                onTap: () {
+                                  navigate(context, state, RecipientModel(
+                                    id: recipient.id,
+                                    firstName: recipient.firstName,
+                                    lastName: recipient.lastName1,
+                                    isPerson: true,
+                                  ));
+                                },
+                                leading: iconSelector(true),
+                                title: Text("${recipient.firstName} ${recipient.lastName1}",
+                                  style: TextStyle(
+                                    fontSize: CustomFontSize.large,
+                                    color: SecondaryColors.secondaryRed,
+                                  ),
+                                ),
+                                // trailing: IconButton(
+                                //     onPressed: () {
+                                //       setState(() {
+                                //         recipientOptions.remove(recipient);
+                                //       });
+                                //     },
+                                //     icon: Icon(Icons.clear)),
+                              );
+                            }
+                          ),
+
+
+                          
                           ListTile(
                             onTap: addRecipient,
                             leading: Icon(

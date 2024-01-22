@@ -122,8 +122,13 @@ class _ParentsState extends State<Parents> {
         return suppliers;
       case 'School administrator':
         return schoolAdministrators;
+      case 'Parent':
+        return parents;
+      case 'All people':
+        return allPeople;
       default:
-        print('You are to Implement custom group.....');
+        allPeople;
+        // print('You are to Implement custom group.....');
     }
   }
 
@@ -210,9 +215,16 @@ class _ParentsState extends State<Parents> {
           searchList = students;
         } else if (selectedContactType == 'Parent') {
           searchList = parents;
-        } else {
+        } 
+        else if (selectedContactType == 'Teacher') {
           searchList = teachers;
+        } else if (selectedContactType == 'Supplier') {
+          searchList = suppliers;
         }
+        
+        // else {
+        //   searchList = teachers;
+        // }
       }
       if (widget.parentSection == ParentSection.sms ||
           widget.parentSection == ParentSection.conversation ||
@@ -255,6 +267,9 @@ class _ParentsState extends State<Parents> {
       }
       if (currentSelectedGroupSpace == Role.Teacher.name) {
         searchList = teachers;
+      }
+      if (currentSelectedGroupSpace == Role.Parent.name) {
+        searchList = parents;
       }
       if (currentSelectedGroupSpace == Role.Supplier.name) {
         searchList = suppliers;
@@ -903,6 +918,11 @@ class _ParentsState extends State<Parents> {
         ? getStudentsWithPendingPayments()
         : getAllStudents();
 
+    /**
+     * Fix contact screen not loading data
+    */
+    if (widget.parentSection == ParentSection.contacts) getAllStudents();
+
     String? groupValue = prefs.getString("groups");
     if (groupValue != null) {
       List<dynamic> groupData = json.decode(groupValue);
@@ -1125,7 +1145,7 @@ class _ParentsState extends State<Parents> {
     } else if (parentSection == ParentSection.students) {
       return parents;
     } else if (parentSection == ParentSection.contacts) {
-      return getSelectedPeopleForContacts();
+       return switchGroupSpace(selectedContactType);
     } else {
       return getSelectedPeople();
     }

@@ -10,6 +10,7 @@ class GroupDropdownMenu extends StatelessWidget {
     required this.btnstyle,
     required this.inputDecorationTheme,
     required this.leadingIcon,
+    this.menuStyle,
   });
 
   List<Group> groupSpace;
@@ -17,6 +18,7 @@ class GroupDropdownMenu extends StatelessWidget {
   ButtonStyle btnstyle;
   InputDecorationTheme inputDecorationTheme;
   Icon leadingIcon;
+  MenuStyle? menuStyle;
   
   @override
   Widget build(BuildContext context) {
@@ -26,7 +28,7 @@ class GroupDropdownMenu extends StatelessWidget {
     if (groupSpace.isEmpty) {
       List<String> data = ['No groups available'];
       dropdownMenu = DropdownMenu<String>(
-        menuStyle: MenuStyle(
+        menuStyle: menuStyle ?? MenuStyle(
           backgroundColor: 
             MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue),
         ),
@@ -48,7 +50,7 @@ class GroupDropdownMenu extends StatelessWidget {
       );
     } else {
       dropdownMenu = DropdownMenu<String>(
-        menuStyle: MenuStyle(
+        menuStyle: menuStyle ?? MenuStyle(
           backgroundColor: 
             MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue),
         ),

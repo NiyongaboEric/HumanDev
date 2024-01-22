@@ -370,7 +370,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     List<Group> groups = prefs.getGroups();
     for (var group in groups) {
       groupList.add(group);
-    }
+    }    
     super.initState();
   }
 
@@ -979,7 +979,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPersonRelativeSection() {
+  Widget _buildPersonRelativeSection() {    
     if (widget.contactVariant == ContactVariant.student ||
         widget.person != null && widget.person!.role == "Student") {
       return _buildSection(
@@ -990,6 +990,9 @@ class _PersonDetailsState extends State<PersonDetails> {
         btnAction: _addToParentList,
       );
     } else {
+      if (widget.contactVariant == ContactVariant.student) {
+        _addToParentList();
+      }
       return Container();
     }
   }
