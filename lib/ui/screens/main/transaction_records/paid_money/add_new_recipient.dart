@@ -2,14 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:getwidget/components/toast/gf_toast.dart';
+import 'package:getwidget/position/gf_toast_position.dart';
 import 'package:seymo_pay_mobile_application/data/account/api/account_api.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/group_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../data/constants/logger.dart';
 import '../../../../../data/person/model/person_request.dart';
@@ -50,6 +57,18 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   // String allGroups = 'Role';
   // Text textErrors = const Text('Remember to fill details person and company section');
 
+  void _refreshTokens() {
+    var prefs = sl<SharedPreferenceModule>();
+    TokenResponse? token = prefs.getToken();
+    if (token != null) {
+      context.read<AuthBloc>().add(
+            AuthEventRefresh(
+              RefreshRequest(refresh: token.refreshToken),
+            ),
+          );
+    }
+  }
+  
   @override
   void initState() {
     String? groupValue = prefs.getString("groups");
@@ -119,8 +138,8 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   // Create Person
   void _createPerson() {
     BlocProvider.of<PersonBloc>(context).add(AddPersonEvent(PersonRequest(
-      firstName: recipientLastNameController.text.isNotEmpty
-          ? recipientLastNameController.text
+      firstName: recipientFirstNameController.text.isNotEmpty
+          ? recipientFirstNameController.text
           : null,
       lastName1: recipientLastNameController.text.isNotEmpty
           ? recipientLastNameController.text
@@ -161,6 +180,26 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
     }
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
+      if (state.status == PersonStatus.error) {
+        logger.e(state.errorMessage);
+        if (state.errorMessage == "Invalid refresh token." ||
+            state.errorMessage == "Exception: Invalid refresh token." ||
+            state.errorMessage == "Exception: Unauthorized"
+        ) {
+          _refreshTokens();
+        } else {
+          GFToast.showToast(
+            state.errorMessage,
+            context,
+            toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
+                                  ? GFToastPosition.TOP
+                                  : GFToastPosition.BOTTOM,
+            toastBorderRadius: 8.0,
+            backgroundColor: CustomColor.red,
+            toastDuration: 5,
+          );
+        }
+      }
     }
   }
 
@@ -232,9 +271,6 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                           if (
                               _personFormKey.currentState!.validate()
                               && currentSelectedGroupSpace.isNotEmpty
-                              //  &&
-                              // currentSelectedGroupSpace.isNotEmpty &&
-                              // companyNameController.text.isNotEmpty
                             ) {
                             formHasErrors = false;
                             _createPerson();

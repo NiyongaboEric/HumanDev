@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:flutter/services.dart';
+
 import 'package:seymo_pay_mobile_application/ui/screens/auth/accounts_bloc/accounts_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_auth.dart';
@@ -21,6 +23,9 @@ final sl = GetIt.instance;
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+    [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]
+  );
   await init();
   runApp(const MyApp());
 }

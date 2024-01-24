@@ -235,7 +235,9 @@ class _RecipientState extends State<Recipient> {
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
       if (state.errorMessage == "Invalid refresh token." ||
-          state.errorMessage == "Exception: Invalid refresh token.") {
+          state.errorMessage == "Exception: Invalid refresh token." ||
+          state.errorMessage == "Exception: Unauthorized"
+      ) {
         _refreshTokens();
       } else {
         GFToast.showToast(
@@ -358,8 +360,8 @@ class _RecipientState extends State<Recipient> {
             actions: [
               BlocListener<PersonBloc, PersonState>(
                 listener: (context, state) {
-                  // TODO: implement listener
-                  _handleParentsStateChange(context, state);
+                    // TODO: implement listener
+                    _handleParentsStateChange(context, state);
                 },
                 child: Container(),
               ),
