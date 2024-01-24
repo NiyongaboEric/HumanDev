@@ -19,6 +19,8 @@ import '../../../../../data/constants/shared_prefs.dart';
 import '../../../../../data/journal/model/request_model.dart';
 import '../../../../utilities/custom_colors.dart';
 import '../../../../widgets/inputs/drop_down_menu.dart';
+import '../../../auth/auth_bloc/auth_bloc.dart';
+import '../../../auth/login.dart';
 
 var sl = GetIt.instance;
 
@@ -36,6 +38,7 @@ class _LogPaymentState extends State<LogPayment> {
   String selectedCurrency = 'GHS';
   DateTime date = DateTime.now();
   var preferences = sl<SharedPreferenceModule>();
+  bool logout = false;
 
   // Update Payment Method
   void updatePaymentMethod(value) {
@@ -88,6 +91,11 @@ class _LogPaymentState extends State<LogPayment> {
         );
   }
 
+  // Logout
+  void _logout() {
+    context.read<AuthBloc>().add(AuthEventLogout());
+  }
+
   // Handle Journal State Change
   void _handleJournalStateChange(BuildContext context, JournalState state) {
     if (state.status == JournalStatus.success) {
@@ -115,6 +123,65 @@ class _LogPaymentState extends State<LogPayment> {
         toastBorderRadius: 12.0,
         backgroundColor: CustomColor.red,
       );
+    }
+  }
+
+  // Handle Get User Data State Change
+  void _handleRefreshStateChange(BuildContext context, AuthState state) {
+    // var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
+    }
+    if (state.status == AuthStateStatus.authenticated) {
+      // navigate(context, state);
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (state.refreshFailure != null &&
+          state.refreshFailure!.contains("Invalid refresh token")) {
+        logger.w("Invalid refresh token");
+        setState(() {
+          logout = true;
+        });
+        _logout();
+      } else {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
     }
   }
 

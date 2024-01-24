@@ -170,13 +170,17 @@ class PaymentScheduleRequest {
 class InvoiceItemRequest {
   final int quantity;
   final String description;
-  final int price;
+  final int? grossPrice;
+  final int? netPrice;
+  final int? taxRate;
   final int total;
 
   InvoiceItemRequest({
     required this.quantity,
     required this.description,
-    required this.price,
+    this.grossPrice,
+    this.netPrice,
+    this.taxRate,
     required this.total,
   });
 
@@ -184,7 +188,9 @@ class InvoiceItemRequest {
     return {
       "quantity": quantity,
       "description": description,
-      "price": price,
+      "price_gross": grossPrice,
+      "price_net": netPrice,
+      "tax_rate": taxRate,
       "total": total,
     };
   }

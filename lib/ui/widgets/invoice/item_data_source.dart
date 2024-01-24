@@ -17,7 +17,7 @@ class ItemsDataSource extends DataGridSource {
         .map<InvoiceItemRequest>((e) => InvoiceItemRequest(
               description: e.getCells()[0].value.toString(),
               quantity: int.parse(e.getCells()[1].value.toString()),
-              price: e.getCells()[2].value is String
+              grossPrice: e.getCells()[2].value is String
                   ? int.parse(e.getCells()[2].value)
                   : (e.getCells()[2].value as double).toInt(),
               total: e.getCells()[3].value is String

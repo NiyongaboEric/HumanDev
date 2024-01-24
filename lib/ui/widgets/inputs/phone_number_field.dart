@@ -106,8 +106,10 @@ class _CustomPhoneNumberFieldState extends State<CustomPhoneNumberField> {
           if (!value.isValidNumber()) {
             return "Please enter a valid phone number";
           }
-          // Validate if it contains only numbers 0-9
-          if(!RegExp(r'^[0-9]+$').hasMatch(value.number)){
+          // Invalidate if contains letters, spaces or special characters
+          if (value.number.contains(RegExp(r'[a-zA-Z]')) ||
+              value.number.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')) ||
+              value.number.contains(RegExp(r'\s+'))) {
             return "Please enter a valid phone number";
           }
           return null;
