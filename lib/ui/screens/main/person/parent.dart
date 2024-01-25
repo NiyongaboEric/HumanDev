@@ -74,6 +74,9 @@ class _ParentsState extends State<Parents> {
   // PS => allPeople. [Students, Parents, Teachers]
   List<PersonModel> allPeople = <PersonModel>[];
 
+  List<PersonModel> customGroupPeople = <PersonModel>[];
+  List<PersonModel> selectedcustomGroupPeople = <PersonModel>[];
+
   List<PersonModel> selectedAllPeopleSendSMS = <PersonModel>[];
   List<PersonModel> selectedStudentsSendSMS = <PersonModel>[];
   List<PersonModel> selectedParentsSendSMS = <PersonModel>[];
@@ -109,7 +112,6 @@ class _ParentsState extends State<Parents> {
   String allGroups = 'All groups';
 
   switchGroupSpace(String selectGroupSpace) {
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>. selectGroupSpace: ${selectGroupSpace}...');
     switch (selectGroupSpace) {
       case 'All groups':
         return allPeople;
@@ -128,8 +130,7 @@ class _ParentsState extends State<Parents> {
       case 'All people':
         return allPeople;
       default:
-        print('You are to Implement custom group.....');
-        allPeople;
+        return customGroupPeople;
     }
   }
 
@@ -150,6 +151,28 @@ class _ParentsState extends State<Parents> {
     currentSelectedGroup == roleToString(Role.School_administrator)
         ? addSchoolAdministratorsSendSMS(person)
         : null;
+
+    /**
+     * Student
+     * Teacher
+     * Relative
+     * Supplier
+     * School_administrator
+     * Parent
+     */
+    if (currentSelectedGroup != allGroups && 
+      currentSelectedGroup != Role.Student.name &&
+      currentSelectedGroup != Role.Relative.name &&
+      currentSelectedGroup != Role.Parent.name &&
+      currentSelectedGroup != Role.Teacher.name &&
+      currentSelectedGroup != Role.Supplier.name &&
+      currentSelectedGroup != roleToString(Role.School_administrator)
+    ) {
+      // Handle Custom groups
+      addSelectedCustomGroupSendSMS(person);
+    } else {
+      return;
+    }
   }
 
   void handleRemovePersonForSendSMS(currentSelectedGroup, PersonModel person) {
@@ -169,6 +192,28 @@ class _ParentsState extends State<Parents> {
     currentSelectedGroup == roleToString(Role.School_administrator)
         ? removeSchoolAdministratorsSendSMS(person)
         : null;
+
+    /**
+     * Student
+     * Teacher
+     * Relative
+     * Supplier
+     * School_administrator
+     * Parent
+    */
+    if (currentSelectedGroup != allGroups && 
+      currentSelectedGroup != Role.Student.name &&
+      currentSelectedGroup != Role.Relative.name &&
+      currentSelectedGroup != Role.Parent.name &&
+      currentSelectedGroup != Role.Teacher.name &&
+      currentSelectedGroup != Role.Supplier.name &&
+      currentSelectedGroup != roleToString(Role.School_administrator)
+    ) {
+      // Handle Custom groups
+      removeSelectedCustomGroup(person);
+    } else {
+      return;
+    }
   }
 
   void handleChangeDropdownItem(value) {
@@ -280,6 +325,18 @@ class _ParentsState extends State<Parents> {
         searchList = schoolAdministrators;
       }
 
+      if (
+        currentSelectedGroupSpace != allGroups && 
+        currentSelectedGroupSpace != Role.Student.name &&
+        currentSelectedGroupSpace != Role.Relative.name &&
+        currentSelectedGroupSpace != Role.Teacher.name &&
+        currentSelectedGroupSpace != Role.Parent.name &&
+        currentSelectedGroupSpace != Role.Supplier.name &&
+        currentSelectedGroupSpace != roleToString(Role.School_administrator)
+      ) {
+        searchList = customGroupPeople;
+      }
+
       setState(() {
         showResults = true;
         searchResults = searchList
@@ -328,6 +385,18 @@ class _ParentsState extends State<Parents> {
   void removeAllPeopleSendSMS(PersonModel allPeople) {
     setState(() {
       selectedAllPeopleSendSMS.remove(allPeople);
+    });
+  }
+
+  void addSelectedCustomGroupSendSMS(PersonModel allPeople) {
+    setState(() {
+      selectedcustomGroupPeople.add(allPeople);
+    });
+  }
+
+  void removeSelectedCustomGroup(PersonModel allPeople) {
+    setState(() {
+      selectedcustomGroupPeople.remove(allPeople);
     });
   }
 
@@ -635,6 +704,7 @@ class _ParentsState extends State<Parents> {
         allPeople.clear();
         suppliers.clear();
         schoolAdministrators.clear();
+        customGroupPeople.clear();
       });
       for (var person in state.persons) {
         if (person.role == "Student") {
@@ -646,31 +716,36 @@ class _ParentsState extends State<Parents> {
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
-        if (person.role == "Relative" || person.role == "Parent") {
+        else if (person.role == "Relative" || person.role == "Parent") {
           if (!parents.contains(person)) {
             parents.add(person);
           }
         }
-        if (person.role == "Teacher") {
+        else if (person.role == "Teacher") {
           if (!teachers.contains(person)) {
             teachers.add(person);
           }
         }
-        if (person.role == "Supplier") {
+        else if (person.role == "Supplier") {
           if (!suppliers.contains(person)) {
             suppliers.add(person);
           }
         }
-        if (person.role == "School administrator") {
+        else if (person.role == "School administrator") {
           if (!schoolAdministrators.contains(person)) {
             schoolAdministrators.add(person);
           }
         }
+      else {
+        if (!customGroupPeople.contains(person)) {
+          customGroupPeople.add(person);
+        }
       }
+    }
 
       allPeople = widget.parentSection == ParentSection.contacts
           ? state.persons
-          : [...parents, ...teachers, ...suppliers, ...schoolAdministrators];
+          : [...parents, ...teachers, ...suppliers, ...schoolAdministrators, ...customGroupPeople];
 
       preferences.savePersons(allPeople);
       if (students.isNotEmpty) preferences.saveStudents(students);
@@ -678,8 +753,8 @@ class _ParentsState extends State<Parents> {
       if (teachers.isNotEmpty) preferences.saveTeachers(teachers);
 
       if (suppliers.isNotEmpty) preferences.saveSuppliers(suppliers);
-      if (schoolAdministrators.isNotEmpty)
-        preferences.saveSchoolAdministrator(schoolAdministrators);
+      if (schoolAdministrators.isNotEmpty) preferences.saveSchoolAdministrator(schoolAdministrators);
+      if (customGroupPeople.isNotEmpty) preferences.saveCustomGroupPeople(customGroupPeople);
     }
     if (state.status == PersonStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
@@ -742,7 +817,8 @@ class _ParentsState extends State<Parents> {
       ...selectedParentsSendSMS,
       ...selectedTeachersSendSMS,
       ...selectedSuppliersSendSMS,
-      ...selectedSchoolAdministratorsSendSMS
+      ...selectedSchoolAdministratorsSendSMS,
+      ...selectedcustomGroupPeople
     ]
         .map((e) => {'${e.firstName} ${e.lastName1}': "${e.phoneNumber1}"})
         .toList();
@@ -757,7 +833,8 @@ class _ParentsState extends State<Parents> {
       ...selectedParentsSendSMS,
       ...selectedTeachersSendSMS,
       ...selectedSuppliersSendSMS,
-      ...selectedSchoolAdministratorsSendSMS
+      ...selectedSchoolAdministratorsSendSMS,
+      ...selectedcustomGroupPeople
     ].map((e) => "${e.firstName} ${e.lastName1}").toList();
 
     context.read<SMSBloc>().add(
@@ -908,6 +985,10 @@ class _ParentsState extends State<Parents> {
     teachers.addAll(teacherList);
     var allPeopleList = preferences.getPersons();
     allPeople.addAll(allPeopleList);
+    
+    var allCustomGroupPeople = preferences.getCustomGroupPeople();
+    customGroupPeople.addAll(allCustomGroupPeople);
+
     if (widget.parentSection == ParentSection.sms) {
       var studentList = preferences.getStudentsWithPendingPayments();
       students.addAll(studentList);
@@ -1041,7 +1122,8 @@ class _ParentsState extends State<Parents> {
                               ...selectedParentsSendSMS,
                               ...selectedTeachersSendSMS,
                               ...selectedSuppliersSendSMS,
-                              ...selectedSchoolAdministratorsSendSMS
+                              ...selectedSchoolAdministratorsSendSMS,
+                              ...selectedcustomGroupPeople
                             ].isEmpty
                               ? Colors.blue.shade200
                               : PrimaryColors.primaryDeepBlue
@@ -1059,7 +1141,8 @@ class _ParentsState extends State<Parents> {
                               ...selectedParentsSendSMS,
                               ...selectedTeachersSendSMS,
                               ...selectedSuppliersSendSMS,
-                              ...selectedSchoolAdministratorsSendSMS
+                              ...selectedSchoolAdministratorsSendSMS,
+                              ...selectedcustomGroupPeople
                             ].isEmpty
                               ? null
                               : () {
@@ -1184,8 +1267,24 @@ class _ParentsState extends State<Parents> {
       bool isAlphabetMatch = false;
       var result = selectedPeople.map((person) {
         if (person.firstName.startsWith(alphabet)) {
-          isAlphabetMatch = true;
-          return _buildPersonListTile(person);
+          
+          if (
+            currentSelectedGroupSpace != allGroups && 
+            currentSelectedGroupSpace != Role.Student.name &&
+            currentSelectedGroupSpace != Role.Relative.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
+            currentSelectedGroupSpace != Role.Teacher.name &&
+            currentSelectedGroupSpace != Role.Supplier.name &&
+            currentSelectedGroupSpace != roleToString(Role.School_administrator)
+          ) {
+            if (person.groups?[0].name == currentSelectedGroupSpace) {
+              isAlphabetMatch = true;
+              return _buildPersonListTile(person);
+            }
+          } else {
+            isAlphabetMatch = true;
+            return _buildPersonListTile(person);
+          }
         }
         return const SizedBox();
       }).toList();
@@ -1215,15 +1314,51 @@ class _ParentsState extends State<Parents> {
 
   AlphabetListViewItemGroup _buildAlphabetListViewItemGroup(
       String alphabet, List<PersonModel> people) {
-    return AlphabetListViewItemGroup(
-      tag: alphabet,
-      children: people.map((person) {
+      bool isAlphabetMatch = false;
+        var result = people.map((person) {
         if (person.firstName.startsWith(alphabet)) {
-          return _buildPersonListTile(person);
+          if (
+            currentSelectedGroupSpace != allGroups && 
+            currentSelectedGroupSpace != Role.Student.name &&
+            currentSelectedGroupSpace != Role.Relative.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
+            currentSelectedGroupSpace != Role.Teacher.name &&
+            currentSelectedGroupSpace != Role.Supplier.name &&
+            currentSelectedGroupSpace != roleToString(Role.School_administrator)
+          ) {
+            if (person.groups?[0].name == currentSelectedGroupSpace) {
+              isAlphabetMatch = true;
+              return _buildPersonListTile(person);
+            }
+          } else {
+            isAlphabetMatch = true;
+            return _buildPersonListTile(person);
+          }
         }
         return const SizedBox();
-      }).toList(),
-    );
+      }).toList();
+
+      if (isAlphabetMatch) {
+        return AlphabetListViewItemGroup(
+          tag: alphabet,
+          children: result,
+        );
+      } else {
+        return AlphabetListViewItemGroup(
+          tag: '',
+          children: [],
+        );
+      }
+
+    // return AlphabetListViewItemGroup(
+    //   tag: alphabet,
+    //   children: people.map((person) {
+    //     if (person.firstName.startsWith(alphabet)) {
+    //       return _buildPersonListTile(person);
+    //     }
+    //     return const SizedBox();
+    //   }).toList(),
+    // );
   }
 
   AlphabetListViewOptions _buildAlphabetListViewOptions() {
@@ -1484,12 +1619,12 @@ class _ParentsState extends State<Parents> {
                           ? selectedSuppliersSendSMS.any((selectedAllPeople) =>
                               person.id == selectedAllPeople.id)
 
-                          // : currentSelectedGroupSpace == schoolAdministrator
-                          //   ? selectedSchoolAdministratorsSendSMS.any(
-                          //     (selectedAllPeople) => person.id == selectedAllPeople.id)
+                          : currentSelectedGroupSpace == roleToString(Role.School_administrator)
+                            ? selectedSchoolAdministratorsSendSMS.any(
+                              (selectedAllPeople) => person.id == selectedAllPeople.id)
 
                           // Default target is school administrator
-                          : selectedSchoolAdministratorsSendSMS.any(
+                          : selectedcustomGroupPeople.any(
                               (selectedAllPeople) =>
                                   person.id == selectedAllPeople.id);
 

@@ -101,6 +101,13 @@ class SharedPreferenceModule {
     pref.setString("schoolAdministrators", jsonStrings);
   }
 
+  void saveCustomGroupPeople (List<PersonModel> customGroupPeople) {
+    final jsonStrings = jsonEncode(
+      customGroupPeople.map((customGroup) => customGroup.toJson()).toList()
+    );
+    pref.setString("customGroup", jsonStrings);
+  }
+
   // Save Students to Shared Preferences
   void saveStudents(List<PersonModel> students) {
     final jsonString = jsonEncode(
@@ -199,6 +206,17 @@ class SharedPreferenceModule {
   // Get Person Data
   List<PersonModel> getPersons() {
     final jsonString = pref.getString("persons");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get Person Data
+  List<PersonModel> getCustomGroupPeople() {
+    final jsonString = pref.getString("customGroup");
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List)
           .map((e) => PersonModel.fromJson(e))
