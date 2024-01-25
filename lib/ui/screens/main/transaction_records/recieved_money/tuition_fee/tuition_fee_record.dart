@@ -28,6 +28,7 @@ import '../../../../../utilities/custom_colors.dart';
 import '../../../../../utilities/font_sizes.dart';
 import '../../../../../widgets/inputs/number_field.dart';
 import '../../../../auth/auth_bloc/auth_bloc.dart';
+import '../../../../auth/login.dart';
 
 var sl = GetIt.instance;
 
@@ -46,6 +47,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   TextEditingController descriptionController = TextEditingController();
   var prefs = sl<SharedPreferences>();
   var preferences = sl<SharedPreferenceModule>();
+  bool logout = false;
 
   // final Connectivity _connectivity = Connectivity();
 
@@ -105,11 +107,11 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
         title: "Tuition Fee",
         data: ReceivedMoneyJournalRequest(
           creditAccountId: accounts
-                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
-                  .id,
-              debitAccountId:
-                  selectedPaymentMethod.id,
-              subaccountPersonId: widget.student.childRelations!.first.id,
+              .firstWhere(
+                  (element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+              .id,
+          debitAccountId: selectedPaymentMethod.id,
+          subaccountPersonId: widget.student.childRelations!.first.id,
           amount: int.parse(amountController.text),
           currency: selectedCurrency,
           reason: descriptionController.text,
@@ -135,7 +137,8 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
           AddNewReceivedMoneyJournalEvent([
             ReceivedMoneyJournalRequest(
               creditAccountId: accounts
-                  .firstWhere((element) => element.name.name == "ACCOUNTS_RECEIVABLE")
+                  .firstWhere(
+                      (element) => element.name.name == "ACCOUNTS_RECEIVABLE")
                   .id,
               debitAccountId: selectedPaymentMethod.id,
               subaccountPersonId: widget.student.id,
@@ -163,6 +166,11 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
     }
   }
 
+  // Logout
+  void _logout() {
+    context.read<AuthBloc>().add(const AuthEventLogout());
+  }
+
   // Handle State Change
   void handleStateChange(BuildContext context, JournalState state) {
     if (state.status == JournalStatus.success) {
@@ -182,15 +190,79 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
     if (state.status == JournalStatus.error) {
       // Handle Error
       print(state.errorMessage);
-      logger.f(state.errorMessage);
-      GFToast.showToast(state.errorMessage!, context,
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      } else {
+        logger.f(state.errorMessage);
+        GFToast.showToast(state.errorMessage!, context,
+            toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+                ? GFToastPosition.TOP
+                : GFToastPosition.BOTTOM,
+            toastDuration: 5,
+            toastBorderRadius: 12.0,
+            backgroundColor: CustomColor.red);
+        setState(() {});
+      }
+    }
+  }
+
+  // Handle Get User Data State Change
+  void _handleRefreshStateChange(BuildContext context, AuthState state) {
+    // var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
+    }
+    if (state.status == AuthStateStatus.authenticated) {
+      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
           toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
               ? GFToastPosition.TOP
               : GFToastPosition.BOTTOM,
-          toastDuration: 5,
-          toastBorderRadius: 12.0,
-          backgroundColor: CustomColor.red);
-      setState(() {});
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (state.refreshFailure != null &&
+          state.refreshFailure!.contains("Invalid refresh token")) {
+        logger.w("Invalid refresh token");
+        setState(() {
+          logout = true;
+        });
+        _logout();
+      } else {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
     }
   }
 
@@ -219,6 +291,12 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
             ),
             centerTitle: true,
             actions: [
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context,state){
+                  _handleRefreshStateChange(context, state);
+                  _handleLogoutStateChange(context, state);
+                },
+              ),
               IconButton(
                   onPressed: state.isLoading
                       ? null
@@ -307,7 +385,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                         if (value != null) {
                           setState(() {
                             selectedCurrency = value;
-                          });                          
+                          });
                         }
                       },
                       child: Padding(
@@ -437,7 +515,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                                       toastDuration: 5);
                                 } else {
                                   // TODO: implement save
-                                    createJournalRecord();
+                                  createJournalRecord();
                                   // try {
                                   //   // saveOffline();
                                   // } catch (e) {

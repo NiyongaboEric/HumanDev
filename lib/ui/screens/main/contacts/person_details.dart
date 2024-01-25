@@ -712,16 +712,16 @@ class _PersonDetailsState extends State<PersonDetails> {
     var tertiaryColor = MaterialColor(
       _tertiaryColorSelection().value,
       <int, Color>{
-        50: _tertiaryColorSelection(),
-        100: _tertiaryColorSelection(),
-        200: _tertiaryColorSelection(),
-        300: _tertiaryColorSelection(),
-        400: _tertiaryColorSelection(),
-        500: _tertiaryColorSelection(),
-        600: _tertiaryColorSelection(),
-        700: _tertiaryColorSelection(),
-        800: _tertiaryColorSelection(),
-        900: _tertiaryColorSelection(),
+        50: _secondaryColorSelection(),
+        100: _secondaryColorSelection(),
+        200: _secondaryColorSelection(),
+        300: _secondaryColorSelection(),
+        400: _secondaryColorSelection(),
+        500: _secondaryColorSelection(),
+        600: _secondaryColorSelection(),
+        700: _secondaryColorSelection(),
+        800: _secondaryColorSelection(),
+        900: _secondaryColorSelection(),
       },
     );
 

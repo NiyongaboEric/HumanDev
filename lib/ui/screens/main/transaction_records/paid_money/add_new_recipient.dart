@@ -2,21 +2,34 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/account/api/account_api.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/group_drop_down.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../data/constants/logger.dart';
 import '../../../../../data/person/model/person_request.dart';
 import '../../../../utilities/colors.dart';
+import '../../../../utilities/custom_colors.dart';
+import '../../../../utilities/navigation.dart';
 import '../../../../widgets/constants/recipients_model.dart';
 import '../../../../widgets/inputs/drop_down_menu.dart';
+import '../../../auth/login.dart';
 import '../../person/bloc/person_bloc.dart';
+
+var sl = GetIt.instance;
 
 class AddNewRecipient extends StatefulWidget {
   const AddNewRecipient({super.key});
@@ -42,14 +55,15 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   final companyNameController = TextEditingController();
   String supplier = "";
   List<String> supplierOptions = ["Retail", "WholeSale"];
-
   List<Group> groupSpace = [];
+  bool logout = false;
   
   String currentSelectedGroupSpace = 'Student';
   bool formHasErrors = false;
   // String allGroups = 'Role';
   // Text textErrors = const Text('Remember to fill details person and company section');
 
+  
   @override
   void initState() {
     String? groupValue = prefs.getString("groups");
@@ -119,8 +133,8 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   // Create Person
   void _createPerson() {
     BlocProvider.of<PersonBloc>(context).add(AddPersonEvent(PersonRequest(
-      firstName: recipientLastNameController.text.isNotEmpty
-          ? recipientLastNameController.text
+      firstName: recipientFirstNameController.text.isNotEmpty
+          ? recipientFirstNameController.text
           : null,
       lastName1: recipientLastNameController.text.isNotEmpty
           ? recipientLastNameController.text
@@ -130,6 +144,21 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
           : null,
       isLegal: isSelected[1],
     )));
+  }
+
+  // Refresh Tokens
+  void _refreshTokens() async {
+    TokenResponse? token = preferences.getToken();
+    if (token != null) {
+      BlocProvider.of<AuthBloc>(context).add(AuthEventRefresh(RefreshRequest(
+        refresh: token.refreshToken,
+      )));
+    }
+  }
+
+  // Logout
+  void _logout() async {
+    context.read<AuthBloc>().add(AuthEventLogout());
   }
 
   // Handle Person Change State
@@ -161,8 +190,72 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
     }
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
+      if (state.errorMessage == "Unauthorized" ||
+          state.errorMessage == "Exception: Unauthorized") {
+        _refreshTokens();
+      }
     }
   }
+
+    // Handle Get User Data State Change
+  void _handleRefreshStateChange(BuildContext context, AuthState state) {
+    // var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
+    }
+    if (state.status == AuthStateStatus.authenticated) {
+      // navigate(context, state);
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (state.refreshFailure != null &&
+          state.refreshFailure!.contains("Invalid refresh token")) {
+        logger.w("Invalid refresh token");
+        setState(() {
+          logout = true;
+        });
+        _logout();
+      } else {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+  }
+
 
   // Person Form
   Widget _buildPersonForm(PersonState state) {
@@ -232,9 +325,6 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                           if (
                               _personFormKey.currentState!.validate()
                               && currentSelectedGroupSpace.isNotEmpty
-                              //  &&
-                              // currentSelectedGroupSpace.isNotEmpty &&
-                              // companyNameController.text.isNotEmpty
                             ) {
                             formHasErrors = false;
                             _createPerson();
@@ -373,6 +463,12 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
             ),
             backgroundColor: Colors.red.shade100,
             centerTitle: true,
+            actions: [
+              BlocListener<AuthBloc, AuthState>(listener: (context, state){
+                _handleRefreshStateChange(context, state);
+                _handleLogoutStateChange(context, state);              
+              },)
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 12),

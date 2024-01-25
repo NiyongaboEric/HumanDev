@@ -4,8 +4,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:getwidget/getwidget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pdf_viewer_plugin/pdf_viewer_plugin.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
@@ -18,8 +21,11 @@ import 'package:seymo_pay_mobile_application/ui/widgets/constants/upload_card_mo
 import 'package:seymo_pay_mobile_application/ui/widgets/default_tag_buttons.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 
+import '../../../../utilities/custom_colors.dart';
 import '../../../../utilities/navigation.dart';
 import '../../../../widgets/cards/upload_card.dart';
+import '../../../auth/auth_bloc/auth_bloc.dart';
+import '../../../auth/login.dart';
 import 'recipient.dart';
 
 var sl = GetIt.instance;
@@ -41,6 +47,7 @@ class _PaymentState extends State<Payment> {
   Widget? previewWidget;
   List<DefaultTagsSettings> tags = [];
   List<DefaultTagsSettings> selectedTags = [];
+  bool logout = false;
 
   _imgFromCamera() async {
     XFile? image = await ImagePicker().pickImage(
@@ -89,6 +96,19 @@ class _PaymentState extends State<Payment> {
     // prefs.setString("tags", json.encode(tags));
   }
 
+// Refresh Tokens
+  void _refreshTokens() {
+    TokenResponse? token = prefs.getToken();
+    if (token != null) {
+      context.read<AuthBloc>().add(AuthEventRefresh(RefreshRequest(refresh:token.refreshToken)));
+    }
+  }
+
+  // Logout
+  void _logout() {
+    context.read<AuthBloc>().add(AuthEventLogout());
+  }
+
   // Handle Paid Money State Change
   void _handleJournalStateChange(BuildContext context, JournalState state) {
     if (state.status == JournalStatus.success) {
@@ -96,6 +116,65 @@ class _PaymentState extends State<Payment> {
     }
     if (state.status == JournalStatus.error) {
       logger.e(state.errorMessage);
+    }
+  }
+
+    // Handle Get User Data State Change
+  void _handleRefreshStateChange(BuildContext context, AuthState state) {
+    // var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
+    }
+    if (state.status == AuthStateStatus.authenticated) {
+      // navigate(context, state);
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (state.refreshFailure != null &&
+          state.refreshFailure!.contains("Invalid refresh token")) {
+        logger.w("Invalid refresh token");
+        setState(() {
+          logout = true;
+        });
+        _logout();
+      } else {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
     }
   }
 
@@ -246,6 +325,13 @@ class _PaymentState extends State<Payment> {
                 color: SecondaryColors.secondaryRed,
               )),
           centerTitle: true,
+          actions: [
+            BlocListener<AuthBloc, AuthState>(listener: (context, state){
+              _handleRefreshStateChange(context, state);
+              _handleLogoutStateChange(context, state);
+            
+            })
+          ],
         ),
         floatingActionButton: FloatingActionButton.extended(
           backgroundColor: Colors.red.shade200,

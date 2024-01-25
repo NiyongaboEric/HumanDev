@@ -23,6 +23,7 @@ import '../../../../utilities/custom_colors.dart';
 import '../../../../utilities/navigation.dart';
 import '../../../../widgets/inputs/text_field.dart';
 import '../../../auth/auth_bloc/auth_bloc.dart';
+import '../../../auth/login.dart';
 import 'add_new_recipient.dart';
 import 'log_payment.dart';
 
@@ -40,7 +41,7 @@ class _RecipientState extends State<Recipient> {
   TextEditingController recipientNameController = TextEditingController();
   var preferences = sl<SharedPreferences>();
   var prefs = sl<SharedPreferences>();
-  var prefsModule =  sl<SharedPreferenceModule>();
+  var prefsModule = sl<SharedPreferenceModule>();
   List<RecipientModel> recipientOptions = [];
   List<RecipientModel> selectedRecipients = [];
   List<RecipientModel> searchResults = [];
@@ -52,6 +53,7 @@ class _RecipientState extends State<Recipient> {
   bool showResults = false;
   List<bool> isSelected = [true, false];
   bool isCurrentPage = false;
+  bool logout = false;
 
   String selectedOption = 'Option 1'; // Initialize the selected option
 
@@ -73,6 +75,7 @@ class _RecipientState extends State<Recipient> {
     context.read<PersonBloc>().add(const GetAllPersonEvent());
   }
 
+  // Refresh Tokens
   void _refreshTokens() {
     var prefs = sl<SharedPreferenceModule>();
     TokenResponse? token = prefs.getToken();
@@ -83,6 +86,11 @@ class _RecipientState extends State<Recipient> {
             ),
           );
     }
+  }
+
+  // Logout
+  void _logout() {
+    context.read<AuthBloc>().add(const AuthEventLogout());
   }
 
   // Set Selected Students
@@ -235,15 +243,17 @@ class _RecipientState extends State<Recipient> {
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
       if (state.errorMessage == "Invalid refresh token." ||
-          state.errorMessage == "Exception: Invalid refresh token.") {
+          state.errorMessage == "Exception: Invalid refresh token." ||
+          state.errorMessage == "Exception: Unauthorized"
+      ) {
         _refreshTokens();
       } else {
         GFToast.showToast(
           state.errorMessage,
           context,
-          toastPosition:  MediaQuery.of(context).viewInsets.bottom != 0 
-                                ? GFToastPosition.TOP
-                                : GFToastPosition.BOTTOM,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
           toastBorderRadius: 8.0,
           backgroundColor: CustomColor.red,
           toastDuration: 5,
@@ -252,14 +262,62 @@ class _RecipientState extends State<Recipient> {
     }
   }
 
-  // Handle Refresh State Change
+  // Handle Get User Data State Change
   void _handleRefreshStateChange(BuildContext context, AuthState state) {
-    if (state.refreshFailure == null) {
-      // Handle Success
-      _getParents();
+    // var prefs = sl<SharedPreferenceModule>();
+    if (logout) {
+      return;
     }
-    if (state.refreshFailure != null) {
-      logger.e(state.refreshFailure);
+    if (state.status == AuthStateStatus.authenticated) {
+      // navigate(context, state);
+      if (state.refreshFailure != null) {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+        );
+      }
+    }
+    if (state.status == AuthStateStatus.unauthenticated) {
+      print("Error...: ${state.refreshFailure}");
+      if (state.refreshFailure != null &&
+          state.refreshFailure!.contains("Invalid refresh token")) {
+        logger.w("Invalid refresh token");
+        setState(() {
+          logout = true;
+        });
+        _logout();
+      } else {
+        GFToast.showToast(
+          state.refreshFailure,
+          context,
+          toastBorderRadius: 8.0,
+          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+              ? GFToastPosition.TOP
+              : GFToastPosition.BOTTOM,
+          backgroundColor: CustomColor.red,
+          toastDuration: 6,
+        );
+      }
+    }
+  }
+
+  // Handle Logout State Change
+  void _handleLogoutStateChange(BuildContext context, AuthState state) {
+    if (!logout) {
+      return;
+    }
+    if (state.logoutMessage != null) {
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+    }
+    if (state.logoutFailure != null) {
+      var prefs = sl<SharedPreferenceModule>();
+      prefs.clear();
+      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
     }
   }
 
@@ -304,26 +362,25 @@ class _RecipientState extends State<Recipient> {
     RecipientModel recipient,
   ) {
     var paymentRequest = JournalModel(
-      recipientFirstName: recipient.firstName,
-      recipientLastName: recipient.lastName,
-      companyName: recipient.companyName,
-      recipientRole: recipient.role,
-      supplier: recipient.supplier,
-      tags: state.journalData?.tags,
-      amount: state.journalData?.amount,
-      accountantId: state.journalData?.accountantId,
-      recipientId: recipient.id,
-      createdAt: state.journalData?.createdAt,
-      updatedAt: state.journalData?.updatedAt,
-      currency: state.journalData?.currency,
-      description: state.journalData?.description,
-      // images: state.journalData?.images,
-      spaceId: state.journalData?.spaceId,
-      id: state.journalData?.id,
-      creditAccountId: state.journalData?.creditAccountId,
-      debitAccountId: state.journalData?.debitAccountId,
-      personId: recipient.id
-    );
+        recipientFirstName: recipient.firstName,
+        recipientLastName: recipient.lastName,
+        companyName: recipient.companyName,
+        recipientRole: recipient.role,
+        supplier: recipient.supplier,
+        tags: state.journalData?.tags,
+        amount: state.journalData?.amount,
+        accountantId: state.journalData?.accountantId,
+        recipientId: recipient.id,
+        createdAt: state.journalData?.createdAt,
+        updatedAt: state.journalData?.updatedAt,
+        currency: state.journalData?.currency,
+        description: state.journalData?.description,
+        // images: state.journalData?.images,
+        spaceId: state.journalData?.spaceId,
+        id: state.journalData?.id,
+        creditAccountId: state.journalData?.creditAccountId,
+        debitAccountId: state.journalData?.debitAccountId,
+        personId: recipient.id);
     try {
       var recipients = json.encode(recipientOptions);
       prefs.setString("recipients", recipients);
@@ -358,8 +415,8 @@ class _RecipientState extends State<Recipient> {
             actions: [
               BlocListener<PersonBloc, PersonState>(
                 listener: (context, state) {
-                  // TODO: implement listener
-                  _handleParentsStateChange(context, state);
+                    // TODO: implement listener
+                    _handleParentsStateChange(context, state);
                 },
                 child: Container(),
               ),
@@ -367,6 +424,7 @@ class _RecipientState extends State<Recipient> {
               BlocListener<AuthBloc, AuthState>(
                 listener: (context, state) {
                   _handleRefreshStateChange(context, state);
+                  _handleLogoutStateChange(context, state);
                 },
                 child: Container(),
               ),
@@ -386,10 +444,10 @@ class _RecipientState extends State<Recipient> {
                   children: [
                     Expanded(
                       child: CustomTextField(
-            prefixIcon: Icon(
-              Icons.search_rounded,
-              color: SecondaryColors.secondaryRed,
-            ),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          color: SecondaryColors.secondaryRed,
+                        ),
                         color: SecondaryColors.secondaryRed,
                         hintText: "Search...",
                         controller: searchController,
@@ -477,53 +535,16 @@ class _RecipientState extends State<Recipient> {
                       child: ListView(
                         shrinkWrap: true,
                         children: [
-                          ...recipientOptions.map(
-                            (recipient) {
-                              if (recipient.id != null) {
-                                return ListTile(
-                                  onTap: () {
-                                    navigate(context, state, recipient);
-                                  },
-                                  leading: iconSelector(recipient.isPerson),
-                                  title: Text(
-                                    recipient.companyName ??
-                                        "${recipient.firstName} ${recipient.lastName}",
-                                    style: TextStyle(
-                                      fontSize: CustomFontSize.large,
-                                      color: SecondaryColors.secondaryRed,
-                                    ),
-                                  ),
-                                  // trailing: IconButton(
-                                  //     onPressed: () {
-                                  //       setState(() {
-                                  //         recipientOptions.remove(recipient);
-                                  //       });
-                                  //     },
-                                  //     icon: Icon(Icons.clear)),
-                                );
-                              } else {
-                                return Container();
-                              }
-                            }
-                          ),
-
-
-
-
-
-                          ...allPeople.map(
-                            (recipient) {
+                          ...recipientOptions.map((recipient) {
+                            if (recipient.id != null) {
                               return ListTile(
                                 onTap: () {
-                                  navigate(context, state, RecipientModel(
-                                    id: recipient.id,
-                                    firstName: recipient.firstName,
-                                    lastName: recipient.lastName1,
-                                    isPerson: true,
-                                  ));
+                                  navigate(context, state, recipient);
                                 },
-                                leading: iconSelector(true),
-                                title: Text("${recipient.firstName} ${recipient.lastName1}",
+                                leading: iconSelector(recipient.isPerson),
+                                title: Text(
+                                  recipient.companyName ??
+                                      "${recipient.firstName} ${recipient.lastName}",
                                   style: TextStyle(
                                     fontSize: CustomFontSize.large,
                                     color: SecondaryColors.secondaryRed,
@@ -537,11 +558,40 @@ class _RecipientState extends State<Recipient> {
                                 //     },
                                 //     icon: Icon(Icons.clear)),
                               );
+                            } else {
+                              return Container();
                             }
-                          ),
-
-
-                          
+                          }),
+                          ...allPeople.map((recipient) {
+                            return ListTile(
+                              onTap: () {
+                                navigate(
+                                    context,
+                                    state,
+                                    RecipientModel(
+                                      id: recipient.id,
+                                      firstName: recipient.firstName,
+                                      lastName: recipient.lastName1,
+                                      isPerson: true,
+                                    ));
+                              },
+                              leading: iconSelector(true),
+                              title: Text(
+                                "${recipient.firstName} ${recipient.lastName1}",
+                                style: TextStyle(
+                                  fontSize: CustomFontSize.large,
+                                  color: SecondaryColors.secondaryRed,
+                                ),
+                              ),
+                              // trailing: IconButton(
+                              //     onPressed: () {
+                              //       setState(() {
+                              //         recipientOptions.remove(recipient);
+                              //       });
+                              //     },
+                              //     icon: Icon(Icons.clear)),
+                            );
+                          }),
                           ListTile(
                             onTap: addRecipient,
                             leading: Icon(
@@ -552,7 +602,8 @@ class _RecipientState extends State<Recipient> {
                               "Add new recipient",
                               style: TextStyle(
                                   fontSize: CustomFontSize.large,
-                                  color: SecondaryColors.secondaryRed.withOpacity(0.7)),
+                                  color: SecondaryColors.secondaryRed
+                                      .withOpacity(0.7)),
                             ),
                           )
                         ],

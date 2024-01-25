@@ -19,7 +19,7 @@
         </intent>
     </queries>
     <application
-        android:label="seymo_pay_mobile_application"
+        android:label="Seymo School"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

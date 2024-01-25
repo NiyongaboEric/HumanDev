@@ -109,6 +109,7 @@ class _ParentsState extends State<Parents> {
   String allGroups = 'All groups';
 
   switchGroupSpace(String selectGroupSpace) {
+    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>. selectGroupSpace: ${selectGroupSpace}...');
     switch (selectGroupSpace) {
       case 'All groups':
         return allPeople;
@@ -127,8 +128,8 @@ class _ParentsState extends State<Parents> {
       case 'All people':
         return allPeople;
       default:
+        print('You are to Implement custom group.....');
         allPeople;
-        // print('You are to Implement custom group.....');
     }
   }
 
