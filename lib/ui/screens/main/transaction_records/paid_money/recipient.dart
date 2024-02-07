@@ -114,7 +114,6 @@ class _RecipientState extends State<Recipient> {
         showResults = false;
       });
     } else {
-      setState(() {
         showResults = true;
         searchResults = recipientOptions
             .toSet()
@@ -129,58 +128,10 @@ class _RecipientState extends State<Recipient> {
         searchResults.addAll(parents.toSet().toList().where((recipient) =>
             (recipient.firstName ?? "").toLowerCase().contains(query) ||
             (recipient.lastName ?? "").toLowerCase().contains(query)));
+      setState(() {
       });
-
-      // print("****************** 1 ************************************** ${query}");
-      // setState(() {
-      //   showResults = true;
-      //   var result = allPeople
-      //     .toSet()
-      //     .toList()
-      //     .where(
-      //       (recipient) =>
-      //           // (recipient.companyName ?? "").toLowerCase().contains(query) ||
-      //           (recipient.firstName ?? "").toLowerCase().contains(query) ||
-      //           (recipient.lastName1 ?? "").toLowerCase().contains(query),
-      //     )
-      //     .toList();
-      //   // searchResultsAllPeople = result;
-      //   // print(';;;;;;;;;;;;;;;;; ${searchResultsAllPeople.length}');
-      //   // print("____STEP____ ${searchResultsAllPeople.length}____${allPeople.length}");
-      //   searchResultsAllPeople.addAll(result.toSet().toList().where((recipient) =>
-      //       (recipient.firstName ?? "").toLowerCase().contains(query) ||
-      //       (recipient.lastName1 ?? "").toLowerCase().contains(query)));
-      // });
     }
   }
-
-  // searchAllPeople(String query) {
-  //   // Search for recipient options and also parents
-  //   query = query.toLowerCase();
-  //   if (query.isEmpty) {
-  //     setState(() {
-  //       showResults = false;
-  //     });
-  //   } else {
-  //     print("****************** 1 **************************************");
-  //     setState(() {
-  //       showResults = true;
-  //       searchResultsAllPeople = searchResultsAllPeople
-  //           .toSet()
-  //           .toList()
-  //           .where(
-  //             (recipient) =>
-  //                 // (recipient.companyName ?? "").toLowerCase().contains(query) ||
-  //                 (recipient.firstName ?? "").toLowerCase().contains(query) ||
-  //                 (recipient.lastName1 ?? "").toLowerCase().contains(query),
-  //           )
-  //           .toList();
-  //       searchResultsAllPeople.addAll(allPeople.toSet().toList().where((recipient) =>
-  //           (recipient.firstName ?? "").toLowerCase().contains(query) ||
-  //           (recipient.lastName1 ?? "").toLowerCase().contains(query)));
-  //     });
-  //   }
-  // }
 
   Widget iconSelector(bool isPerson) {
     if (isPerson) {
@@ -394,6 +345,9 @@ class _RecipientState extends State<Recipient> {
 
   @override
   Widget build(BuildContext context) {
+    searchController.addListener(() {
+      search(searchController.text);
+    });
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
         // TODO: implement listener

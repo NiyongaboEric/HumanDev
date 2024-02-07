@@ -12,7 +12,7 @@ class InvoiceCard extends StatelessWidget {
   final bool isVoid;
   final bool isPaid;
   final bool isDraft;
-  final int? paidAmount;
+  final dynamic? paidAmount;
   final String? invoiceNumber;
   const InvoiceCard({
     super.key,

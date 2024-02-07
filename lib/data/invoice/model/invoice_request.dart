@@ -1,21 +1,3 @@
-var updateschema = {
-  "totalAmount": 100,
-  "invoiceDate": "2023-11-07",
-  "currency": "GHS",
-  "invoiceePersonId": 1,
-  "studentPersonId": 2,
-  "paymentSchedules": {
-    "createOrUpdate": [
-      {"id": 1, "dueDate": "2023-12-07", "dueAmount": 100}
-    ],
-    "deleteIds": [0]
-  },
-  "invoiceItems": [
-    {"quantity": 2, "description": "Wooden desk", "price": 50, "total": 100}
-  ],
-  "transactionIds": [1, 2],
-  "isDraft": true
-};
 
 class InvoiceCreateRequest {
   final int totalAmount;
@@ -26,8 +8,12 @@ class InvoiceCreateRequest {
   final List<int>? transactionIds;
   final List<PaymentScheduleRequest> paymentSchedules;
   final List<InvoiceItemRequest> invoiceItems;
-  final bool isDraft;
+  bool isDraft;
   final String? type;
+  final int? grossPrice;
+  final int? netPrice;
+  final int taxAmount;
+  final double? taxRate;
   final int? creditNoteForInvoiceId;
 
   InvoiceCreateRequest({
@@ -40,6 +26,10 @@ class InvoiceCreateRequest {
     required this.paymentSchedules,
     required this.invoiceItems,
     required this.isDraft,
+    this.grossPrice,
+    this.netPrice,
+    required this.taxAmount,
+    this.taxRate,
     this.type,
     this.creditNoteForInvoiceId,
   });
@@ -56,6 +46,10 @@ class InvoiceCreateRequest {
         "invoiceItems": invoiceItems.map((e) => e.toJson()).toList(),
         "isDraft": isDraft,
         "type": type,
+        // "price_gross": grossPrice ?? 0,
+        // "price_net": netPrice ?? 0,
+        // "tax_amount": taxAmount,
+        // "tax_rate": taxRate,
         "creditNoteForInvoiceId": creditNoteForInvoiceId,
       };
     } else {
@@ -69,6 +63,10 @@ class InvoiceCreateRequest {
         "invoiceItems": invoiceItems.map((e) => e.toJson()).toList(),
         "isDraft": isDraft,
         "type": type,
+        // "price_gross": grossPrice,
+        // "price_net": netPrice,
+        // "tax_amount": taxAmount,
+        // "tax_rate": taxRate,
         "creditNoteForInvoiceId": creditNoteForInvoiceId,
       };
     }
@@ -85,6 +83,10 @@ class InvoiceUpdateRequest {
   final List<PaymentScheduleRequest> paymentSchedules;
   final List<InvoiceItemRequest> invoiceItems;
   final bool isDraft;
+  final int? grossPrice;
+  final int? netPrice;
+  final int taxAmount;
+  final double? taxRate;
   final String? type;
   final int? creditNoteForInvoiceId;
 
@@ -98,6 +100,10 @@ class InvoiceUpdateRequest {
     required this.paymentSchedules,
     required this.invoiceItems,
     required this.isDraft,
+    this.grossPrice,
+    this.netPrice,
+    required this.taxAmount,
+    this.taxRate,
     this.type,
     this.creditNoteForInvoiceId,
   });
@@ -113,6 +119,10 @@ class InvoiceUpdateRequest {
         "paymentSchedules": paymentSchedules.map((e) => e.toJson()).toList(),
         "invoiceItems": invoiceItems.map((e) => e.toJson()).toList(),
         "isDraft": isDraft,
+        "price_gross": grossPrice ?? 0,
+        "price_net": netPrice ?? 0,
+        "tax_amount": taxAmount,
+        "tax_rate": taxRate,
         "type": type,
         "creditNoteForInvoiceId": creditNoteForInvoiceId,
       };
@@ -126,6 +136,10 @@ class InvoiceUpdateRequest {
         "paymentSchedules": paymentSchedules.map((e) => e.toJson()).toList(),
         "invoiceItems": invoiceItems.map((e) => e.toJson()).toList(),
         "isDraft": isDraft,
+        "price_gross": grossPrice ?? 0,
+        "price_net": netPrice ?? 0,
+        "tax_amount": taxAmount,
+        "tax_rate": taxRate,
         "type": type,
         "creditNoteForInvoiceId": creditNoteForInvoiceId,
       };
@@ -172,7 +186,8 @@ class InvoiceItemRequest {
   final String description;
   final int? grossPrice;
   final int? netPrice;
-  final int? taxRate;
+  final int? taxAmount;
+  final double? taxRate;
   final int total;
 
   InvoiceItemRequest({
@@ -180,6 +195,7 @@ class InvoiceItemRequest {
     required this.description,
     this.grossPrice,
     this.netPrice,
+    this.taxAmount,
     this.taxRate,
     required this.total,
   });
@@ -189,8 +205,9 @@ class InvoiceItemRequest {
       "quantity": quantity,
       "description": description,
       "price_gross": grossPrice,
-      "price_net": netPrice,
+      "price_net": netPrice ?? 0,
       "tax_rate": taxRate,
+      "tax_amount": taxAmount ?? 0,
       "total": total,
     };
   }

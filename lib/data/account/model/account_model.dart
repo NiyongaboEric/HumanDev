@@ -11,12 +11,14 @@ enum AccountName {
   REVENUE,
   BANK_ACCOUNT,
   MOMO,
+  OTHERS,
 }
 
 class AccountsModel {
   final int id;
   final AccountName name;
   final AccountType type;
+  final bool supportsMoneyFlow;
   final int spaceId;
   final String createdAt;
   final String updatedAt;
@@ -25,6 +27,7 @@ class AccountsModel {
     required this.id,
     required this.name,
     required this.type,
+    required this.supportsMoneyFlow,
     required this.spaceId,
     required this.createdAt,
     required this.updatedAt,
@@ -35,6 +38,7 @@ class AccountsModel {
       id: json['id'],
       name: accountNameFromString(json['name']),
       type: accountTypeFromString(json['type']),
+      supportsMoneyFlow: json['supportsMoneyFlow'],
       spaceId: json['spaceId'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
@@ -47,6 +51,7 @@ class AccountsModel {
       'name': name.name,
       'type': type.name,
       'spaceId': spaceId,
+      'supportsMoneyFlow': supportsMoneyFlow,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
@@ -57,7 +62,7 @@ class AccountsModel {
 AccountName accountNameFromString(String name) {
   return AccountName.values.firstWhere(
       (e) => e.toString().split('.').last == name,
-      orElse: () => AccountName.ACCOUNTS_RECEIVABLE);
+      orElse: () => AccountName.OTHERS);
 }
 
 // Type Enum to String

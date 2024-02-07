@@ -156,8 +156,10 @@ class InvoiceItemModel {
   final int? price;
   final int? total;
   final int? invoiceId;
-  final int? grossPrice;
-  final int? netPrice;
+  final dynamic? grossPrice;
+  final dynamic? netPrice;
+  final dynamic taxRate;
+  final dynamic? taxAmount;
   final String? createdAt;
   final String? updatedAt;
 
@@ -171,6 +173,8 @@ class InvoiceItemModel {
     this.invoiceId,
     this.grossPrice,
     this.netPrice,
+    this.taxRate,
+    this.taxAmount,
     this.createdAt,
     this.updatedAt,
   });
@@ -186,6 +190,8 @@ class InvoiceItemModel {
       invoiceId: json['invoiceId'],
       grossPrice: json['price_gross'],
       netPrice: json['price_net'],
+      taxRate: json['tax_rate'],
+      taxAmount: json['tax_amount'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
     );
@@ -202,6 +208,8 @@ class InvoiceItemModel {
       "invoiceId": invoiceId,
       "price_gross": grossPrice,
       "price_net": netPrice,
+      "tax_rate": taxRate,
+      "tax_amount": taxAmount,
       "createdAt": createdAt,
       "updatedAt": updatedAt,
     };

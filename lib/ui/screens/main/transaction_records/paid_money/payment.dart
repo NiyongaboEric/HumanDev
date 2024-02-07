@@ -329,8 +329,7 @@ class _PaymentState extends State<Payment> {
             BlocListener<AuthBloc, AuthState>(listener: (context, state){
               _handleRefreshStateChange(context, state);
               _handleLogoutStateChange(context, state);
-            
-            })
+            }, child: Container(),)
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(

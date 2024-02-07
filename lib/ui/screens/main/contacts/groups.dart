@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../data/auth/model/auth_request.dart';
 import '../../../../data/groups/model/group_model.dart';
@@ -35,20 +37,25 @@ class GroupsScreen extends StatefulWidget {
 
 class _GroupsScreenState extends State<GroupsScreen> {
   var pref = sl<SharedPreferenceModule>();
+  bool isCurrentPage = true;
   // Text Editing Controllers
   TextEditingController groupNameController = TextEditingController();
+  // Scroll Controller
+  ScrollController _scrollController = ScrollController();
+  bool isScroll = false;
 
   // Groups
   List<Group> groups = [];
 
   // Get Groups
   _getGroups() {
-    sl<GroupsBloc>().add(const GroupsEventGetGroups());
+    context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
   // Create Group
   _createGroup() {
-    sl<GroupsBloc>().add(GroupsEventCreateGroup(GroupRequest(name: groupNameController.text)));
+    context.read<GroupsBloc>().add(
+        GroupsEventCreateGroup(GroupRequest(name: groupNameController.text)));
   }
 
   // Refresh Tokens
@@ -69,32 +76,50 @@ class _GroupsScreenState extends State<GroupsScreen> {
   // Handle Groups State Change
   void _handleGroupsStateChange(BuildContext context, GroupsState state) {
     if (state.status == GroupStateStatus.success) {
+      groups = state.groups!; // Update the groups directly
+      // Scroll to the bottom of the list
+      if (isScroll)
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+
       setState(() {
-        groups = state.groups!;
+        isScroll = false;
       });
     }
     if (state.status == GroupStateStatus.createSuccess) {
-      setState(() {
-        groups.add(state.groupResponse!);
-      });
+      groups.add(state.groupResponse!); // Update the groups directly
+      if (mounted) {
+        setState(() {
+          isScroll = true;
+        });
+      }
+      GFToast.showToast(
+        state.successMessage!,
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.BOTTOM
+            : GFToastPosition.TOP,
+        backgroundColor: Colors.green,
+        toastDuration: 6,
+      );
+      _getGroups();
     }
     if (state.status == GroupStateStatus.error ||
         state.status == GroupStateStatus.createError) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Invalid token") {
-        _refreshTokens();
-      } else {
-        GFToast.showToast(
-          state.errorMessage,
-          context,
-          toastBorderRadius: 8.0,
-          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-              ? GFToastPosition.BOTTOM
-              : GFToastPosition.TOP,
-          backgroundColor: CustomColor.red,
-          toastDuration: 6,
-        );
-      }
+      GFToast.showToast(
+        state.errorMessage,
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.BOTTOM
+            : GFToastPosition.TOP,
+        backgroundColor: CustomColor.red,
+        toastDuration: 6,
+      );
     }
   }
 
@@ -113,7 +138,6 @@ class _GroupsScreenState extends State<GroupsScreen> {
     pref.clear();
     nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
   }
-
 
   // Primary Color Selection
   Color _primaryColorSelection() {
@@ -151,6 +175,7 @@ class _GroupsScreenState extends State<GroupsScreen> {
     }
   }
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -166,15 +191,36 @@ class _GroupsScreenState extends State<GroupsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<GroupsBloc, GroupsState>(listener: (context, state) {
-      _handleGroupsStateChange(context, state);
-    }, builder: (context, state) {
-      return Scaffold(
-        backgroundColor: _backgroundColorSelection(),
-        appBar: _buildAppBar(),
-        body: _buildListView(state),
-      );
-    });
+    return VisibilityDetector(
+      key: Key("GroupsScreen"),
+      onVisibilityChanged: (visibility) {
+        if (mounted) {
+          if (visibility.visibleFraction == 1.0) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          } else {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }
+        }
+      },
+      child: BlocConsumer<GroupsBloc, GroupsState>(
+        listenWhen: (prev, current) => isCurrentPage,
+        listener: (context, state) {
+          // TODO: implement listener
+          _handleGroupsStateChange(context, state);
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: _backgroundColorSelection(),
+            appBar: _buildAppBar(),
+            body: _buildListView(state),
+          );
+        },
+      ),
+    );
   }
 
   AppBar _buildAppBar() {
@@ -200,12 +246,6 @@ class _GroupsScreenState extends State<GroupsScreen> {
         ]);
   }
 
-  // void _addGroup(Group group) {
-  //   setState(() {
-  //     groups.add(group);
-  //   });
-  // }
-
   Color primaryColorSelection(ContactSelection contactSelection) {
     switch (contactSelection) {
       case ContactSelection.students:
@@ -226,11 +266,15 @@ class _GroupsScreenState extends State<GroupsScreen> {
 
   ListView _buildListView(GroupsState state) {
     return ListView(
+      controller: _scrollController,
       children: [
         for (var group in groups) _buildGroupListTile(group),
         state.isLoading
-            ? const Center(child: GFLoader(type: GFLoaderType.ios,))
-            : Container(),        
+            ? const Center(
+                child: GFLoader(
+                type: GFLoaderType.ios,
+              ))
+            : Container(),
       ],
     );
   }
@@ -250,44 +294,52 @@ class _GroupsScreenState extends State<GroupsScreen> {
     );
   }
 
-  void _buildDialog (){
+  void _buildDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        actionsAlignment: MainAxisAlignment.center,
-        backgroundColor: Colors.pink.shade50,
-        title: const Text("Add new group"),
-        content: CustomTextField(
-          controller: groupNameController,
-          hintText: "Group name",
-          inputType: TextInputType.text,
-          color: SecondaryColors.secondaryPink,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
+      builder: (context) => Form(
+        key: _formKey,
+        child: AlertDialog(
+          actionsAlignment: MainAxisAlignment.center,
+          backgroundColor: Colors.pink.shade50,
+          title: const Text("Add new group"),
+          content: CustomTextField(
+            controller: groupNameController,
+            hintText: "Group name",
+            inputType: TextInputType.text,
+            color: SecondaryColors.secondaryPink,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Please enter a group name";
+              }
+              return null;
             },
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                color: SecondaryColors.secondaryPink,
-                fontSize: CustomFontSize.large,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                "Cancel",
+                style: TextStyle(
+                  color: SecondaryColors.secondaryPink,
+                  fontSize: CustomFontSize.large,
+                ),
               ),
             ),
-          ),
-          DefaultBtn(
-            btnColor: primaryColorSelection(widget.contactSelection),
-            textColor: secondaryColorSelection(widget.contactSelection),
-            text: "Create",
-            onPressed: () {
-              if (groupNameController.text.isNotEmpty) {
-                _createGroup();
-              }
-            }
-          ),
-        ],
-        
+            DefaultBtn(
+                btnColor: primaryColorSelection(widget.contactSelection),
+                textColor: secondaryColorSelection(widget.contactSelection),
+                text: "Create",
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    _createGroup();
+                    Navigator.pop(context);
+                  }
+                }),
+          ],
+        ),
       ),
     );
   }

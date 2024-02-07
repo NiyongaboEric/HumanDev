@@ -235,7 +235,7 @@ List<HomeSection> homeSections(BuildContext context) {
       },
     ),
     HomeButton(
-      title: "Third Party Invoice",
+      title: "Third Party Invoiceee",
       color: const Color(0xFF9747FF),
       icon: Padding(
         padding: const EdgeInsets.all(20),

@@ -37,7 +37,7 @@ Future<void> init() async {
 
   // Request Interceptor (Registered before NetworkModule)
   sl.registerSingletonWithDependencies<RequestInterceptor>(
-    () => RequestInterceptor(pref: sl<SharedPreferenceModule>()),
+    () => RequestInterceptor(pref: sl<SharedPreferenceModule>(), authApiImpl: sl<AuthApiImpl>(),),
     dependsOn: [SharedPreferenceModule],
   );
 

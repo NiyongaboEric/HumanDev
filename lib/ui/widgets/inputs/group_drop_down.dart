@@ -28,6 +28,7 @@ class GroupDropdownMenu extends StatelessWidget {
     if (groupSpace.isEmpty) {
       List<String> data = ['No groups available'];
       dropdownMenu = DropdownMenu<String>(
+        menuHeight: 300,
         menuStyle: menuStyle ?? MenuStyle(
           backgroundColor: 
             MaterialStatePropertyAll<Color>(BackgroundColors.bgBlue),

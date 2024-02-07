@@ -1,6 +1,5 @@
 part of 'invoice_bloc.dart';
 
-
 enum InvoiceStateStatus { initial, success, error }
 
 class InvoiceState {
@@ -11,6 +10,7 @@ class InvoiceState {
   final List<InvoiceUpdateRequest>? invoiceUpdateRequests;
   final List<InvoiceModel>? invoices;
   final InvoiceResponse? invoiceResponse;
+  final List<InvoiceResponse>? invoiceResponses;
   final String? errorMessage;
   final String? successMessage;
 
@@ -22,6 +22,7 @@ class InvoiceState {
     this.invoiceUpdateRequests,
     this.invoices,
     this.invoiceResponse,
+    this.invoiceResponses,
     this.errorMessage,
     this.successMessage,
   });
@@ -34,6 +35,7 @@ class InvoiceState {
     List<InvoiceUpdateRequest>? invoiceUpdateRequests,
     List<InvoiceModel>? invoices,
     InvoiceResponse? invoiceResponse,
+    List<InvoiceResponse>? invoiceResponses,
     String? errorMessage,
     String? successMessage,
   }) {
@@ -41,13 +43,15 @@ class InvoiceState {
       id: id ?? this.id,
       status: status ?? this.status,
       isLoading: isLoading ?? this.isLoading,
-      invoiceCreateRequests: invoiceCreateRequests ?? this.invoiceCreateRequests,
-      invoiceUpdateRequests: invoiceUpdateRequests ?? this.invoiceUpdateRequests,
+      invoiceCreateRequests:
+          invoiceCreateRequests ?? this.invoiceCreateRequests,
+      invoiceUpdateRequests:
+          invoiceUpdateRequests ?? this.invoiceUpdateRequests,
       invoices: invoices ?? this.invoices,
       invoiceResponse: invoiceResponse ?? this.invoiceResponse,
+      invoiceResponses: invoiceResponses ?? this.invoiceResponses,
       errorMessage: errorMessage ?? this.errorMessage,
       successMessage: successMessage ?? this.successMessage,
     );
   }
-  
 }

@@ -42,7 +42,7 @@ class Constants {
   ];
 
   // Payment Payment Methods
-  static List<AccountsModel> paymentMethods = preferences.getAccounts().where((element) => element.name.name != "ACCOUNTS_RECEIVABLE" || element.name.name != "REVENUE").toList();
+  static List<AccountsModel> paymentMethods = preferences.getAccounts().where((element) => element.supportsMoneyFlow).toList();
 
   // Currency Options
   static const currencyOptions = ["GHS", "USD", "NGN", "EUR", "INR", "Add "];

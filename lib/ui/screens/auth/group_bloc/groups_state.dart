@@ -8,7 +8,7 @@ enum GroupStateStatus {
   createError
 }
 
-class GroupsState {
+class GroupsState extends Equatable {
   final GroupStateStatus status;
   final GroupRequest? groupRequest;
   final Group? groupResponse;
@@ -46,4 +46,15 @@ class GroupsState {
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        status,
+        groupRequest,
+        groupResponse,
+        groups,
+        isLoading,
+        successMessage,
+        errorMessage,
+      ];
 }

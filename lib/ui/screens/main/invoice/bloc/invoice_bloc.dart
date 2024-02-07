@@ -82,10 +82,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   Future<void> _createInvoice(InvoiceEventCreateInvoice event, Emitter<InvoiceState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final invoice = await invoiceApiImpl.createInvoice(event.invoiceRequest);
+      final invoices = await invoiceApiImpl.createInvoice(event.invoiceRequests);
       emit(state.copyWith(
           status: InvoiceStateStatus.success,
-          invoiceResponse: invoice.first,
+          // invoiceResponse: invoice.first,
+          invoiceResponses: invoices,
           isLoading: false,
           successMessage: "Invoice created successfully"));
     } on DioException catch (error) {

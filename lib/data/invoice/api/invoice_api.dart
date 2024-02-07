@@ -12,7 +12,7 @@ var sl = GetIt.instance;
 abstract class InvoiceApi {
   Future<InvoiceModel> getInvoice(String id);
   Future<List<InvoiceModel>> getInvoices();
-  Future<List<InvoiceResponse>> createInvoice(InvoiceCreateRequest invoice);
+  Future<List<InvoiceResponse>> createInvoice(List<InvoiceCreateRequest> invoice);
   Future<InvoiceResponse> updateInvoice(InvoiceUpdateRequest invoice, String id);
   Future<InvoiceModel> deleteInvoice(String id);
 }
@@ -53,13 +53,13 @@ class InvoiceApiImpl implements InvoiceApi {
   }
   
   @override
-  Future<List<InvoiceResponse>> createInvoice(InvoiceCreateRequest invoice) async{
+  Future<List<InvoiceResponse>> createInvoice(List<InvoiceCreateRequest> invoice) async{
     // TODO: implement createInvoice
     var interceptor = sl<RequestInterceptor>();
     var dio = sl<Dio>()..interceptors.add(interceptor);
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
-    return dio.post("/space/${space.id}/invoice", data: [invoice.toJson()]).then((res) {
+    return dio.post("/space/${space.id}/invoice", data: invoice.map((e) => e.toJson()).toList()).then((res) {
       if (res.statusCode == 201) {
         List<dynamic> responseData = res.data; 
         return responseData.map<InvoiceResponse>((e) => InvoiceResponse.fromJson(e)).toList();

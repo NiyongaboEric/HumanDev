@@ -23,6 +23,8 @@ class ItemsDataSource extends DataGridSource {
               total: e.getCells()[3].value is String
                   ? int.parse(e.getCells()[3].value)
                   : (e.getCells()[3].value as double).toInt(),
+              taxAmount: 0,
+              taxRate: int.parse(e.getCells()[4].value.toString().split(" ").first)/100,
             ))
         .toList();
   }
@@ -35,6 +37,7 @@ class ItemsDataSource extends DataGridSource {
                   columnName: 'quantity', value: e.quantity.toString()),
               DataGridCell<double>(columnName: 'price', value: e.price),
               DataGridCell<double>(columnName: 'total', value: e.total),
+              DataGridCell<String>(columnName: 'vat', value: '${e.vat} %'),
             ]))
         .toList();
   }
@@ -68,7 +71,7 @@ class ItemsDataSource extends DataGridSource {
   Widget? buildEditWidget(DataGridRow dataGridRow,
       RowColumnIndex rowColumnIndex, GridColumn column, CellSubmit submitCell) {
     // Text going to display on editable widget
-    final String displayText = dataGridRow
+    String displayText = dataGridRow
             .getCells()
             .firstWhere((DataGridCell dataGridCell) =>
                 dataGridCell.columnName == column.columnName)
@@ -81,7 +84,9 @@ class ItemsDataSource extends DataGridSource {
     // into the current non-modified [DataGridCell].
     newCellValue = null;
 
-    final bool isNumericType = column.columnName == 'quantity';
+    if (column.columnName == "vat") displayText = displayText.split(" ").first;
+
+    final bool isNumericType = column.columnName == 'quantity' || column.columnName == 'vat';
 
     final bool isDoubleType = column.columnName == 'price';
 
@@ -109,6 +114,10 @@ class ItemsDataSource extends DataGridSource {
         onChanged: (String value) {
           if (value.isNotEmpty) {
             if (isNumericType) {
+              if(column.columnName == "vat" && int.parse(value) > 100){
+                newCellValue = 100;
+                return;
+              }
               newCellValue = int.parse(value);
             } else if (isDoubleType) {
               newCellValue = double.parse(value);
@@ -150,6 +159,10 @@ class ItemsDataSource extends DataGridSource {
       _items[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
           DataGridCell<int>(columnName: 'quantity', value: newCellValue);
       // _employees[dataRowIndex].designation = newCellValue.toString();
+    } else if (column.columnName == 'vat') {
+      _items[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
+          DataGridCell<String>(columnName: 'vat', value: '${newCellValue} %');
+      // _employees[dataRowIndex].designation = newCellValue.toString();
     } else {
       _items[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
           DataGridCell<double>(columnName: 'price', value: newCellValue);
@@ -163,7 +176,6 @@ class ItemsDataSource extends DataGridSource {
             double.parse(_items[dataRowIndex].getCells()[2].value.toString())));
 
     savedItem();
-
     notifyListeners();
   }
 }
@@ -174,6 +186,7 @@ class ItemsTable {
   final int quantity;
   final double price;
   final double total;
+  final int vat;
 
   ItemsTable({
     this.id,
@@ -181,5 +194,6 @@ class ItemsTable {
     required this.quantity,
     required this.price,
     required this.total,
+    required this.vat,
   });
 }

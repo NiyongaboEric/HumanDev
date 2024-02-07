@@ -222,12 +222,12 @@ class PersonApiImpl implements PersonApi {
       final res = await dio.get("/space/${space.id}/person/me");
       if (res.statusCode == 200) {
         var response = res.data;
-
+        logger.d(response);
         if (response is Map && response['statusCode'] != null) {
           logger.d(response);
           throw Exception(response['message']);
         }
-        // logger.d(response);
+        logger.wtf(PersonModel.fromJson(response));
         return PersonModel.fromJson(response);
       } else {
         // Handle non-200 status codes

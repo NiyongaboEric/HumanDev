@@ -9,6 +9,8 @@ import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.da
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_request.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/data/space/model/space_model.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/select_fee.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/third_party_invoice/batch_invoice_preview.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -16,6 +18,7 @@ import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/buttons/default_btn.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../widgets/inputs/number_field.dart';
 import '../../../../widgets/invoice/invoice_table.dart';
@@ -52,6 +55,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
   bool isItemEditable = false;
   bool isPaymentScheduleEditable = false;
   bool saveDraft = false;
+  bool isCurrentPage = true;
   var date = DateTime.now();
   _updateDate(DateTime newDate) {
     setState(() {
@@ -125,7 +129,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       );
       return;
     }
-    if (invoiceItems.first.grossPrice == 0 || invoiceItems.first.quantity == 0) {
+    if (invoiceItems.first.grossPrice == 0 ||
+        invoiceItems.first.quantity == 0) {
       logger.wtf(invoiceItems.first.grossPrice);
       logger.wtf(invoiceItems.first.quantity);
       GFToast.showToast(
@@ -150,11 +155,11 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       return;
     }
     if (paymentSchedules
-              .map((e) => e.dueAmount)
-              .reduce((value, element) => value + element) !=
-          invoiceItems
-              .map((e) => e.total)
-              .reduce((value, element) => value + element)) {
+            .map((e) => e.dueAmount)
+            .reduce((value, element) => value + element) !=
+        invoiceItems
+            .map((e) => e.total)
+            .reduce((value, element) => value + element)) {
       GFToast.showToast(
         "Please ensure the sum of all payment schedules due amounts equals the sum of all invoice items total amounts",
         context,
@@ -165,7 +170,10 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       );
       return;
     }
-    if (invoiceItems.map((e) => e.grossPrice).any((element) => element == 0) || paymentSchedules.map((e) => e.dueAmount).any((element) => element == 0)) {
+    if (invoiceItems.map((e) => e.grossPrice).any((element) => element == 0) ||
+        paymentSchedules
+            .map((e) => e.dueAmount)
+            .any((element) => element == 0)) {
       GFToast.showToast(
         "Please ensure all items and payment schedules have a price and due amount respectively",
         context,
@@ -174,7 +182,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
         backgroundColor: Colors.red,
         toastBorderRadius: 12.0,
       );
-      return;      
+      return;
     }
     setState(() {
       saveDraft = true;
@@ -184,17 +192,22 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
     context.read<InvoiceBloc>().add(
           widget.invoiceType == InvoiceType.CREATE
               ? InvoiceEventCreateInvoice(
-                  InvoiceCreateRequest(
-                      invoiceePersonId: widget.person!.childRelations!.first.id,
-                      studentPersonId: widget.person!.id,
-                      invoiceDate: date.toIso8601String(),
-                      currency: space.currency ?? "GHS",
-                      invoiceItems: invoiceItems,
-                      paymentSchedules: paymentSchedules,
-                      totalAmount: totalAmount()!,
-                      isDraft: true,
-                      type: "NORMAL",
-                      creditNoteForInvoiceId: 1),
+                  [
+                    InvoiceCreateRequest(
+                        invoiceePersonId:
+                            widget.person!.childRelations!.first.id,
+                        studentPersonId: widget.person!.id,
+                        invoiceDate: date.toIso8601String(),
+                        currency: space.currency ?? "GHS",
+                        invoiceItems: invoiceItems,
+                        paymentSchedules: paymentSchedules,
+                        totalAmount: totalAmount()!,
+                        isDraft: true,
+                        type: "NORMAL",
+                        taxAmount: 0,
+                        taxRate: 0,
+                        creditNoteForInvoiceId: 1)
+                  ],
                 )
               : InvoiceUpdateInvoice(
                   InvoiceUpdateRequest(
@@ -207,6 +220,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                       totalAmount: totalAmount()!,
                       isDraft: true,
                       type: "NORMAL",
+                      taxAmount: 0,
+                      taxRate: 0,
                       creditNoteForInvoiceId: 1),
                   widget.invoice!.id.toString()),
         );
@@ -221,19 +236,23 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
     Space space = prefs.getSpaces().first;
     context.read<InvoiceBloc>().add(widget.invoiceType == InvoiceType.CREATE
         ? InvoiceEventCreateInvoice(
-            InvoiceCreateRequest(
-              studentPersonId: widget.person!.id,
-              invoiceePersonId: widget.person!.childRelations!.first.id,
-              invoiceDate: date.toIso8601String(),
-              currency: space.currency ?? "GHS",
-              invoiceItems: invoiceItems,
-              paymentSchedules: paymentSchedules,
-              totalAmount: totalAmount()!,
-              transactionIds: [],
-              isDraft: false,
-              type: "NORMAL",
-              creditNoteForInvoiceId: 1,
-            ),
+            [
+              InvoiceCreateRequest(
+                studentPersonId: widget.person!.id,
+                invoiceePersonId: widget.person!.childRelations!.first.id,
+                invoiceDate: date.toIso8601String(),
+                currency: space.currency ?? "GHS",
+                invoiceItems: invoiceItems,
+                paymentSchedules: paymentSchedules,
+                totalAmount: totalAmount()!,
+                transactionIds: [],
+                isDraft: false,
+                taxAmount: 0,
+                taxRate: 0,
+                type: "NORMAL",
+                creditNoteForInvoiceId: 1,
+              )
+            ],
           )
         : InvoiceUpdateInvoice(
             InvoiceUpdateRequest(
@@ -248,6 +267,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               isDraft: false,
               type: "NORMAL",
               creditNoteForInvoiceId: 1,
+              taxAmount: 0,
+              taxRate: 0,
             ),
             widget.invoice!.id.toString()));
   }
@@ -282,7 +303,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
         backgroundColor: Colors.green,
         toastBorderRadius: 12.0,
       );
-      Navigator.pop(context, true);
+      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      nextScreen(context: context, screen: const InvoiceList());
     }
     if (state.invoiceResponse != null &&
         state.invoiceResponse!.isSuccess != null &&
@@ -305,7 +327,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
         backgroundColor: Colors.green,
         toastBorderRadius: 12.0,
       );
-      Navigator.pop(context, true);
+      nextScreenAndRemoveAll(context: context, screen: const HomePage());
+      nextScreen(context: context, screen: const InvoiceList());
     }
     if (state.status == InvoiceStateStatus.error) {
       GFToast.showToast(
@@ -330,33 +353,51 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: BackgroundColors.bgPurple,
-      appBar: _buildAppBar(),
-      body: ListView(
-        padding: const EdgeInsets.only(left: 12, right: 12, bottom: 20),
-        children: [
-          if (widget.invoice != null &&
-              widget.invoice!.number != null &&
-              widget.invoice!.number!.isNotEmpty)
-            _buildInvoiceDraft(),
-          const SizedBox(height: 20),
-          _buildNames(
-              widget.person != null
-                  ? "${widget.person?.childRelations?.first.firstName ?? ""} ${widget.person?.childRelations?.first.lastName1 ?? ""}"
-                  : "${widget.persons!.length.toString()} recipients",
-              widget.person != null
-                  ? "${widget.person?.firstName ?? ""} ${widget.person?.lastName1 ?? ""}"
-                  : "${widget.persons!.length.toString()} students"),
-          const SizedBox(height: 20),
-          _buildDatePicker(),
-          const SizedBox(height: 20),
-          _buildInvoiceItems(),
-          const SizedBox(height: 20),
-          _buildPaymentSchedule(),
-          const SizedBox(height: 20),
-          _buildActionButtons(),
-        ],
+    return VisibilityDetector(
+      key: Key("invoice-details"),
+      onVisibilityChanged: (visibilityInfo) {
+        if (visibilityInfo.visibleFraction == 1.0) {
+          if (mounted) {
+            setState(() {
+              isCurrentPage = true;
+            });
+          }
+        } else {
+          if (mounted) {
+            setState(() {
+              isCurrentPage = false;
+            });
+          }
+        }
+      },
+      child: Scaffold(
+        backgroundColor: BackgroundColors.bgPurple,
+        appBar: _buildAppBar(),
+        body: ListView(
+          padding: const EdgeInsets.only(left: 12, right: 12, bottom: 20),
+          children: [
+            if (widget.invoice != null &&
+                widget.invoice!.number != null &&
+                widget.invoice!.number!.isNotEmpty)
+              _buildInvoiceDraft(),
+            const SizedBox(height: 20),
+            _buildNames(
+                widget.person != null
+                    ? "${widget.person?.childRelations?.first.firstName ?? ""} ${widget.person?.childRelations?.first.lastName1 ?? ""}"
+                    : "${widget.persons!.length.toString()} recipients",
+                widget.person != null
+                    ? "${widget.person?.firstName ?? ""} ${widget.person?.lastName1 ?? ""}"
+                    : "${widget.persons!.length.toString()} students"),
+            const SizedBox(height: 20),
+            _buildDatePicker(),
+            const SizedBox(height: 20),
+            _buildInvoiceItems(),
+            const SizedBox(height: 20),
+            _buildPaymentSchedule(),
+            const SizedBox(height: 20),
+            _buildActionButtons(),
+          ],
+        ),
       ),
     );
   }
@@ -505,6 +546,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
   // BUild Action Buttons
   Widget _buildActionButtons() {
     return BlocConsumer<InvoiceBloc, InvoiceState>(
+      listenWhen: (prev, current) => isCurrentPage && mounted,
       listener: (context, state) {
         // TODO: implement listener
         _handleInvoiceStateChange(context, state);
@@ -517,11 +559,36 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               isLoading: saveDraft ? state.isLoading : false,
               key: const Key("save-as-draft"),
               onPressed: () {
+                logger.d({widget.persons?.first.toJson()});
+                Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(
-                        context: context, screen: BatchInvoicePreview())
+                        context: context,
+                        screen: BatchInvoicePreview(
+                            batchInvoiceItems: widget.persons!
+                                .map((e) => BatchInvoiceItem(
+                                      parentName:
+                                          "${e.childRelations!.first.firstName} ${e.childRelations!.first.lastName1}",
+                                      studentName:
+                                          "${e.firstName} ${e.lastName1}",
+                                      newInvoices: InvoiceCreateRequest(
+                                        invoiceePersonId:
+                                            e.childRelations!.first.id,
+                                        studentPersonId: e.id,
+                                        invoiceDate: date.toIso8601String(),
+                                        currency: space.currency ?? "GHS",
+                                        invoiceItems: invoiceItems,
+                                        paymentSchedules: paymentSchedules,
+                                        totalAmount: totalAmount()!,
+                                        isDraft: true,
+                                        type: "NORMAL",
+                                        taxAmount: 0,
+                                        taxRate: 0,
+                                        creditNoteForInvoiceId: 1,
+                                      ),
+                                    ))
+                                .toList()))
                     : _saveAsDraft();
-                // _saveAsDraft();
               },
               text: "Save as draft",
               btnColor: LightInvoiceColors.medium,
@@ -531,9 +598,34 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               isLoading: !saveDraft ? state.isLoading : false,
               key: const Key("commit"),
               onPressed: () {
+                Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(
-                        context: context, screen: BatchInvoicePreview())
+                        context: context,
+                        screen: BatchInvoicePreview(
+                            batchInvoiceItems: widget.persons!
+                                .map((e) => BatchInvoiceItem(
+                                      studentName:
+                                          "${e.childRelations!.first.firstName} ${e.childRelations!.first.lastName1}",
+                                      parentName:
+                                          "${e.firstName} ${e.lastName1}",
+                                      newInvoices: InvoiceCreateRequest(
+                                        invoiceePersonId:
+                                            e.childRelations!.first.id,
+                                        studentPersonId: e.id,
+                                        invoiceDate: date.toIso8601String(),
+                                        currency: space.currency ?? "GHS",
+                                        invoiceItems: invoiceItems,
+                                        paymentSchedules: paymentSchedules,
+                                        totalAmount: totalAmount()!,
+                                        isDraft: false,
+                                        type: "NORMAL",
+                                        taxAmount: 0,
+                                        taxRate: 0,
+                                        creditNoteForInvoiceId: 1,
+                                      ),
+                                    ))
+                                .toList()))
                     : _commitInvoice();
               },
               text: "Commit",

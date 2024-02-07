@@ -71,8 +71,9 @@ class _InvoiceTableState extends State<InvoiceTable> {
               id: e.id!,
               items: e.description!,
               quantity: e.quantity!,
-              price: e.price!.toDouble(),
+              price: e.grossPrice!.toDouble(),
               total: e.total!.toDouble(),
+              vat: e.taxRate is double ? (e.taxRate! * 100).toInt() : e.taxRate! * 100,
             ))
         .toList();
   }
@@ -84,6 +85,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
               date: DateTime.tryParse(e.dueDate!),
               due: e.dueAmount?.toDouble(),
               paid: e.paidAmount?.toDouble(),
+              remaining: 0,
             ))
         .toList();
   }
@@ -152,6 +154,21 @@ class _InvoiceTableState extends State<InvoiceTable> {
           ),
         ),
       ),
+      GridColumn(
+        columnName: 'vat',
+        label: Container(
+          color: PrimaryColors.primaryPurple,
+          padding: const EdgeInsets.all(8.0),
+          alignment: Alignment.center,
+          child: Text(
+            'VAT',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: CustomFontSize.medium,
+                color: SecondaryColors.secondaryPurple.withOpacity(0.7)),
+          ),
+        ),
+      ),
     ];
   }
 
@@ -159,6 +176,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
     return [
       GridColumn(
         columnName: 'date',
+        minimumWidth: 200,
         columnWidthMode: ColumnWidthMode.fill,
         label: Container(
           color: PrimaryColors.primaryPurple,
@@ -204,6 +222,23 @@ class _InvoiceTableState extends State<InvoiceTable> {
           ),
         ),
       ),
+      GridColumn(
+        columnName: 'remaining',
+        minimumWidth: 150,
+        allowEditing: false,
+        label: Container(
+          color: PrimaryColors.primaryPurple,
+          // padding: const EdgeInsets.all(8.0),
+          alignment: Alignment.center,
+          child: Text(
+            'Remaining',
+            style: TextStyle(
+                fontSize: CustomFontSize.medium,
+                color: SecondaryColors.secondaryPurple.withOpacity(0.7)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
     ];
   }
 
@@ -225,6 +260,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
               DataGridCell<String>(columnName: 'quantity', value: '0'),
               DataGridCell<String>(columnName: 'price', value: '0'),
               DataGridCell<String>(columnName: 'total', value: '0'),
+              DataGridCell<String>(columnName: 'vat', value: '0 %'),
             ]));
             itemsDataSource.buildRow(itemsDataSource.rows.last);
           }
@@ -239,6 +275,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
               DataGridCell<String>(columnName: 'date', value: 'New date'),
               DataGridCell<String>(columnName: 'due', value: '0'),
               DataGridCell<String>(columnName: 'paid', value: '0'),
+              DataGridCell<String>(columnName: 'remaining', value: '0'),
             ]));
             paymentScheduleDataSource
                 .buildRow(paymentScheduleDataSource.rows.last);
@@ -339,6 +376,9 @@ class _InvoiceTableState extends State<InvoiceTable> {
                                         value: '${e.price}'),
                                     DataGridCell<String>(
                                         columnName: 'total',
+                                        value: '${e.price}'),
+                                    DataGridCell<String>(
+                                        columnName: 'vat',
                                         value: '${e.price}'),
                                   ])));
                           // invoiceItems?.addAll(result.map((e) => InvoiceItemModel(
@@ -503,6 +543,8 @@ class _InvoiceTableState extends State<InvoiceTable> {
                                   columnName: 'price', value: '0'),
                               DataGridCell<String>(
                                   columnName: 'total', value: '0'),
+                              DataGridCell<String>(
+                                  columnName: 'vat', value: '0 %'),
                             ]));
                             itemsDataSource.buildRow(itemsDataSource.rows.last);
                           } else {
@@ -514,6 +556,8 @@ class _InvoiceTableState extends State<InvoiceTable> {
                                   columnName: 'due', value: '0'),
                               DataGridCell<String>(
                                   columnName: 'paid', value: '0'),
+                              DataGridCell<String>(
+                                  columnName: 'remaining', value: '0'),
                             ]));
                             paymentScheduleDataSource
                                 .buildRow(paymentScheduleDataSource.rows.last);
