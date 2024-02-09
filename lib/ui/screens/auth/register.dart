@@ -13,6 +13,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/phone_number.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/fullpage_loader_auth.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/phone_verification.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_registration.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -117,6 +118,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   double heightSizeEmail = 55;
   double heightSizePassword = 55;
   double heightSizeConfirmPassword = 55;
+
+  String passwordPattern = r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+  // bool isPasswordValid = false;
+  String customPasswordError = "";
+
+  validatePassword(value) {
+    if (value.isEmpty && passwordController.text.isEmpty) {
+      setState(() {
+        customPasswordError = "";
+      });
+    }
+    if (value.isNotEmpty && passwordController.text.isNotEmpty) {
+      bool validTypedPassword = RegExp(passwordPattern).hasMatch(passwordController.text);
+      if (validTypedPassword) {
+        setState(() {
+          customPasswordError = "";
+        });
+      } else {
+        setState(() {
+          customPasswordError = "Password should have a minimum of eight characters, \nat least one uppercase letter, lowercase letter, number \nand special character";
+        });
+      }
+    }
+  }
 
   final List<XFile> _images = [];
   Map<dynamic, dynamic> selectPhonenumberController(int index) {
@@ -253,7 +278,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         );
         nextScreen(
           context: context,
-          screen: const FullPageLoaderAuth(),
+          screen: PhoneVerification(phoneNumber: digitNumbercontrollerOne.text),
         );
         setState(() {
           handleAuth = false;
@@ -507,6 +532,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                             const SizedBox(height: 20),
                             CustomTextField(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                               heightSize: 55,
                               hintText: "Middle Name",
                               controller: middleNameController,
@@ -696,36 +722,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       //     }
                                       //   },
                                       // ),
-                                      _buildPhoneNumberField(
-                                          digitNumbercontrollerOne,
-                                          "Primary number"),
-                                      if (displayPhoneNumberField >= 2)
-                                        _buildPhoneNumberField(
-                                            digitNumbercontrollerTwo,
-                                            "Second number"),
-                                      if (displayPhoneNumberField >= 3)
-                                        _buildPhoneNumberField(
-                                            digitNumbercontrollerThree,
-                                            "Third number"),
-                                      if (displayPhoneNumberField < 3)
+
+                                      // if (displayPhoneNumberField < 3)
                                         TextButton(
                                           onPressed: () {
                                             setState(
                                               () {
-                                                if (displayPhoneNumberField <
-                                                    3) {
-                                                  displayPhoneNumberField =
-                                                      displayPhoneNumberField +
-                                                          1;
+                                                if (displayPhoneNumberField < 3) {
+                                                  displayPhoneNumberField = displayPhoneNumberField + 1;
                                                 }
                                               },
                                             );
                                           },
-                                          child: Text(
-                                            "Add another number",
+                                          style: ButtonStyle(splashFactory: NoSplash.splashFactory),
+                                          child: const Text(
+                                            "+ Add phone number",
                                             style: TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline),
+                                              decoration: TextDecoration.underline,
+                                              color: Color.fromRGBO(81, 35, 0, 0.80),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       // if (i ==
@@ -751,6 +768,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       //       fontWeight: FontWeight.bold,
                                       //     ),
                                       //   ),
+                                    
+                                      // if (displayPhoneNumberField >= 1)
+                                      _buildPhoneNumberField(
+                                          digitNumbercontrollerOne,
+                                          "Primary number"),
+                                      if (displayPhoneNumberField >= 2)
+                                        _buildPhoneNumberField(
+                                            digitNumbercontrollerTwo,
+                                            "Second number"),
+                                      if (displayPhoneNumberField >= 3)
+                                        _buildPhoneNumberField(
+                                            digitNumbercontrollerThree,
+                                            "Third number"),
                                     ],
                                   ),
                                   const SizedBox(height: 25),
@@ -824,7 +854,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                           fillColor: const Color(0xFFF5EBD8),
                                           hintTextSize: 20,
                                         ),
-                                        if (i == extendEmailSize.length - 1)
+                                        // if (i == extendEmailSize.length - 1)
                                           RegistrationTextButton(
                                             handleButton: () {
                                               if (extendEmailSize.length > 1) {
@@ -1035,25 +1065,32 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                             const SizedBox(height: 20),
+
                             CustomTextField(
                               heightSize: heightSizePassword,
                               hintText: "Password",
                               controller: passwordController,
                               textCapitalization: TextCapitalization.none,
                               obscureText: true,
+                              onChanged: validatePassword,
                               validator: (value) {
-                                const pattern =
-                                    r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
-                                final regex = RegExp(pattern);
+                                // const pattern =
+                                //     r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+                                final regex = RegExp(passwordPattern);
 
                                 if (value!.isEmpty) {
                                   setState(() {
                                     heightSizePassword = 80;
                                   });
                                   return "Please enter your password";
-                                } else if (!regex.hasMatch(value)) {
-                                  return 'Password should have a minimum of eight characters, \nat least one uppercase letter, lowercase letter, number \nand special character';
-                                } else {
+                                }
+                                // else if (!regex.hasMatch(value)) {
+                                //   setState(() {
+                                //     heightSizePassword = 80;
+                                //   });
+                                //   return 'Password should have a minimum of eight characters, \nat least one uppercase letter, lowercase letter, number \nand special character';
+                                // } 
+                                else {
                                   setState(() {
                                     heightSizePassword = 55;
                                   });
@@ -1064,6 +1101,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               hintTextSize: 18,
                               color: const Color.fromRGBO(81, 35, 0, 0.80),
                             ),
+
+                            customPasswordError.isEmpty
+                              ? const Text("")
+                              : Text(
+                                customPasswordError,                               
+                                  style: const TextStyle(
+                                    color: Colors.red
+                                  ),
+                              ),
+
                             const SizedBox(height: 20),
                             CustomTextField(
                               heightSize: heightSizeConfirmPassword,
@@ -1090,6 +1137,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               hintTextSize: 18,
                               color: const Color.fromRGBO(81, 35, 0, 0.80),
                             ),
+
                             const SizedBox(height: 50),
                             DefaultBtn(
                               isLoading: state.isLoading,
@@ -1141,9 +1189,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
                   );
                 },
-                child: Text(
-                  "Remove number",
-                  // style: TextStyle(color: _secondaryColorSelection(),),
+                style: const ButtonStyle(splashFactory: NoSplash.splashFactory),
+                child: const Text(
+                  "Remove",
+                  style: TextStyle(
+                    color: Colors.red, 
+                    fontSize: 15, 
+                    fontWeight: FontWeight.bold
+                  ),
                 ),
               ),
           ],

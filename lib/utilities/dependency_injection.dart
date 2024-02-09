@@ -8,7 +8,9 @@ import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/reminders/api/reminder_api.dart';
 import 'package:seymo_pay_mobile_application/data/space/api/space_api.dart';
 import 'package:seymo_pay_mobile_application/data/tags/api/tag_api.dart';
+import 'package:seymo_pay_mobile_application/data/verify_phone_numbers/api/verify_phone_number.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/auth/verify_phone_number_bloc/verify_phone_number_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -56,6 +58,7 @@ Future<void> init() async {
   sl.registerSingleton<SpaceApiImpl>(SpaceApiImpl());
   sl.registerSingleton<ReminderApiImpl>(ReminderApiImpl());
   sl.registerSingleton<InvoiceApiImpl>(InvoiceApiImpl());
+  sl.registerSingleton<VerifyPhoneNumberImpl>(VerifyPhoneNumberImpl());
   
   // Blocs
   sl.registerFactory<AuthBloc>(
@@ -69,4 +72,5 @@ Future<void> init() async {
       () => SpaceBloc(sl<SharedPreferenceModule>(), sl<SpaceApiImpl>()));
   sl.registerFactory<ReminderBloc>(() => ReminderBloc(sl<ReminderApiImpl>()));
   sl.registerFactory<InvoiceBloc>(() => InvoiceBloc(sl<SharedPreferenceModule>(), sl<InvoiceApiImpl>()));
+  sl.registerFactory<VerifyPhoneNumberBloc>(() => VerifyPhoneNumberBloc(sl<VerifyPhoneNumberImpl>()));
 }

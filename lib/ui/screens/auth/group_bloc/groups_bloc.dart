@@ -25,12 +25,14 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     try {
       final groups = await groupApiImpl.getGroups();
       sharedPreferenceModule.saveGroups(groups);
+      logger.i("Status: ${state.isLoading}");
       emit(state.copyWith(
         status: GroupStateStatus.success,
         groups: groups,
         isLoading: false,
         successMessage: "Request Successful",
       ));
+      logger.i("Status: ${state.isLoading}");
     } on DioException catch (error) {
       emit(state.copyWith(
         errorMessage:

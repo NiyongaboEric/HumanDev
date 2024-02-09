@@ -54,13 +54,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       AuthEventRegister event, Emitter<AuthState> emit) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final TokenResponse message =
-          await authApiImpl.register(event.registrationRequest);
+      final TokenResponse message = await authApiImpl.register(event.registrationRequest);
 
       sharedPreferenceModule.saveToken(message);
 
-      await authApiImpl
-          .completeRegistration(event.personSpaceRegistrationRequest);
+      await authApiImpl.completeRegistration(event.personSpaceRegistrationRequest);
 
       emit(state.copyWith(
         status: AuthStateStatus.authenticated,

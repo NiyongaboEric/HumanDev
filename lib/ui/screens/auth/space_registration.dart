@@ -67,8 +67,8 @@ class SpaceRegistration extends StatelessWidget {
         title: const Text(
           'Seymo',
           style: TextStyle(
-            color: Color.fromRGBO(81, 35, 0, 0.80),
-            fontSize: 22,
+            color: Color(0xFF512300), //Color.fromRGBO(81, 35, 0, 0.80),
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -77,7 +77,10 @@ class SpaceRegistration extends StatelessWidget {
           Container(
             margin: const EdgeInsets.only(right: 5),
             child: IconButton(
-              onPressed: () => {},
+              onPressed: () => nextScreen(
+                  context: context,
+                  screen: SpaceRegistrationForm(),
+                ),
               icon: const Icon(Icons.check),
             ),
           ),
@@ -89,16 +92,16 @@ class SpaceRegistration extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 140),
+            const SizedBox(height: 120),
             const Text(
               "Welcome to Seymo!",
               style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color.fromRGBO(81, 35, 0, 0.80),
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF512300), //Color.fromRGBO(81, 35, 0, 0.80),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
             ElevatedBtn(
               handleButton: () {
                 nextScreen(
@@ -108,30 +111,40 @@ class SpaceRegistration extends StatelessWidget {
               },
               textName: 'Create a new school space',
               buttonStyle: ButtonStyle(
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                ),
                 elevation: MaterialStateProperty.all(6),
                 backgroundColor: const MaterialStatePropertyAll<Color>(
                   Color(0xFFDAC6A1),
                 ),
                 padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                  const EdgeInsets.symmetric(vertical: 18, horizontal: 60),
                 ),
               ),
-              textStyle: const TextStyle(color: Color(0xFF512300)),
+              textStyle: const TextStyle(color: Color(0xFF512300), fontSize: 18),
             ),
             const SizedBox(height: 15),
             ElevatedBtn(
               handleButton: () => _joinSpaceAlert(context),
-              textName: 'Joing existing school space',
+              textName: 'Joining existing school space',
               buttonStyle: ButtonStyle(
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                ),
                 elevation: MaterialStateProperty.all(6),
                 backgroundColor: const MaterialStatePropertyAll<Color>(
                   Color(0xFFF5EBD8),
                 ),
                 padding: MaterialStateProperty.all(
-                  const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                  const EdgeInsets.symmetric(vertical: 18, horizontal: 58),
                 ),
               ),
-              textStyle: const TextStyle(color: Color(0xFF512300)),
+              textStyle: const TextStyle(color: Color(0xFF512300), fontSize: 18),
             ),
           ],
         ),
@@ -156,6 +169,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   String dropdownValueLocalization = 'en - English';
 
   late String dropdownValueTimezone;
+  String _timezone = '';
 
   double heightSizeSchool = 55;
   double heightSizeCountry = 55;
@@ -166,6 +180,22 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
   @override
   void initState() {
     super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    try {
+      _timezone = await FlutterTimezone.getLocalTimezone();
+      setState(() {
+        // Load by default UTC/GMT+00:00
+        dropdownValueTimezone = 'UTC/GMT+00:00 $_timezone';
+      });
+    } catch (e) {
+      print('Could not get the local timezone');
+    }
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -197,7 +227,7 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
 
   IconButton _buildCheckButton() {
     return IconButton(
-      onPressed: () => {},
+      onPressed: () => _validateAndNavigate(),
       icon: const Icon(Icons.check),
     );
   }
@@ -373,13 +403,13 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
         // if (value!.isEmpty) {
         // return "Select your timezone";
         // }
-        if (value == null) {
+        if (value == null && dropdownValueTimezone.isEmpty) {
           return "Select your timezone";
         }
         return null;
       },
       dropdownColor: const Color(0xfffffffff),
-      hint: const Text("Select timezone"),
+      hint: _timezone.isNotEmpty ? Text(_timezone): const Text("Select your timezone"),
       onChanged: (String? newValue) {
         setState(() {
           dropdownValueTimezone = newValue!;
@@ -486,8 +516,9 @@ class _SpaceRegistrationFormState extends State<SpaceRegistrationForm> {
 
   void _validateAndNavigate() {
     if (_formKey.currentState!.validate()) {
+      String getTimezoneSplitBySpace = dropdownValueTimezone.split(" ")[0];
       String convertTimezone =
-          '${availableTimezonesConversion[dropdownValueTimezone]}';
+          '${availableTimezonesConversion[getTimezoneSplitBySpace]}';
 
       nextScreen(
         context: context,

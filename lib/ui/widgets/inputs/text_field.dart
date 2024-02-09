@@ -17,7 +17,9 @@ class CustomTextField extends StatefulWidget {
   final double? fontSize;
   final bool? isDense;
   final double? heightSize;
- final Widget? prefixIcon;
+  final Widget? prefixIcon;
+  final EdgeInsets? contentPadding;
+
   const CustomTextField({
     super.key,
     this.obscureText,
@@ -33,7 +35,8 @@ class CustomTextField extends StatefulWidget {
     this.prefixIcon,
     this.fontSize,
     this.isDense,
-    this.heightSize,
+    this.heightSize, 
+    this.contentPadding,
   });
 
   @override
@@ -76,7 +79,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           hintText: widget.hintText,
           hintStyle: TextStyle(
               color: Colors.grey.shade400, fontWeight: FontWeight.normal, fontSize: widget.hintTextSize),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          contentPadding: widget.contentPadding ??  const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(
               color: widget.color.withOpacity(0.5),

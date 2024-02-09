@@ -10,6 +10,8 @@ class SecondaryColors {
   // SMS Reminder
   static Color secondaryOrange = const Color(0xff512300);
 
+  static Color secondaryChocolate = const Color(0xff4D0C2B);
+
   // Conversation Reminder
   static Color secondaryYellow = const Color(0xFF3B3101);
 
