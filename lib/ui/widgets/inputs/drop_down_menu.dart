@@ -27,6 +27,7 @@ class CustomDropDownMenu extends StatelessWidget {
       height: 80,
       child: DropdownButtonFormField(
         // dropdownColor: materialColor.shade100,
+        menuMaxHeight: 300,
         items: options
             .map(
               (option) => DropdownMenuItem(

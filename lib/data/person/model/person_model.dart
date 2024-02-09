@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_model.dart';
 
 import '../../groups/model/group_model.dart';
@@ -248,9 +249,9 @@ class PersonModel {
       personSettings: json['personSettings'],
       VATId: json['VATId'],
       taxId: json['taxId'],
-      firstName: json['firstName'],
+      firstName: json['firstName'] != null ? "${toBeginningOfSentenceCase(json['firstName'])}" :  "First name",
       middleName: json['middleName'],
-      lastName1: json['lastName1'],
+      lastName1: json['lastName1'] != null ? "${toBeginningOfSentenceCase(json['lastName1'])}" :  "Last name",
       lastName2: json['lastName2'],
       dateOfBirth: json['dateOfBirth'],
       gender: json["gender"],

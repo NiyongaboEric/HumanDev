@@ -58,6 +58,7 @@ class PaymentScheduleDataSource extends DataGridSource {
               DataGridCell<DateTime>(columnName: 'date', value: e.date),
               DataGridCell<double>(columnName: 'due', value: e.due),
               DataGridCell<double>(columnName: 'paid', value: e.paid),
+              DataGridCell<double>(columnName: 'remaining', value: e.remaining),
             ]))
         .toList();
   }
@@ -209,6 +210,10 @@ class PaymentScheduleDataSource extends DataGridSource {
       _paymentSchedule[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
           DataGridCell<double>(columnName: 'due', value: newCellValue);
       // _employees[dataRowIndex].designation = newCellValue.toString();
+    } else if (column.columnName == 'remaining') {
+      _paymentSchedule[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
+          DataGridCell<double>(columnName: 'remaining', value: newCellValue);
+      // _employees[dataRowIndex].designation = newCellValue.toString();
     } else {
       _paymentSchedule[dataRowIndex].getCells()[rowColumnIndex.columnIndex] =
           DataGridCell<double>(columnName: 'paid', value: newCellValue);
@@ -226,11 +231,13 @@ class PaymentScheduleTable {
   final DateTime? date;
   final double? due;
   final double? paid;
+  final double? remaining;
 
   PaymentScheduleTable({
     this.id,
     this.date,
     this.due,
     this.paid,
+    this.remaining,
   });
 }

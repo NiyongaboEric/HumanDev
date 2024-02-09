@@ -167,10 +167,10 @@ class _StudentsState extends State<Students> {
       preferences.setString("students", offlineStudentList);
     }
     if (state.status == PersonStatus.error) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Exception: Unauthorized") {
-        _refreshTokens();
-      } else {
+      // if (state.errorMessage == "Unauthorized" ||
+      //     state.errorMessage == "Exception: Unauthorized") {
+      //   _refreshTokens();
+      // } else {
         GFToast.showToast(
           state.errorMessage,
           context,
@@ -181,7 +181,7 @@ class _StudentsState extends State<Students> {
           backgroundColor: CustomColor.red,
           toastDuration: 6,
         );
-      }
+      // }
     }
   }
 
@@ -378,7 +378,6 @@ class _StudentsState extends State<Students> {
         List<PersonModel> studentList = studentData.map((data) {
           return PersonModel.fromJson(data);
         }).toList();
-        logger.d(studentList);
         students.addAll(studentList);
       } catch (e) {
         logger.f(studentData);
@@ -391,7 +390,6 @@ class _StudentsState extends State<Students> {
         List<Group> groupList = groupData.map((data) {
           return Group.fromJson(data);
         }).toList();
-        logger.d(groupList);
         // Add ones with only student name
         for (var group in groupList) {
           if (group.name == "Student") {
@@ -515,9 +513,9 @@ class _StudentsState extends State<Students> {
           },
           title: Text(
             [
-              student.firstName,
+              student.firstName ?? "First Name",
               student.middleName ?? "",
-              student.lastName1,
+              student.lastName1 ?? "Last Name",
               student.lastName2 ?? ""
             ].join(" ").trim(),
             style: TextStyle(

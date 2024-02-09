@@ -33,8 +33,8 @@ class _SelectFeeState extends State<SelectFee> {
         )),
   ];
   List<ItemFee> itemFees = [
-    ItemFee(id: 1, name: "Tuition Fee", price: 1000),
-    ItemFee(id: 2, name: "Feeding Fee", price: 85),
+    ItemFee(id: 1, name: "Tuition Fee", price: 1000, vat: 0),
+    ItemFee(id: 2, name: "Feeding Fee", price: 85, vat: 0),
   ];
   List<ItemFee> selectedFees = [];
 
@@ -261,6 +261,7 @@ class ItemFee {
   final int? id;
   final String? name;
   final int? price;
+  final int? vat;
 
-  ItemFee({this.id, this.name, this.price});  
+  ItemFee({this.id, this.name, this.price, this.vat});  
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
@@ -8,8 +9,10 @@ import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart
 import 'package:seymo_pay_mobile_application/data/person/model/person_request.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/groups.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/person/students.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
@@ -20,7 +23,6 @@ import 'package:seymo_pay_mobile_application/ui/widgets/inputs/phone_number_fiel
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_area.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/inputs/text_field.dart';
 import 'package:seymo_pay_mobile_application/ui/widgets/pickers/date_picker.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../data/constants/shared_prefs.dart';
@@ -62,8 +64,11 @@ class _PersonDetailsState extends State<PersonDetails> {
   final middleNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final phoneNumberController = TextEditingController();
+  final countryCode = TextEditingController();
   final phoneNumberController2 = TextEditingController();
+  final countryCode2 = TextEditingController();
   final phoneNumberController3 = TextEditingController();
+  final countryCode3 = TextEditingController();
   final notesController = TextEditingController();
   final emailController = TextEditingController();
   final emailController2 = TextEditingController();
@@ -84,6 +89,10 @@ class _PersonDetailsState extends State<PersonDetails> {
   bool collapseGroups = false;
   bool collapseInvoices = false;
   bool collapsePendingPayments = false;
+
+  PhoneNumber? phoneNumber;
+  PhoneNumber? phoneNumber2;
+  PhoneNumber? phoneNumber3;
 
   // Date picker and change date handler
   DateTime selectedDate = DateTime.now();
@@ -113,7 +122,7 @@ class _PersonDetailsState extends State<PersonDetails> {
   List<Group> selectGroupList = [];
   List<Group> disconnectedGroupList = [];
   _updateGroupList() async {
-    Group groupData = await Navigator.push(
+    Group? groupData = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => GroupsScreen(
@@ -122,6 +131,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                 : ContactSelection.allContacts),
       ),
     );
+    if (groupData == null) return;
     groupList.add(groupData);
     selectGroupList.add(groupData);
     disconnectedGroupList.remove(groupData);
@@ -138,28 +148,30 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   // Parent List and update handler
   List<ParentObject> parentList = [];
-  _addToParentList() async{
+  _addToParentList() async {
     try {
       setState(() {
         isCurrentPage = false;
       });
-        PersonModel parentData = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                const Parents(parentSection: ParentSection.students),
-          ),
-        );
-        parentList.add(ParentObject(
-          name: parentData.firstName + " " + parentData.lastName1,
-          relation: PersonChildRelation(
-            relativePersonId: parentData.id,
-            relation: "PARENT",
-          ),
-        ));
-        setState(() {
-          isCurrentPage = true;
-        });
+      PersonModel parentData = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              const Parents(parentSection: ParentSection.students),
+        ),
+      );
+      parentList.add(ParentObject(
+        name: parentData.firstName + " " + parentData.lastName1,
+        relation: PersonChildRelation(
+          relativePersonId: parentData.id,
+          relation: "PARENT",
+        ),
+      ));
+      // Remove duplicate parents
+      setState(() {
+        isCurrentPage = true;
+        parentList = parentList.toSet().toList();
+      });
       setState(() {});
     } catch (e) {
       logger.e(e);
@@ -180,6 +192,7 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   saveData() {
+    logger.i("phone number: ${phoneNumber?.completeNumber}");
     if (widget.screenFunction == ScreenFunction.add) {
       context.read<PersonBloc>().add(
             AddPersonEvent(PersonRequest(
@@ -187,17 +200,16 @@ class _PersonDetailsState extends State<PersonDetails> {
               middleName: middleNameController.text,
               lastName1: lastNameController.text,
               gender: selectedGender == "Gender*" ? null : selectedGender,
-              phoneNumber1: phoneNumberController.text,
-              phoneNumber2: phoneNumberController2.text,
-              phoneNumber3: phoneNumberController3.text,
+              phoneNumber1: phoneNumber?.completeNumber,
+              phoneNumber2: phoneNumber2?.completeNumber,
+              phoneNumber3: phoneNumber3?.completeNumber,
               email1: emailController.text,
               email2: emailController2.text,
               email3: emailController3.text,
               dateOfBirth: selectedDate.toString(),
-              groupIds: selectGroupList.map((e) => e.id!).toList().toSet().toList(),
-              personChildRelations: parentList
-                  .map((e) => e.relation)
-                  .toList(),
+              groupIds:
+                  selectGroupList.map((e) => e.id!).toList().toSet().toList(),
+              personChildRelations: parentList.map((e) => e.relation).toList(),
               isLegal: false,
             )),
           );
@@ -205,43 +217,58 @@ class _PersonDetailsState extends State<PersonDetails> {
       try {
         if (widget.screenFunction == ScreenFunction.edit) {
           context.read<PersonBloc>().add(
-                UpdatePersonEvent(
-                  UpdatePersonRequest(
-                    id: widget.person!.id,
-                    firstName: firstNameController.text,
-                    middleName: middleNameController.text,
-                    lastName1: lastNameController.text,
-                    gender: selectedGender != "Gender*" ? selectedGender : null,
-                    phoneNumber1: phoneNumberController.text,
-                    phoneNumber2: phoneNumberController2.text,
-                    phoneNumber3: phoneNumberController3.text,
-                    email1: emailController.text,
-                    email2: emailController2.text,
-                    email3: emailController3.text,
-                    dateOfBirth: selectedDate.toString(),
-                    connectGroupIds: selectGroupList
-                        .where((element) => !widget.person!.groups!
-                            .map((e) => e.id)
-                            .toList()
-                            .contains(element.id))
-                        .map((e) => e.id!)
-                        .toList(),
-                    disconnectGroupIds: widget.person!.groups!
-                        .where((element) => !selectGroupList.contains(element))
-                        .map((e) => e.id!)
-                        .toList(),
-                    isLegal: widget.person!.isLegal,
-                    VATId: widget.person!.VATId,
-                    taxId: widget.person!.taxId,
-                    address: Address(
-                      street: streetController.text,
-                      city: cityController.text,
-                      state: stateController.text,
-                      zip: zipController.text,
-                    ),
-                    isDeactivated: widget.person!.isDeactivated,
-                  )
-                ),
+                UpdatePersonEvent(UpdatePersonRequest(
+                  id: widget.person!.id,
+                  firstName: firstNameController.text,
+                  middleName: middleNameController.text,
+                  lastName1: lastNameController.text,
+                  gender: selectedGender != "Gender*" ? selectedGender : null,
+                  phoneNumber1: phoneNumber?.completeNumber ??
+                      widget.person!.phoneNumber1,
+                  phoneNumber2: phoneNumber2?.completeNumber ??
+                      widget.person!.phoneNumber2,
+                  phoneNumber3: phoneNumber3?.completeNumber ??
+                      widget.person!.phoneNumber3,
+                  email1: emailController.text,
+                  email2: emailController2.text,
+                  email3: emailController3.text,
+                  dateOfBirth: selectedDate.toString(),
+                  connectGroupIds: selectGroupList
+                      .where((element) => !widget.person!.groups!
+                          .map((e) => e.id)
+                          .toList()
+                          .contains(element.id))
+                      .map((e) => e.id!)
+                      .toList(),
+                  disconnectGroupIds: widget.person!.groups!
+                      .where((element) => !selectGroupList.contains(element))
+                      .map((e) => e.id!)
+                      .toList(),
+                  connectPersonChildRelations: parentList
+                      .where((element) => !widget.person!.childRelations!
+                          .map((e) => e.id)
+                          .toList()
+                          .contains(element.relation.relativePersonId))
+                      .map((e) => e.relation)
+                      .toList(),
+                  disconnectPersonChildRelations: widget.person!.childRelations!
+                      .where((element) => !parentList
+                          .map((e) => e.relation.relativePersonId)
+                          .toList()
+                          .contains(element.id))
+                      .map((e) => e.id!)
+                      .toList(),
+                  isLegal: widget.person!.isLegal,
+                  VATId: widget.person!.VATId,
+                  taxId: widget.person!.taxId,
+                  address: Address(
+                    street: streetController.text,
+                    city: cityController.text,
+                    state: stateController.text,
+                    zip: zipController.text,
+                  ),
+                  isDeactivated: widget.person!.isDeactivated,
+                )),
               );
         }
       } catch (e) {
@@ -288,7 +315,7 @@ class _PersonDetailsState extends State<PersonDetails> {
 
   // Handle Person State Change
   void _onPersonStateChange(PersonState state) {
-    if (state.status == PersonStatus.success  && state.successMessage != null) {
+    if (state.status == PersonStatus.success && state.successMessage != null) {
       GFToast.showToast(
         state.successMessage,
         context,
@@ -299,7 +326,16 @@ class _PersonDetailsState extends State<PersonDetails> {
         backgroundColor: Colors.green,
         toastBorderRadius: 12.0,
       );
-      if(state.personResponse != null) Navigator.pop(context, true);
+      if (state.personResponse != null) {
+        // Navigator.pop(context, true);
+        if (widget.contactVariant == ContactVariant.student) {
+          nextScreenAndRemoveAll(context: context, screen: HomePage());
+          nextScreen(
+              context: context,
+              screen: Students(
+                  select: false, option: StudentOption.studentContact));
+        }
+      }
     } else if (state.status == PersonStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
       } else {
@@ -336,13 +372,29 @@ class _PersonDetailsState extends State<PersonDetails> {
   @override
   void initState() {
     // TODO: implement initState
+    List<Group> groups = prefs.getGroups();
+    for (var group in groups) {
+      groupList.add(group);
+    }
     if (widget.person != null) {
       firstNameController.text = widget.person!.firstName;
       middleNameController.text = widget.person!.middleName ?? "";
       lastNameController.text = widget.person!.lastName1;
-      phoneNumberController.text = widget.person!.phoneNumber1 ?? "";
-      phoneNumberController2.text = widget.person!.phoneNumber2 ?? "";
-      phoneNumberController3.text = widget.person!.phoneNumber3 ?? "";
+      phoneNumberController.text = widget.person!.phoneNumber1 != null
+          ? PhoneNumber.fromCompleteNumber(
+                  completeNumber: widget.person!.phoneNumber1!)
+              .number
+          : "";
+      phoneNumberController2.text = widget.person!.phoneNumber2 != null
+          ? PhoneNumber.fromCompleteNumber(
+                  completeNumber: widget.person!.phoneNumber2!)
+              .number
+          : "";
+      phoneNumberController3.text = widget.person!.phoneNumber3 != null
+          ? PhoneNumber.fromCompleteNumber(
+                  completeNumber: widget.person!.phoneNumber3!)
+              .number
+          : "";
       emailController.text = widget.person!.email1 ?? "";
       emailController2.text = widget.person!.email2 ?? "";
       emailController3.text = widget.person!.email3 ?? "";
@@ -366,11 +418,15 @@ class _PersonDetailsState extends State<PersonDetails> {
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
+    } else {
+      if (widget.contactVariant == ContactVariant.student) {
+        // Get the student role
+        var studentGroup = groups.firstWhere(
+          (element) => element.name == "Student",
+        );
+        selectGroupList.add(studentGroup);
+      }
     }
-    List<Group> groups = prefs.getGroups();
-    for (var group in groups) {
-      groupList.add(group);
-    }    
     super.initState();
   }
 
@@ -439,14 +495,28 @@ class _PersonDetailsState extends State<PersonDetails> {
                       "Contacts",
                       Icons.contact_page_rounded,
                       [
-                        _buildPhoneNumberField(
-                            phoneNumberController, "Primary number"),
+                        _buildPhoneNumberField(phoneNumberController,
+                            phoneNumber, "Primary number", (updatedNumber) {
+                          phoneNumber = updatedNumber;
+                        }),
                         if (displayPhoneNumberField >= 2)
                           _buildPhoneNumberField(
-                              phoneNumberController2, "Second number"),
+                            phoneNumberController2,
+                            phoneNumber2,
+                            "Second number",
+                            (updatedNumber) {
+                              phoneNumber2 = updatedNumber;
+                            },
+                          ),
                         if (displayPhoneNumberField >= 3)
                           _buildPhoneNumberField(
-                              phoneNumberController3, "Third number"),
+                            phoneNumberController3,
+                            phoneNumber3,
+                            "Third number",
+                            (updatedNumber) {
+                              phoneNumber3 = updatedNumber;
+                            },
+                          ),
                         // SizedBox(height: 5),
                         if (displayPhoneNumberField < 3)
                           TextButton(
@@ -498,7 +568,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                       collapse: collapseAddress),
                   _buildPersonRelativeSection(),
                   _buildSection(
-                    "Groups *",
+                    widget.contactVariant == ContactVariant.student ? "Groups" : "Groups*",
                     Icons.groups_2_rounded,
                     [
                       _buildGroupChip(),
@@ -542,8 +612,13 @@ class _PersonDetailsState extends State<PersonDetails> {
         ),
         IconButton(
           onPressed: () {
-            if (firstNameController.text.isNotEmpty &&
-                lastNameController.text.isNotEmpty &&
+            if (_formKey.currentState!.validate() &&
+                (phoneNumber == null ||
+                    phoneNumber != null && phoneNumber!.isValidNumber()) &&
+                (phoneNumber2 == null ||
+                    phoneNumber2 != null && phoneNumber!.isValidNumber()) &&
+                (phoneNumber3 == null ||
+                    phoneNumber3 != null && phoneNumber3!.isValidNumber()) &&
                 selectGroupList.isNotEmpty) {
               saveData();
             } else {
@@ -601,13 +676,16 @@ class _PersonDetailsState extends State<PersonDetails> {
       color: _secondaryColorSelection(),
       hintText: hintText,
       inputType: inputType,
-      // validator: (value) {
-      //   // if (value != null && value.endsWith("*")) return null;
-      //   if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
-      //     return "This field is required";
-      //   }
-      //   return null;
-      // },
+      validator: (value) {
+        // if value is empty and hint text ends with * then return error
+        if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
+          return "This field is required";
+        }
+        if (hintText.endsWith("*") && value!.trim().isEmpty) {
+          return "Invalid characters";
+        }
+        return null;
+      },
     );
   }
 
@@ -628,7 +706,12 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPhoneNumberField(TextEditingController controller, String text) {
+  Widget _buildPhoneNumberField(
+    TextEditingController controller,
+    PhoneNumber? phoneNumber,
+    String text,
+    Function(PhoneNumber?) onPhoneNumberChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -657,11 +740,19 @@ class _PersonDetailsState extends State<PersonDetails> {
         ),
         const SizedBox(height: 5),
         CustomPhoneNumberField(
+          countryCode: countryCode.text,
           initialValue: controller.text,
           controller: controller,
           color: _secondaryColorSelection(),
           onChanged: (value) {
-            controller.text = value.completeNumber;
+            if (value.isValidNumber()) {
+              setState(() {
+                phoneNumber = value;
+              });
+              logger.i(value.completeNumber);
+              onPhoneNumberChanged(
+                  value); // Invoke the callback with the updated value
+            }
           },
         ),
       ],
@@ -747,16 +838,10 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildSection(
-    String title, 
-    IconData icon,
-    List<Widget> children,
-      {
-        bool isAddButton = false,
-        Function()? btnAction,
-        bool collapse = false
-      }
-    ) {
+  Widget _buildSection(String title, IconData icon, List<Widget> children,
+      {bool isAddButton = false,
+      Function()? btnAction,
+      bool collapse = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -849,8 +934,16 @@ class _PersonDetailsState extends State<PersonDetails> {
                 onPressed: state.isLoading
                     ? null
                     : () {
-                        if (firstNameController.text.isNotEmpty  &&
-                            lastNameController.text.isNotEmpty  &&
+                        if (_formKey.currentState!.validate() &&
+                            (phoneNumber == null ||
+                                phoneNumber != null &&
+                                    phoneNumber!.isValidNumber()) &&
+                            (phoneNumber2 == null ||
+                                phoneNumber2 != null &&
+                                    phoneNumber!.isValidNumber()) &&
+                            (phoneNumber3 == null ||
+                                phoneNumber3 != null &&
+                                    phoneNumber3!.isValidNumber()) &&
                             selectGroupList.isNotEmpty) {
                           onPressed!();
                         } else {
@@ -907,34 +1000,31 @@ class _PersonDetailsState extends State<PersonDetails> {
         spacing: 10,
         runSpacing: 10,
         children: [
-          ...selectGroupList.map((group)  {            
+          ...selectGroupList.map((group) {
             if (filterGroups.contains(group.name)) {
               return Container();
             } else {
               filterGroups.add("${group.name}");
               return Chip(
-                    label: Text(
-                      group.name!,
-                      style: TextStyle(
-                        color: _secondaryColorSelection(),
-                        fontSize: CustomFontSize.medium,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    backgroundColor: _primaryColorSelection(),
-                    deleteIconColor: _secondaryColorSelection(),
-                    onDeleted: () {
-                      setState(() {
-                        selectGroupList.remove(group);
-                        disconnectedGroupList.add(group);
-                      });
-                    },
-                  );
+                label: Text(
+                  group.name!,
+                  style: TextStyle(
+                    color: _secondaryColorSelection(),
+                    fontSize: CustomFontSize.medium,
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                backgroundColor: _primaryColorSelection(),
+                deleteIconColor: _secondaryColorSelection(),
+                onDeleted: () {
+                  setState(() {
+                    selectGroupList.remove(group);
+                    disconnectedGroupList.add(group);
+                  });
+                },
+              );
             }
-
-
-          }
-            ),
+          }),
         ],
       ),
     );
@@ -979,7 +1069,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildPersonRelativeSection() {    
+  Widget _buildPersonRelativeSection() {
     if (widget.contactVariant == ContactVariant.student ||
         widget.person != null && widget.person!.role == "Student") {
       return _buildSection(
@@ -1041,7 +1131,6 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 }
 
-
 class ParentObject {
   final String name;
   final PersonChildRelation relation;
@@ -1056,5 +1145,5 @@ class ParentObject {
       'name': name,
       'relation': relation,
     };
-  }  
+  }
 }

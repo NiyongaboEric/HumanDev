@@ -367,7 +367,16 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                   activeColor: LightInvoiceColors.dark,
                   value: selectedPeople.contains(person),
                   onChanged: (value) {
-                    _onSelected(value!, person);
+                    if (person.childRelations != null &&
+                        person.childRelations!.isNotEmpty) {
+                      _onSelected(value!, person);
+                    } else {
+                      GFToast.showToast("No assigned relative", context,
+                          toastPosition: GFToastPosition.BOTTOM,
+                          toastBorderRadius: 12.0,
+                          toastDuration: 6,
+                          backgroundColor: Colors.red);
+                    }
                   },
                 )
               : const SizedBox(),
@@ -529,6 +538,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       centerTitle: true,
       actions: [
         BlocListener<GroupsBloc, GroupsState>(
+          listenWhen: (prev, current) => isCurrentPage,
           listener: (context, state) {
             _handleGroupStateChange(context, state);
           },

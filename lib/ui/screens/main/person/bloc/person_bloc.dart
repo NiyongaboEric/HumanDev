@@ -34,7 +34,6 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
           persons: persons,
           isLoading: false,
           status: PersonStatus.success,
-          // successMessage: "Request successful",
         ),
       );
     } catch (error) {
@@ -154,22 +153,11 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         personResponse: persons,
         successMessage: "Person updated successfully",
       ));
-      emit(state.copyWith(
-        status: PersonStatus.initial,
-        errorMessage: null,
-        successMessage: null,
-        personRequest: null,
-      ));
     } catch (error) {
       emit(state.copyWith(
         errorMessage: error.toString(),
         isLoading: false,
         status: PersonStatus.error,
-      ));
-      emit(state.copyWith(
-        status: PersonStatus.initial,
-        errorMessage: null,
-        successMessage: null,
       ));
     } finally {
       emit(state.copyWith(

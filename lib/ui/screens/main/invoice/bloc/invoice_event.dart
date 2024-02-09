@@ -24,9 +24,9 @@ final class InvoiceGetOneInvoice extends InvoiceEvent {
 }
 
 final class InvoiceEventCreateInvoice extends InvoiceEvent {
-  final InvoiceCreateRequest invoiceRequest;
+  final List<InvoiceCreateRequest> invoiceRequests;
 
-  const InvoiceEventCreateInvoice(this.invoiceRequest);
+  const InvoiceEventCreateInvoice(this.invoiceRequests);
   
   @override
   List<Object> get props => [];

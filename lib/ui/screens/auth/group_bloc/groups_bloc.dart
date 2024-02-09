@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
+import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 
 import '../../../../data/groups/api/group_api.dart';

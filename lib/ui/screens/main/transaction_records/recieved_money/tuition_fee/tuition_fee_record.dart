@@ -296,6 +296,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   _handleRefreshStateChange(context, state);
                   _handleLogoutStateChange(context, state);
                 },
+                child: Container(),
               ),
               IconButton(
                   onPressed: state.isLoading
@@ -441,7 +442,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   color: SecondaryColors.secondaryGreen.withOpacity(0.7),
                   options: [
                     "Payment method",
-                    ...Constants.paymentMethods.map((e) => e.name.name)
+                    ...Constants.paymentMethods.map((e) => e.name.name.split("_").join(" ")).toList(),
                   ],
                   value: selectedPaymentMethod.name.name,
                   onChanged: updatePaymentMethod,

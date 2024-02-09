@@ -423,7 +423,7 @@ class _LogPaymentState extends State<LogPayment> {
                 color: const Color(0xff410002),
                 options: [
                   "Payment method",
-                  ...Constants.paymentMethods.map((e) => e.name.name)
+                  ...Constants.paymentMethods.map((e) => e.name.name.split("_").join(" "))
                 ],
                 value: selectedPaymentMethod.name.name,
                 onChanged: updatePaymentMethod,

@@ -1,6 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
+import 'package:seymo_pay_mobile_application/data/auth/model/auth_response.dart';
 
+import '../auth/api/auth_api.dart';
 import './request_interceptor.dart';
+import 'shared_prefs.dart';
+
+var sl = GetIt.instance;
+var prefs = sl<SharedPreferenceModule>();
 
 class DioConfig {
   final Dio _dio = Dio();

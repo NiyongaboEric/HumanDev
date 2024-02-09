@@ -46,11 +46,7 @@ class GroupApiImpl implements GroupApi {
     var prefs = sl<SharedPreferenceModule>();
     Space? space = prefs.getSpaces().first;
     final res = await dio.post("/space/${space.id}/group", data: groupRequest.toJson());
-    if (res.statusCode == 200) {
-      logger.d(res.data);
-      if (res.data is Map && res.data['statusCode'] != null) {
-        throw Exception(res.data['message']);
-      }
+    if (res.statusCode == 201) {
       return Group.fromJson(res.data);
     }
     throw Exception(res.data["message"]);

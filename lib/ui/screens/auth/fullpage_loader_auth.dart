@@ -335,7 +335,7 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
             }
           }),
           BlocListener<GroupsBloc, GroupsState>(listenWhen: (context, state) {
-            return true;
+            return isCurrentPage;
           }, listener: (context, state) {
             // TODO: implement groups listener
             if (mounted) {

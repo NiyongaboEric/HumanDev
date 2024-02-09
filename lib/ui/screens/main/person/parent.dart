@@ -757,11 +757,11 @@ class _ParentsState extends State<Parents> {
       if (customGroupPeople.isNotEmpty) preferences.saveCustomGroupPeople(customGroupPeople);
     }
     if (state.status == PersonStatus.error) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Exception: Unauthorized") {
-        logger.e(state.errorMessage);
-        _refreshTokens();
-      } else {
+      // if (state.errorMessage == "Unauthorized" ||
+      //     state.errorMessage == "Exception: Unauthorized") {
+      //   logger.e(state.errorMessage);
+      //   _refreshTokens();
+      // } else {
         GFToast.showToast(
           state.errorMessage,
           context,
@@ -772,7 +772,7 @@ class _ParentsState extends State<Parents> {
           backgroundColor: CustomColor.red,
           toastDuration: 6,
         );
-      }
+      // }
     }
   }
 
@@ -1277,7 +1277,8 @@ class _ParentsState extends State<Parents> {
             currentSelectedGroupSpace != Role.Supplier.name &&
             currentSelectedGroupSpace != roleToString(Role.School_administrator)
           ) {
-            if (person.groups?[0].name == currentSelectedGroupSpace) {
+              logger.wtf(person.groups);
+            if (person.groups!.isNotEmpty && person.groups?[0].name == currentSelectedGroupSpace) {
               isAlphabetMatch = true;
               return _buildPersonListTile(person);
             }

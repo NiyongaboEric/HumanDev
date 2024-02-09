@@ -95,6 +95,7 @@ class _InvoiceListState extends State<InvoiceList> {
       setState(() {
         invoices = state.invoices!;
       });
+      _getAllPersons();
     } else if (state.status == InvoiceStateStatus.error) {
       if (state.errorMessage!.contains("Unauthorized")) {
         _refreshToken();
@@ -182,91 +183,95 @@ class _InvoiceListState extends State<InvoiceList> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: BackgroundColors.bgPurple,
-            appBar: _buildAppBar(context),
-            body: state.isLoading
-                ? const Center(
-                    child: GFLoader(
-                      type: GFLoaderType.ios,
-                    ),
-                  )
-                : invoices.isNotEmpty || persons.isNotEmpty
-                    ? ListView(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 20),
-                        children: [
-                          ...invoices.map(
-                            (element) => Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () async {
-                                    if (element.isDraft) {
-                                      bool reFetch = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => InvoiceDetails(
-                                            key: const Key(
-                                                "invoice_details_edit"),
-                                            invoiceType: InvoiceType.EDIT,
-                                            invoice: element,
-                                            person: persons.isNotEmpty
-                                                ? persons.firstWhere((each) =>
-                                                    each.id ==
-                                                    element.studentPersonId)
-                                                : null,
-                                          ),
-                                        ),
-                                      ) ?? false;
-                                      if (reFetch) {
-                                        _getAllInvoices();
+              backgroundColor: BackgroundColors.bgPurple,
+              appBar: _buildAppBar(context),
+              body: state.isLoading
+                  ? const Center(
+                      child: GFLoader(
+                        type: GFLoaderType.ios,
+                      ),
+                    )
+                  : invoices.isNotEmpty || persons.isNotEmpty
+                      ? ListView(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 20),
+                          children: [
+                            ...invoices.map(
+                              (element) => Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      if (element.isDraft) {
+                                        bool reFetch = await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    InvoiceDetails(
+                                                  key: const Key(
+                                                      "invoice_details_edit"),
+                                                  invoiceType: InvoiceType.EDIT,
+                                                  invoice: element,
+                                                  person: persons.isNotEmpty
+                                                      ? persons.firstWhere(
+                                                          (each) =>
+                                                              each.id ==
+                                                              element
+                                                                  .studentPersonId)
+                                                      : null,
+                                                ),
+                                              ),
+                                            ) ??
+                                            false;
+                                        if (reFetch) {
+                                          _getAllInvoices();
+                                        }
+                                        // nextScreen(
+                                        //   context: context,
+                                        //   screen: InvoiceDetails(
+                                        //     key: const Key("invoice_details_edit"),
+                                        //     invoiceType: InvoiceType.EDIT,
+                                        //     invoice: element,
+                                        //     person: persons.isNotEmpty
+                                        //         ? persons.firstWhere((each) =>
+                                        //             each.id ==
+                                        //             element.studentPersonId)
+                                        //         : null,
+                                        //   ),
+                                        // );
                                       }
-                                      // nextScreen(
-                                      //   context: context,
-                                      //   screen: InvoiceDetails(
-                                      //     key: const Key("invoice_details_edit"),
-                                      //     invoiceType: InvoiceType.EDIT,
-                                      //     invoice: element,
-                                      //     person: persons.isNotEmpty
-                                      //         ? persons.firstWhere((each) =>
-                                      //             each.id ==
-                                      //             element.studentPersonId)
-                                      //         : null,
-                                      //   ),
-                                      // );
-                                    }
-                                  },
-                                  child: InvoiceCard(
-                                    name: persons.isNotEmpty
-                                        ? "${persons.firstWhere((each) => each.id == element.studentPersonId).firstName} ${persons.firstWhere((each) => each.id == element.studentPersonId).lastName1}"
-                                        : "",
-                                    date: element.invoiceDate,
-                                    amount: element.totalAmount.toString(),
-                                    currency: element.currency,
-                                    isVoid: element.isVoid,
-                                    isPaid: element.isPaid,
-                                    isDraft: element.isDraft,
-                                    paidAmount: element.paymentSchedules!
-                                        .map((e) => e.paidAmount)
-                                        .reduce((value, val) => value! + val!),
-                                    invoiceNumber: element.number,
+                                    },
+                                    child: InvoiceCard(
+                                      name: persons.isNotEmpty
+                                          ? "${persons.firstWhere((each) => each.id == element.studentPersonId).firstName} ${persons.firstWhere((each) => each.id == element.studentPersonId).lastName1}"
+                                          : "",
+                                      date: element.invoiceDate,
+                                      amount: element.totalAmount.toString(),
+                                      currency: element.currency,
+                                      isVoid: element.isVoid,
+                                      isPaid: element.isPaid,
+                                      isDraft: element.isDraft,
+                                      paidAmount: element.paymentSchedules!
+                                          .map((e) => e.paidAmount)
+                                          .reduce(
+                                              (value, val) => value! + val!),
+                                      invoiceNumber: element.number,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 20),
-                              ],
+                                  const SizedBox(height: 20),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : Center(
+                          child: Text(
+                            "No invoices found",
+                            style: TextStyle(
+                              fontSize: CustomFontSize.medium,
+                              color: SecondaryColors.secondaryPurple,
                             ),
                           ),
-                        ],
-                      )
-                    : Center(
-                        child: Text(
-                          "No invoices found",
-                          style: TextStyle(
-                            fontSize: CustomFontSize.medium,
-                            color: SecondaryColors.secondaryPurple,
-                          ),
-                        ),
-                      )
-          );
+                        ));
         },
       ),
     );
