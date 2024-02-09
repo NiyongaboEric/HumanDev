@@ -248,6 +248,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildPopupMenuButton(BuildContext context, SpaceState state) {
     return PopupMenuButton(
+      color: const Color(0xFFF5EBD8),
       itemBuilder: (context) {
         return [
           PopupMenuItem(
@@ -255,7 +256,7 @@ class _HomePageState extends State<HomePage> {
               "Change school/space name",
               style: TextStyle(
                 fontSize: CustomFontSize.extraSmall,
-                color: SecondaryColors.secondaryOrange,
+                color: SecondaryColors.secondaryChocolate,
               ),
             ),
             onTap: () {
@@ -264,10 +265,20 @@ class _HomePageState extends State<HomePage> {
           ),
           PopupMenuItem(
             child: Text(
+              "Settings",
+              style: TextStyle(
+                fontSize: CustomFontSize.extraSmall,
+                color: SecondaryColors.secondaryChocolate,
+              ),
+            ),
+            onTap: () {},
+          ),
+          PopupMenuItem(
+            child: Text(
               "Log out",
               style: TextStyle(
                 fontSize: CustomFontSize.extraSmall,
-                color: SecondaryColors.secondaryOrange,
+                color: SecondaryColors.secondaryChocolate,
               ),
             ),
             onTap: () {

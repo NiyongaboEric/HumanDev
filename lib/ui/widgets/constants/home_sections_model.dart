@@ -14,12 +14,14 @@ import '../../utilities/navigation.dart';
 class HomeButton {
   final String title;
   final Widget icon;
+  // final AssetImage? image;
   final Color color;
   final Function() onPressed;
 
   HomeButton({
     required this.title,
     required this.icon,
+    // this.image,
     required this.color,
     required this.onPressed,
   });
@@ -40,74 +42,103 @@ class HomeSection {
 List<HomeSection> homeSections(BuildContext context) {
   List<HomeButton> logTransactions = [
     HomeButton(
-      title: "Received money",
+      title: "Received",
       color: const Color(0xFF0BBA74),
       icon: const Icon(
-        Icons.file_download_outlined,
+        CupertinoIcons.down_arrow,
         color: Colors.white,
-        size: 54,
+        size: 50,
       ),
       onPressed: () {
         nextScreen(context: context, screen: const ReceivedMoney());
       },
     ),
     HomeButton(
-      title: "Paid money",
+      title: "Paid",
       color: const Color(0xFFF56359),
       icon: const Icon(
-        Icons.file_upload_outlined,
+        CupertinoIcons.arrow_up,
         color: Colors.white,
-        size: 54,
+        size: 50,
       ),
       onPressed: () {
         nextScreen(context: context, screen: const Payment());
       },
+    ),
+    HomeButton(
+      title: "Dashboard",
+      color: const Color(0XFF68D5FF),
+      // icon: const Icon(
+      //   Icons.monetization_on,
+      //   color: Colors.white,
+      //   size: 50,
+      // ),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/dashboard.svg",
+          color: Colors.white,
+        ),
+      ),
+      onPressed: () {},
     )
   ];
 
   List<HomeButton> reminders = [
-    HomeButton(
-      title: "SMS",
-      color: const Color(0xFFFF8D3A),
-      icon: const Icon(
-        CupertinoIcons.text_bubble_fill,
-        color: Colors.white,
-        size: 54,
-      ),
-      onPressed: () {
-        nextScreen(context: context, screen: const SMSReminder());
-      },
-    ),
     HomeButton(
       title: "Letter",
       color: const Color(0xFF00ADEF),
       icon: const Icon(
         CupertinoIcons.mail_solid,
         color: Colors.white,
-        size: 54,
+        size: 65,
       ),
       onPressed: () {
         nextScreen(
-            context: context,
-            screen: const Parents(
-              parentSection: ParentSection.letter,
-            ));
+          context: context,
+          screen: const Parents(
+            parentSection: ParentSection.letter,
+          ),
+        );
       },
     ),
     HomeButton(
       title: "Conversation",
       color: const Color(0xFFFAD215),
       icon: const Icon(
-        CupertinoIcons.person_2_alt,
+        CupertinoIcons.bubble_left_bubble_right_fill,
         color: Colors.white,
         size: 54,
       ),
       onPressed: () {
         nextScreen(
-            context: context,
-            screen: const Parents(
-              parentSection: ParentSection.conversation,
-            ));
+          context: context,
+          screen: const Parents(
+            parentSection: ParentSection.conversation,
+          ),
+        );
+      },
+    ),
+    HomeButton(
+      title: "SMS reminder",
+      color: const Color(0xFFFF8D3A),
+      // icon: const Icon(
+      //   CupertinoIcons.ch,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/SMS_reminder.svg",
+          color: Colors.white,
+        ),
+      ),
+      onPressed: () {
+        nextScreen(
+          context: context, 
+          screen: const SMSReminder()
+        );
       },
     ),
     // HomeButton(
@@ -128,10 +159,17 @@ List<HomeSection> homeSections(BuildContext context) {
     HomeButton(
       title: "Students",
       color: const Color(0xFFF09EC5),
-      icon: const Icon(
-        Icons.school_rounded,
-        color: Colors.white,
-        size: 54,
+      // icon: const Icon(
+      //   Icons.s,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/students.svg",
+          color: Colors.white,
+        ),
       ),
       onPressed: () {
         nextScreen(
@@ -144,12 +182,19 @@ List<HomeSection> homeSections(BuildContext context) {
       },
     ),
     HomeButton(
-      title: "Contacts",
+      title: "All contacts",
       color: const Color(0xFF2ECC28),
-      icon: const Icon(
-        Icons.groups_rounded,
-        color: Colors.white,
-        size: 54,
+      // icon: const Icon(
+      //   Icons.groups_rounded,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
+      icon: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SvgPicture.asset(
+          "assets/icons/all_contacts.svg",
+          color: Colors.white,
+        ),
       ),
       onPressed: () {
         nextScreen(
@@ -181,7 +226,7 @@ List<HomeSection> homeSections(BuildContext context) {
 
   List<HomeButton> reports = [
     HomeButton(
-      title: "Transaction log",
+      title: "Transactions",
       color: const Color(0xFF9747FF),
       icon: const Icon(
         Icons.compare_arrows_rounded,
@@ -204,58 +249,107 @@ List<HomeSection> homeSections(BuildContext context) {
 
   List<HomeButton> invoices = [
     HomeButton(
-      title: "Invoice List",
+      title: "Invoices",
       color: const Color(0xFF9747FF),
       icon: Padding(
         padding: const EdgeInsets.all(20),
-        child: SvgPicture.asset(
-          "assets/icons/invoice_list.svg",
+        child: 
+        SvgPicture.asset(
+          "assets/icons/invoice_x.svg",
           color: Colors.white,
         ),
       ),
+
+      // icon: const Icon(
+      //   Icon.d,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
+
+      //   // AssetImage("assets/images/dropbox.png"),
+      // image: AssetImage("assets/images/invoices_1.svg.png"),
+
+      // ),
       onPressed: () {
         nextScreen(context: context, screen: const InvoiceList());
       },
     ),
     HomeButton(
-      title: "Student Invoice",
+      title: "Create invoice",
       color: const Color(0xFF9747FF),
+      // icon: const Icon(
+      //   Icons.compare_arrows_rounded,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
       icon: Padding(
         padding: const EdgeInsets.all(20),
-        child: SvgPicture.asset(
-          "assets/icons/student_invoice.svg",
+        child: 
+        SvgPicture.asset(
+          "assets/icons/invoice_y.svg",
           color: Colors.white,
         ),
       ),
-      onPressed: () {
-        nextScreen(
-          context: context,
-          screen: const PeopleListInvoice(personType: PersonType.STUDENT),
-        );
-      },
+      onPressed: () {},
     ),
     HomeButton(
-      title: "Third Party Invoiceee",
-      color: const Color(0xFF9747FF),
+      title: "Transactions",
+      color: const Color(0xFFA2A4A0),
+      // icon: const Icon(
+      //   Icons.,
+      //   color: Colors.white,
+      //   size: 54,
+      // ),
       icon: Padding(
         padding: const EdgeInsets.all(20),
         child: SvgPicture.asset(
-          "assets/icons/third_party_invoice.svg",
+          "assets/icons/transaction.svg",
           color: Colors.white,
         ),
       ),
-      onPressed: () {
-        nextScreen(
-          context: context,
-          screen: const PeopleListInvoice(personType: PersonType.THIRD_PARTY),
-        );
-      },
+      // 
+      onPressed: () {},
     ),
+
+    // HomeButton(
+    //   title: "Student Invoice",
+    //   color: const Color(0xFF9747FF),
+    //   icon: Padding(
+    //     padding: const EdgeInsets.all(20),
+    //     child: SvgPicture.asset(
+    //       "assets/icons/student_invoice.svg",
+    //       color: Colors.white,
+    //     ),
+    //   ),
+    //   onPressed: () {
+    //     nextScreen(
+    //       context: context,
+    //       screen: const PeopleListInvoice(personType: PersonType.STUDENT),
+    //     );
+    //   },
+    // ),
+    // HomeButton(
+    //   title: "Third Party Invoice",
+    //   color: const Color(0xFF9747FF),
+    //   icon: Padding(
+    //     padding: const EdgeInsets.all(20),
+    //     child: SvgPicture.asset(
+    //       "assets/icons/third_party_invoice.svg",
+    //       color: Colors.white,
+    //     ),
+    //   ),
+    //   onPressed: () {
+    //     nextScreen(
+    //       context: context,
+    //       screen: const PeopleListInvoice(personType: PersonType.THIRD_PARTY),
+    //     );
+    //   },
+    // ),
   ];
 
   return [
     HomeSection(
-      title: "Log transactions",
+      title: "Money",
       buttons: logTransactions,
       textColor: const Color(0xFF0BBA74),
     ),
@@ -275,7 +369,7 @@ List<HomeSection> homeSections(BuildContext context) {
     //   textColor: const Color(0xFF9747FF),
     // ),
     HomeSection(
-      title: "Invoices",
+      title: "Accounting",
       buttons: invoices,
       textColor: const Color(0xFF9747FF),
     ),
