@@ -150,7 +150,6 @@ var schema = {
 enum Role {
   Student,
   Teacher,
-  Relative,
   Supplier,
   School_administrator,
   Parent
@@ -650,10 +649,8 @@ Role stringToRole(String value) {
   switch (value) {
     case "Student":
       return Role.Student;
-    case "Relative":
-      return Role.Relative;
     case "Parent":
-      return Role.Relative;
+      return Role.Parent;
     case "Teacher":
       return Role.Teacher;
     default:
@@ -669,7 +666,7 @@ String roleToString(Enum value) {
       return "School administrator";
     case Role.Teacher:
       return "Teacher";
-    case Role.Relative:
+    case Role.Parent:
       return "Parent";
     default:
       return "Student";

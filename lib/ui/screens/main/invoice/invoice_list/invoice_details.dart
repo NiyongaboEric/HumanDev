@@ -115,75 +115,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
 
   // Save as Draft
   void _saveAsDraft() {
-    logger.e(invoiceItems.length.toString());
-    if (invoiceItems.length == 1 &&
-        paymentSchedules.length == 1 &&
-        invoiceItems.first.description.toLowerCase() == "new item") {
-      GFToast.showToast(
-        "Please add at least one item",
-        context,
-        toastPosition: GFToastPosition.BOTTOM,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-        toastBorderRadius: 12.0,
-      );
-      return;
-    }
-    if (invoiceItems.first.grossPrice == 0 ||
-        invoiceItems.first.quantity == 0) {
-      logger.wtf(invoiceItems.first.grossPrice);
-      logger.wtf(invoiceItems.first.quantity);
-      GFToast.showToast(
-        "Please add at least one invoice item",
-        context,
-        toastPosition: GFToastPosition.BOTTOM,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-        toastBorderRadius: 12.0,
-      );
-      return;
-    }
-    if (paymentSchedules.first.dueAmount == 0) {
-      GFToast.showToast(
-        "Please add at least one payment schedule",
-        context,
-        toastPosition: GFToastPosition.BOTTOM,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-        toastBorderRadius: 12.0,
-      );
-      return;
-    }
-    if (paymentSchedules
-            .map((e) => e.dueAmount)
-            .reduce((value, element) => value + element) !=
-        invoiceItems
-            .map((e) => e.total)
-            .reduce((value, element) => value + element)) {
-      GFToast.showToast(
-        "Please ensure the sum of all payment schedules due amounts equals the sum of all invoice items total amounts",
-        context,
-        toastPosition: GFToastPosition.BOTTOM,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-        toastBorderRadius: 12.0,
-      );
-      return;
-    }
-    if (invoiceItems.map((e) => e.grossPrice).any((element) => element == 0) ||
-        paymentSchedules
-            .map((e) => e.dueAmount)
-            .any((element) => element == 0)) {
-      GFToast.showToast(
-        "Please ensure all items and payment schedules have a price and due amount respectively",
-        context,
-        toastPosition: GFToastPosition.BOTTOM,
-        toastDuration: 5,
-        backgroundColor: Colors.red,
-        toastBorderRadius: 12.0,
-      );
-      return;
-    }
     setState(() {
       saveDraft = true;
     });
@@ -559,7 +490,78 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               isLoading: saveDraft ? state.isLoading : false,
               key: const Key("save-as-draft"),
               onPressed: () {
-                logger.d({widget.persons?.first.toJson()});
+                logger.e(invoiceItems.length.toString());
+                if (invoiceItems.length == 1 &&
+                    paymentSchedules.length == 1 &&
+                    invoiceItems.first.description.toLowerCase() ==
+                        "new item") {
+                  GFToast.showToast(
+                    "Please add at least one item",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (invoiceItems.first.grossPrice! <= 0 ||
+                    invoiceItems.first.quantity <= 0) {
+                  logger.wtf(invoiceItems.first.grossPrice);
+                  logger.wtf(invoiceItems.first.quantity);
+                  GFToast.showToast(
+                    "Invalid item character",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (paymentSchedules.first.dueAmount == 0) {
+                  GFToast.showToast(
+                    "Please add at least one payment schedule",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (paymentSchedules
+                        .map((e) => e.dueAmount)
+                        .reduce((value, element) => value + element) !=
+                    invoiceItems
+                        .map((e) => e.total)
+                        .reduce((value, element) => value + element)) {
+                  GFToast.showToast(
+                    "Please ensure the sum of all payment schedules due amounts equals the sum of all invoice items total amounts",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (invoiceItems
+                        .map((e) => e.grossPrice)
+                        .any((element) => element == 0) ||
+                    paymentSchedules
+                        .map((e) => e.dueAmount)
+                        .any((element) => element == 0)) {
+                  GFToast.showToast(
+                    "Please ensure all items and payment schedules have a price and due amount respectively",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
                 Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(
@@ -598,6 +600,78 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               isLoading: !saveDraft ? state.isLoading : false,
               key: const Key("commit"),
               onPressed: () {
+                logger.e(invoiceItems.length.toString());
+                if (invoiceItems.length == 1 &&
+                    paymentSchedules.length == 1 &&
+                    invoiceItems.first.description.toLowerCase() ==
+                        "new item") {
+                  GFToast.showToast(
+                    "Please add at least one item",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (invoiceItems.first.grossPrice == 0 ||
+                    invoiceItems.first.quantity == 0) {
+                  logger.wtf(invoiceItems.first.grossPrice);
+                  logger.wtf(invoiceItems.first.quantity);
+                  GFToast.showToast(
+                    "Please add at least one invoice item",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (paymentSchedules.first.dueAmount == 0) {
+                  GFToast.showToast(
+                    "Please add at least one payment schedule",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (paymentSchedules
+                        .map((e) => e.dueAmount)
+                        .reduce((value, element) => value + element) !=
+                    invoiceItems
+                        .map((e) => e.total)
+                        .reduce((value, element) => value + element)) {
+                  GFToast.showToast(
+                    "Please ensure the sum of all payment schedules due amounts equals the sum of all invoice items total amounts",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                if (invoiceItems
+                        .map((e) => e.grossPrice)
+                        .any((element) => element == 0) ||
+                    paymentSchedules
+                        .map((e) => e.dueAmount)
+                        .any((element) => element == 0)) {
+                  GFToast.showToast(
+                    "Please ensure all items and payment schedules have a price and due amount respectively",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
                 Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(

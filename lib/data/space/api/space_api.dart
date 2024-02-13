@@ -30,10 +30,13 @@ class SpaceApiImpl implements SpaceApi {
           logger.d(response);
           throw Exception(response['message']);
         }
-        logger.d(response);
+        // logger.d(response);
         List responseData = response;
-        final List<Space> spaces =
-            responseData.map((data) => Space.fromJson(data)).toList();
+        logger.d(Space.fromJson(responseData.first).toJson());
+        final List<Space> spaces = responseData.map((data) {
+          // logger.f(data);
+          return Space.fromJson(data);
+        }).toList();
         return spaces;
       } else {
         // Handle non-200 status codes

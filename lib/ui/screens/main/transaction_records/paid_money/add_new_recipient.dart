@@ -57,13 +57,12 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   List<String> supplierOptions = ["Retail", "WholeSale"];
   List<Group> groupSpace = [];
   bool logout = false;
-  
+
   String currentSelectedGroupSpace = 'Student';
   bool formHasErrors = false;
   // String allGroups = 'Role';
   // Text textErrors = const Text('Remember to fill details person and company section');
 
-  
   @override
   void initState() {
     String? groupValue = prefs.getString("groups");
@@ -165,28 +164,10 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
   void _handlePersonStateChange(BuildContext context, PersonState state) {
     if (state.status == PersonStatus.success) {
       // Handle Success
-      if (isSelected[0]) {
         Navigator.pop(
           context,
-          RecipientModel(
-            id: state.personResponse?.id,
-            firstName: recipientFirstNameController.text,
-            lastName: recipientLastNameController.text,
-            role: role.isNotEmpty ? role : null,
-            isPerson: true,
-          ),
+          true
         );
-      } else if (isSelected[1]) {
-        Navigator.pop(
-          context,
-          RecipientModel(
-            id: state.personResponse?.id,
-            companyName: companyNameController.text,
-            supplier: supplier,
-            isPerson: false,
-          ),
-        );
-      }
     }
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
@@ -197,7 +178,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
     }
   }
 
-    // Handle Get User Data State Change
+  // Handle Get User Data State Change
   void _handleRefreshStateChange(BuildContext context, AuthState state) {
     // var prefs = sl<SharedPreferenceModule>();
     if (logout) {
@@ -256,7 +237,6 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
     }
   }
 
-
   // Person Form
   Widget _buildPersonForm(PersonState state) {
     return Form(
@@ -288,7 +268,7 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                 return null;
               }),
           const SizedBox(height: 20),
-          
+
           GroupDropdownMenu(
             groupSpace: groupSpace,
             handleChangeDropdownItem: updateRole,
@@ -322,13 +302,11 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                   onPressed: state.isLoading
                       ? null
                       : () {
-                          if (
-                              _personFormKey.currentState!.validate()
-                              && currentSelectedGroupSpace.isNotEmpty
-                            ) {
+                          if (_personFormKey.currentState!.validate() &&
+                              currentSelectedGroupSpace.isNotEmpty) {
                             formHasErrors = false;
                             _createPerson();
-                          }  else {
+                          } else {
                             setState(() {
                               formHasErrors = true;
                             });
@@ -371,7 +349,6 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
               }
               return null;
             },
-    
           ),
           const SizedBox(height: 20),
           // CustomDropDownMenu(
@@ -390,12 +367,12 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                   onPressed: state.isLoading
                       ? null
                       : () {
-                          if (_companyFormKey.currentState!.validate() 
-                          // &&
-                          //   currentSelectedGroupSpace.isNotEmpty &&
-                          //   recipientFirstNameController.text.isNotEmpty &&
-                          //   recipientLastNameController.text.isNotEmpty
-                           ) {
+                          if (_companyFormKey.currentState!.validate()
+                              // &&
+                              //   currentSelectedGroupSpace.isNotEmpty &&
+                              //   recipientFirstNameController.text.isNotEmpty &&
+                              //   recipientLastNameController.text.isNotEmpty
+                              ) {
                             formHasErrors = false;
                             _createPerson();
                           } else {
@@ -464,10 +441,13 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
             backgroundColor: Colors.red.shade100,
             centerTitle: true,
             actions: [
-              BlocListener<AuthBloc, AuthState>(listener: (context, state){
-                _handleRefreshStateChange(context, state);
-                _handleLogoutStateChange(context, state);              
-              },)
+              BlocListener<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  _handleRefreshStateChange(context, state);
+                  _handleLogoutStateChange(context, state);
+                },
+                child: Container(),
+              )
             ],
           ),
           body: ListView(

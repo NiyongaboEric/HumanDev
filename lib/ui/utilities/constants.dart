@@ -11,7 +11,7 @@ var preferences = sl<SharedPreferenceModule>();
 class Constants {
   static const String appName = "Seymo School";
 
-  // List of all alphabets in uppercase
+  // List of all alphabets in uppercase and others(numeric, special characters, etc.)
   static const List<String> alphabets = [
     'A',
     'B',
@@ -38,7 +38,8 @@ class Constants {
     'W',
     'X',
     'Y',
-    'Z'
+    'Z',
+    "#"
   ];
 
   // Payment Payment Methods

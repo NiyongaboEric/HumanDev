@@ -117,7 +117,7 @@ class _ParentsState extends State<Parents> {
         return allPeople;
       case 'Student':
         return students;
-      case 'Relative':
+      case 'Parent':
         return parents;
       case 'Teacher':
         return teachers;
@@ -139,7 +139,7 @@ class _ParentsState extends State<Parents> {
     currentSelectedGroup == Role.Student.name
         ? addStudentsSendSMS(person)
         : null;
-    currentSelectedGroup == Role.Relative.name
+    currentSelectedGroup == Role.Parent.name
         ? addParentsSendSMS(person)
         : null;
     currentSelectedGroup == Role.Teacher.name
@@ -155,14 +155,14 @@ class _ParentsState extends State<Parents> {
     /**
      * Student
      * Teacher
-     * Relative
+     * Parent
      * Supplier
      * School_administrator
      * Parent
      */
     if (currentSelectedGroup != allGroups && 
       currentSelectedGroup != Role.Student.name &&
-      currentSelectedGroup != Role.Relative.name &&
+      currentSelectedGroup != Role.Parent.name &&
       currentSelectedGroup != Role.Parent.name &&
       currentSelectedGroup != Role.Teacher.name &&
       currentSelectedGroup != Role.Supplier.name &&
@@ -180,7 +180,7 @@ class _ParentsState extends State<Parents> {
     currentSelectedGroup == Role.Student.name
         ? removeStudentsSendSMS(person)
         : null;
-    currentSelectedGroup == Role.Relative.name
+    currentSelectedGroup == Role.Parent.name
         ? removeParentsSendSMS(person)
         : null;
     currentSelectedGroup == Role.Teacher.name
@@ -196,14 +196,14 @@ class _ParentsState extends State<Parents> {
     /**
      * Student
      * Teacher
-     * Relative
+     * Parent
      * Supplier
      * School_administrator
      * Parent
     */
     if (currentSelectedGroup != allGroups && 
       currentSelectedGroup != Role.Student.name &&
-      currentSelectedGroup != Role.Relative.name &&
+      currentSelectedGroup != Role.Parent.name &&
       currentSelectedGroup != Role.Parent.name &&
       currentSelectedGroup != Role.Teacher.name &&
       currentSelectedGroup != Role.Supplier.name &&
@@ -308,7 +308,7 @@ class _ParentsState extends State<Parents> {
       if (currentSelectedGroupSpace == Role.Student.name) {
         searchList = students;
       }
-      if (currentSelectedGroupSpace == Role.Relative.name) {
+      if (currentSelectedGroupSpace == Role.Parent.name) {
         searchList = parents;
       }
       if (currentSelectedGroupSpace == Role.Teacher.name) {
@@ -328,7 +328,7 @@ class _ParentsState extends State<Parents> {
       if (
         currentSelectedGroupSpace != allGroups && 
         currentSelectedGroupSpace != Role.Student.name &&
-        currentSelectedGroupSpace != Role.Relative.name &&
+        currentSelectedGroupSpace != Role.Parent.name &&
         currentSelectedGroupSpace != Role.Teacher.name &&
         currentSelectedGroupSpace != Role.Parent.name &&
         currentSelectedGroupSpace != Role.Supplier.name &&
@@ -617,7 +617,7 @@ class _ParentsState extends State<Parents> {
     context.read<PersonBloc>().add(const GetAllPersonEvent());
   }
 
-  // Get Relative
+  // Get Parent
   getRelatives(String studentId) {
     context.read<PersonBloc>().add(GetRelativesEvent(studentId));
   }
@@ -650,7 +650,7 @@ class _ParentsState extends State<Parents> {
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
-        if (person.role == "Relative" || person.role == "Parent") {
+        if (person.role == "Parent" || person.role == "Parent") {
           if (!parents.contains(person)) {
             parents.add(person);
           }
@@ -716,7 +716,7 @@ class _ParentsState extends State<Parents> {
             randomNumbers.add((50 + Random().nextInt(150 - 50)));
           }
         }
-        else if (person.role == "Relative" || person.role == "Parent") {
+        else if (person.role == "Parent" || person.role == "Parent") {
           if (!parents.contains(person)) {
             parents.add(person);
           }
@@ -1271,7 +1271,7 @@ class _ParentsState extends State<Parents> {
           if (
             currentSelectedGroupSpace != allGroups && 
             currentSelectedGroupSpace != Role.Student.name &&
-            currentSelectedGroupSpace != Role.Relative.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
             currentSelectedGroupSpace != Role.Parent.name &&
             currentSelectedGroupSpace != Role.Teacher.name &&
             currentSelectedGroupSpace != Role.Supplier.name &&
@@ -1309,7 +1309,42 @@ class _ParentsState extends State<Parents> {
   List<AlphabetListViewItemGroup> _buildSearchResultAlphabetView() {
     return getResultsFirstCharacters(searchResults).map((alphabet) {
       searchResults.sort((a, b) => a.firstName.compareTo(b.firstName));
-      return _buildAlphabetListViewItemGroup(alphabet, searchResults);
+      // Here
+      bool isAlphabetMatch = false;
+      var result = searchResults.map((person) {
+      if (person.firstName.startsWith(alphabet)) {
+          if (
+            currentSelectedGroupSpace != allGroups && 
+            currentSelectedGroupSpace != Role.Student.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
+            currentSelectedGroupSpace != Role.Teacher.name &&
+            currentSelectedGroupSpace != Role.Supplier.name &&
+            currentSelectedGroupSpace != roleToString(Role.School_administrator)
+          ) {
+            if (person.groups!.isNotEmpty && person.groups?[0].name == currentSelectedGroupSpace) {
+              isAlphabetMatch = true;
+              return _buildPersonListTile(person);
+            }
+          } else {
+            isAlphabetMatch = true;
+            return _buildPersonListTile(person);
+          }
+      }
+      return const SizedBox();
+      }).toList();
+
+      if (isAlphabetMatch) {
+        return AlphabetListViewItemGroup(
+          tag: alphabet,
+          children: result,
+        );
+      } else {
+        return AlphabetListViewItemGroup(
+          tag: '',
+          children: [],
+        );
+      }
     }).toList();
   }
 
@@ -1321,7 +1356,7 @@ class _ParentsState extends State<Parents> {
           if (
             currentSelectedGroupSpace != allGroups && 
             currentSelectedGroupSpace != Role.Student.name &&
-            currentSelectedGroupSpace != Role.Relative.name &&
+            currentSelectedGroupSpace != Role.Parent.name &&
             currentSelectedGroupSpace != Role.Parent.name &&
             currentSelectedGroupSpace != Role.Teacher.name &&
             currentSelectedGroupSpace != Role.Supplier.name &&
@@ -1610,7 +1645,7 @@ class _ParentsState extends State<Parents> {
           : currentSelectedGroupSpace == Role.Student.name
               ? selectedStudentsSendSMS
                   .any((selectedAllPeople) => person.id == selectedAllPeople.id)
-              : currentSelectedGroupSpace == Role.Relative.name
+              : currentSelectedGroupSpace == Role.Parent.name
                   ? selectedParentsSendSMS.any(
                       (selectedAllPeople) => person.id == selectedAllPeople.id)
                   : currentSelectedGroupSpace == Role.Teacher.name

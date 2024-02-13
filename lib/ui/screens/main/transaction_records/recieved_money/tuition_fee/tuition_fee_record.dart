@@ -10,6 +10,7 @@ import 'package:seymo_pay_mobile_application/data/constants/logger.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
+import 'package:seymo_pay_mobile_application/data/space/model/space_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/bloc/journal_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/currency_selector.dart';
@@ -54,13 +55,13 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   AccountsModel selectedPaymentMethod = Constants.paymentMethods
       .where((element) => element.name.name == "CASH")
       .toList()[0];
-  String selectedCurrency = 'GHS';
+  String selectedCurrency = "";
   DateTime date = DateTime.now();
   bool sendSMS = true;
   // Toggle options
   List<bool> selectedOptions = <bool>[false, false, false];
 
-  List<String> currencies = ['GHS', 'USD', 'NGN', 'EUR'];
+  // List<String> currencies = ['GHS', 'USD', 'NGN', 'EUR'];
 
   // Update Payment Method
   void updatePaymentMethod(value) {
@@ -279,6 +280,9 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
         handleStateChange(context, state);
       },
       builder: (context, state) {
+        var space = preferences.getSpaces()[0];
+        logger.d(space.toJson());
+        selectedCurrency = space.currency ?? "GHS";
         return Scaffold(
           backgroundColor: Colors.green.shade50,
           appBar: AppBar(
@@ -292,7 +296,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
             centerTitle: true,
             actions: [
               BlocListener<AuthBloc, AuthState>(
-                listener: (context,state){
+                listener: (context, state) {
                   _handleRefreshStateChange(context, state);
                   _handleLogoutStateChange(context, state);
                 },
@@ -348,7 +352,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Old balance: GHS ",
+                      "Old balance: ${space.currency ?? "GHS"} ",
                       style: TextStyle(
                         // fontWeight: FontWeight.bold,
                         color: SecondaryColors.secondaryGreen.withOpacity(0.7),
@@ -442,7 +446,9 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   color: SecondaryColors.secondaryGreen.withOpacity(0.7),
                   options: [
                     "Payment method",
-                    ...Constants.paymentMethods.map((e) => e.name.name.split("_").join(" ")).toList(),
+                    ...Constants.paymentMethods
+                        .map((e) => e.name.name.split("_").join(" "))
+                        .toList(),
                   ],
                   value: selectedPaymentMethod.name.name,
                   onChanged: updatePaymentMethod,
