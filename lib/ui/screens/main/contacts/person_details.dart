@@ -161,8 +161,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       PersonModel parentData = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              const ParentListScreen(),
+          builder: (context) => const ParentListScreen(),
         ),
       );
       parentList.add(ParentObject(
@@ -319,8 +318,13 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   // Handle Person State Change
-  void _onPersonStateChange(PersonState state) {
-    if (state.status == PersonStatus.success && state.successMessage != null) {
+  void _onPersonStateChange(BuildContext context, PersonState state) async {
+    if (state.status == PersonStatus.updateSuccess ||
+        state.status == PersonStatus.createSuccess) {
+      logger.wtf(state.personResponse?.toJson());
+      state.personResponse != null
+          ? Navigator.pop(context, state.personResponse)
+          : null;
       GFToast.showToast(
         state.successMessage,
         context,
@@ -331,20 +335,8 @@ class _PersonDetailsState extends State<PersonDetails> {
         backgroundColor: Colors.green,
         toastBorderRadius: 12.0,
       );
-      if (state.personResponse != null) {
-        if (widget.contactVariant == ContactVariant.student) {
-          Navigator.pop(context, true);
-          // nextScreenAndRemoveAll(context: context, screen: HomePage());
-          // nextScreen(
-          //     context: context,
-          //     screen: StudentContactListScreen());
-        } else {
-          // nextScreenAndRemoveAll(context: context, screen: HomePage());
-          // nextScreen(context: context, screen: ContactListScreen());
-          Navigator.pop(context, true);
-        }
-      }
-    } else if (state.status == PersonStatus.error) {
+    } else if (state.status == PersonStatus.updateError ||
+        state.status == PersonStatus.createError) {
       if (state.errorMessage!.contains("Unauthorized")) {
       } else {
         GFToast.showToast(
@@ -408,6 +400,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       emailController3.text = widget.person!.email3 ?? "";
       selectGroupList.addAll(widget.person!.groups!);
       selectedGender = widget.person?.gender ?? "Gender";
+      selectedGender = widget.person?.gender ?? "Gender";
       parentList.addAll(widget.person!.childRelations!
           .where((element) => element.relation == "PARENT")
           .map((e) => ParentObject(
@@ -435,6 +428,8 @@ class _PersonDetailsState extends State<PersonDetails> {
         selectGroupList.add(studentGroup);
       }
     }
+    // Reset Person State
+    context.read<PersonBloc>().add(const ResetPersonStateEvent());
     super.initState();
   }
 
@@ -453,6 +448,8 @@ class _PersonDetailsState extends State<PersonDetails> {
     cityController.dispose();
     stateController.dispose();
     zipController.dispose();
+    notesController.dispose();
+
     super.dispose();
   }
 
@@ -477,7 +474,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         listener: (context, state) {
           // TODO: implement listener
           if (isCurrentPage && mounted) {
-            _onPersonStateChange(state);
+            _onPersonStateChange(context, state);
           }
         },
         builder: (context, state) {
@@ -614,41 +611,44 @@ class _PersonDetailsState extends State<PersonDetails> {
       backgroundColor: _primaryColorSelection(),
       title: _buildAppBarTitle(widget.screenFunction, widget.contactVariant),
       actions: [
-        BlocListener<AuthBloc, AuthState>(
-          listener: (context, state) {
-            _onRefreshStateChange(state);
-          },
-          child: Container(),
-        ),
+        // BlocListener<AuthBloc, AuthState>(
+        //   listener: (context, state) {
+        //     _onRefreshStateChange(state);
+        //   },
+        //   child: Container(),
+        // ),
         BlocBuilder<PersonBloc, PersonState>(
           builder: (context, state) {
             return IconButton(
               onPressed: state.isLoading
-                    ? null
-                    : () {
-                if (_formKey.currentState!.validate() &&
-                    (phoneNumber == null ||
-                        phoneNumber != null && phoneNumber!.isValidNumber()) &&
-                    (phoneNumber2 == null ||
-                        phoneNumber2 != null && phoneNumber!.isValidNumber()) &&
-                    (phoneNumber3 == null ||
-                        phoneNumber3 != null &&
-                            phoneNumber3!.isValidNumber()) &&
-                    selectGroupList.isNotEmpty) {
-                  saveData();
-                } else {
-                  GFToast.showToast(
-                    "Please fill all required fields",
-                    context,
-                    toastDuration: 5,
-                    toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-                        ? GFToastPosition.TOP
-                        : GFToastPosition.BOTTOM,
-                    backgroundColor: Colors.red,
-                    toastBorderRadius: 12.0,
-                  );
-                }
-              },
+                  ? null
+                  : () {
+                      if (_formKey.currentState!.validate() &&
+                          (phoneNumber == null ||
+                              phoneNumber != null &&
+                                  phoneNumber!.isValidNumber()) &&
+                          (phoneNumber2 == null ||
+                              phoneNumber2 != null &&
+                                  phoneNumber!.isValidNumber()) &&
+                          (phoneNumber3 == null ||
+                              phoneNumber3 != null &&
+                                  phoneNumber3!.isValidNumber()) &&
+                          selectGroupList.isNotEmpty) {
+                        saveData();
+                      } else {
+                        GFToast.showToast(
+                          "Please fill all required fields",
+                          context,
+                          toastDuration: 5,
+                          toastPosition:
+                              MediaQuery.of(context).viewInsets.bottom != 0
+                                  ? GFToastPosition.TOP
+                                  : GFToastPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          toastBorderRadius: 12.0,
+                        );
+                      }
+                    },
               icon: const Icon(Icons.check_rounded),
             );
           },
@@ -847,6 +847,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return CustomDropDownMenu(
       color: _secondaryColorSelection(),
       options: const [
+        "Gender",
         "Gender",
         ...Constants.genders,
       ],

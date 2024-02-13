@@ -1,9 +1,9 @@
 part of 'person_bloc.dart';
 
 // Person State Enum
-enum PersonStatus { initial, success, error }
+enum PersonStatus { initial, createSuccess, createError, updateSuccess, updateError, success, error }
 
-final class PersonState extends Equatable {
+final class PersonState {
   final bool isLoading;
   final List<PersonModel> persons;
   final List<PersonModel> relatives;
@@ -50,6 +50,6 @@ final class PersonState extends Equatable {
     );
   }
 
-  @override
-  List<Object> get props => [isLoading, persons];
+  // @override
+  // List<Object> get props => [isLoading, persons];
 }

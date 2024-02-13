@@ -38,3 +38,8 @@ final class GetAdminEvent extends PersonEvent {
 final class GetStudentsWithPendingPaymentsEvent extends PersonEvent {
   const GetStudentsWithPendingPaymentsEvent();
 }
+
+// Reset State Event
+final class ResetPersonStateEvent extends PersonEvent {
+  const ResetPersonStateEvent();
+}

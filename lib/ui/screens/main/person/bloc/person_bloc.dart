@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/person/api/person_api.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
+import '../../../../../data/constants/logger.dart';
 import '../../../../../data/person/model/person_request.dart';
 
 part 'person_event.dart';
@@ -20,6 +23,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
     on<UpdatePersonEvent>(_updatePerson);
     on<GetAdminEvent>(_getAdmin);
     on<GetStudentsWithPendingPaymentsEvent>(_getStudentsWithPendingPayments);
+    on<ResetPersonStateEvent>(_resetPersonState);
   }
 
   Future _getAllStudents(
@@ -117,7 +121,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       final person = await studentApiImpl.createPerson(event.personRequest);
       emit(state.copyWith(
         isLoading: false,
-        status: PersonStatus.success,
+        status: PersonStatus.createSuccess,
         personResponse: person,
         successMessage: "Person created successfully",
       ));
@@ -125,7 +129,7 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
       emit(state.copyWith(
         errorMessage: error.toString(),
         isLoading: false,
-        status: PersonStatus.error,
+        status: PersonStatus.createError,
       ));
     } finally {
       emit(state.copyWith(
@@ -145,29 +149,50 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      final persons = await studentApiImpl.updatePerson(event.persons);
-      Future.delayed(Duration(seconds: 2));
+      final person = await studentApiImpl.updatePerson(event.persons);
       emit(state.copyWith(
         isLoading: false,
-        status: PersonStatus.success,
-        personResponse: persons,
+        status: PersonStatus.updateSuccess,
+        personResponse: person,
         successMessage: "Person updated successfully",
       ));
+      logger.d(state.status);
+      // Delay for half a second
+      // await Future.delayed(const Duration(milliseconds: 500));
+      // Reset State
+      // emit(state.copyWith(
+      //   status: PersonStatus.initial,
+      //   errorMessage: null,
+      //   successMessage: null,
+      // ));
+      // logger.d(state.status);
+
+      logger.d(person.toJson());
     } catch (error) {
       emit(state.copyWith(
         errorMessage: error.toString(),
         isLoading: false,
-        status: PersonStatus.error,
+        status: PersonStatus.updateError,
       ));
-    } finally {
-      emit(state.copyWith(
-        status: PersonStatus.initial,
-        errorMessage: null,
-        successMessage: null,
-        isLoading: false,
-        personRequest: null,
-      ));
-    }
+      logger.e("An error occurred: $error");
+    } 
+    // finally {
+    //   emit(state.copyWith(
+    //     status: PersonStatus.initial,
+    //     errorMessage: null,
+    //     successMessage: null,
+    //   ));
+    //   logger.i(state.status);
+    // }
+    // finally {
+    //   emit(state.copyWith(
+    //     status: PersonStatus.initial,
+    //     errorMessage: null,
+    //     successMessage: null,
+    //     isLoading: false,
+    //     personRequest: null,
+    //   ));
+    // }
   }
 
   // Get Admin
@@ -225,5 +250,18 @@ class PersonBloc extends Bloc<PersonEvent, PersonState> {
         errorMessage: null,
       ));
     }
+  }
+
+  // Reset State
+  void _resetPersonState(
+    ResetPersonStateEvent event,
+    Emitter<PersonState> emit,
+  ) {
+    emit(state.copyWith(
+      status: PersonStatus.initial,
+      errorMessage: null,
+      successMessage: null,
+    ));
+    logger.i(state.status);
   }
 }
