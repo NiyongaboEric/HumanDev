@@ -250,10 +250,10 @@ class _InvoiceListState extends State<InvoiceList> {
                                       isVoid: element.isVoid,
                                       isPaid: element.isPaid,
                                       isDraft: element.isDraft,
-                                      paidAmount: element.paymentSchedules!
-                                          .map((e) => e.paidAmount)
-                                          .reduce(
-                                              (value, val) => value! + val!),
+                                      // paidAmount: element.paymentSchedules!
+                                      //     .map((e) => e.paidAmount)
+                                      //     .reduce(
+                                      //         (value, val) => value! + val!),
                                       invoiceNumber: element.number,
                                     ),
                                   ),
@@ -306,7 +306,6 @@ class _InvoiceListState extends State<InvoiceList> {
             nextScreen(
                 context: context,
                 screen: const PeopleListInvoice(
-                  personType: PersonType.STUDENT,
                 ));
           },
           icon: const Icon(
@@ -364,9 +363,4 @@ class _InvoiceListState extends State<InvoiceList> {
       children: toggleOptions,
     );
   }
-
-  // Invoice Card
-  // Widget _buildInvoiceCard() {
-  //   return InvoiceCard();
-  // }
 }

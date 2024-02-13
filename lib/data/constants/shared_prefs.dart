@@ -146,6 +146,14 @@ class SharedPreferenceModule {
     pref.setString("studentsWithPendingPayments", jsonString);
   }
 
+  // Save All Contacts to Shared Preferences
+  void saveAllContacts(List<PersonModel> contacts) {
+    final jsonString = jsonEncode(
+      contacts.map((contact) => contact.toJson()).toList(),
+    );
+    pref.setString("contacts", jsonString);
+  }
+
 ////
 // Retrieve From LocalStorage/SharedPreferences
 ////
@@ -292,6 +300,17 @@ class SharedPreferenceModule {
   // Get Students with pending payments
   List<PersonModel> getStudentsWithPendingPayments() {
     final jsonString = pref.getString("studentsWithPendingPayments");
+    if (jsonString != null) {
+      return (jsonDecode(jsonString) as List)
+          .map((e) => PersonModel.fromJson(e))
+          .toList();
+    }
+    return [];
+  }
+
+  // Get All Contacts
+  List<PersonModel> getAllContacts() {
+    final jsonString = pref.getString("contacts");
     if (jsonString != null) {
       return (jsonDecode(jsonString) as List)
           .map((e) => PersonModel.fromJson(e))

@@ -30,8 +30,7 @@ var sl = GetIt.instance;
 enum PersonType { STUDENT, THIRD_PARTY }
 
 class PeopleListInvoice extends StatefulWidget {
-  final PersonType personType;
-  const PeopleListInvoice({super.key, required this.personType});
+  const PeopleListInvoice({super.key,});
 
   @override
   State<PeopleListInvoice> createState() => _PeopleListInvoiceState();
@@ -50,7 +49,8 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   String errorMsg = "";
   late List<AlphabetListViewItemGroup> personAlphabetView;
   late List<AlphabetListViewItemGroup> searchResultAlphabetView;
-  List<Group> groups = [];
+  List<Group> roleGroups = [];
+  List<Group> nonRoleGroups = [];
   String selectedGroup = "All groups";
   bool isSelect = false;
 
@@ -95,6 +95,14 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
             .toList();
       });
     }
+  }
+
+  // Filter Selected Group Contacts
+  List<PersonModel> filterSelectedGroupContacts(String group, List<PersonModel> contacts) {
+    if (group == "All groups") {
+      return contacts;
+    }
+    return contacts.where((element) => element.role == group).toList();
   }
 
   // Logout
@@ -147,21 +155,16 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       preferences.setString("students", offlineStudentList);
     }
     if (state.status == PersonStatus.error) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Exception: Unauthorized") {
-        _refreshTokens();
-      } else {
-        GFToast.showToast(
-          state.errorMessage,
-          context,
-          toastBorderRadius: 8.0,
-          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-              ? GFToastPosition.TOP
-              : GFToastPosition.BOTTOM,
-          backgroundColor: CustomColor.red,
-          toastDuration: 6,
-        );
-      }
+      GFToast.showToast(
+        state.errorMessage,
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
+        backgroundColor: CustomColor.red,
+        toastDuration: 6,
+      );
     }
   }
 
@@ -170,30 +173,25 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     if (state.status == GroupStateStatus.success) {
       // Handle Success
       setState(() {
-        groups.clear();
+        roleGroups.clear();
+        nonRoleGroups.clear();
         if (state.groups == null) return;
         // groups.add("All groups");
-        for (var group in state.groups!) {
-          if (group.name!.toLowerCase() == "student") groups.add(group);
-        }
+        roleGroups.addAll(state.groups!.where((element) => element.isRole!));
+        nonRoleGroups.addAll(state.groups!.where((element) => !element.isRole!));
       });
     }
     if (state.status == GroupStateStatus.error) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Exception: Unauthorized") {
-        _refreshTokens();
-      } else {
-        GFToast.showToast(
-          state.errorMessage,
-          context,
-          toastBorderRadius: 8.0,
-          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-              ? GFToastPosition.TOP
-              : GFToastPosition.BOTTOM,
-          backgroundColor: CustomColor.red,
-          toastDuration: 6,
-        );
-      }
+      GFToast.showToast(
+        state.errorMessage,
+        context,
+        toastBorderRadius: 8.0,
+        toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+            ? GFToastPosition.TOP
+            : GFToastPosition.BOTTOM,
+        backgroundColor: CustomColor.red,
+        toastDuration: 6,
+      );
     }
   }
 
@@ -238,22 +236,14 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   }
 
   void updateSelectionState() {
-    if (isSelect) {
-      setState(() {
-        isSelect = false;
-      });
-      logger.d("isSelect: $isSelect");
-    } else {
-      setState(() {
-        isSelect = true;
-      });
-      logger.d("isSelect: $isSelect");
-    }
+    setState(() {
+      isSelect = !isSelect;
+      selectedPeople.clear();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    isSelect = widget.personType == PersonType.THIRD_PARTY;
 
     // Initialize the AlphabetListViewOptions
     final AlphabetListViewOptions options =
@@ -297,7 +287,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
             backgroundColor: BackgroundColors.bgPurple,
             appBar: _buildAppBar(),
             floatingActionButton:
-                widget.personType == PersonType.THIRD_PARTY || isSelect
+                isSelect
                     ? _buildFloatingActionButton()
                     : Container(),
             body: _buildBody(options, state),
@@ -306,23 +296,21 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       ),
     );
   }
-
-  List<String> getFirstCharacters(List<PersonModel> students) {
-    return students.map((student) {
-      return student.firstName.substring(0, 1);
+  // Get First Characters
+  List<String> getFirstCharacters(List<PersonModel> contacts) {
+    // Group filtered Contacts
+    var filteredContacts = filterSelectedGroupContacts(selectedGroup, contacts);
+    return filteredContacts.map((contact) {
+      return contact.firstName.substring(0, 1);
     }).toList();
   }
+
 
   List<AlphabetListViewItemGroup> buildAlphabetView(
       List<String> firstCharacters, List<PersonModel> students) {
     return firstCharacters.map(
       (alphabet) {
-        selectedGroupPeople() {
-          if (selectedGroup == groups[0]) {
-            // Students in initial group
-          }
-        }
-
+        // Include student name starting with number or special character
         students.sort((a, b) => a.firstName.compareTo(b.firstName));
         return AlphabetListViewItemGroup(
           tag: alphabet,
@@ -346,9 +334,9 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     return Column(
       children: [
         ListTile(
-          onTap: widget.personType == PersonType.STUDENT && !isSelect
+          onTap: !isSelect
               ? () {
-                  onPersonTileTap(person, widget.personType);
+                  onPersonTileTap(person);
                 }
               : null,
           title: Text(
@@ -388,8 +376,8 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
     );
   }
 
-  void onPersonTileTap(PersonModel student, PersonType personType) {
-    if (personType == PersonType.STUDENT) {
+  void onPersonTileTap(PersonModel student) {
+    if (!isSelect) {
       try {
         if (student.childRelations == null || student.childRelations!.isEmpty) {
           GFToast.showToast("No assigned relative", context,
@@ -409,12 +397,6 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       } catch (e) {
         logger.e(e);
       }
-    }
-    if (personType == PersonType.THIRD_PARTY) {
-      // nextScreen(
-      //   context: context,
-      //   screen: ,
-      // );
     }
   }
 
@@ -447,9 +429,6 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         padding: const EdgeInsets.all(12.0),
         child: InkWell(
           onTap: () {
-            // setState(() {
-            //   isSelect = !isSelect;
-            // });
             updateSelectionState();
           },
           child: Text(isSelect ? "Single selection" : "Batch creation",
@@ -527,9 +506,9 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         color: SecondaryColors.secondaryPurple,
       ),
       title: Text(
-        widget.personType == PersonType.STUDENT
-            ? "Select student"
-            : "Select recipients",
+        isSelect
+            ? "Select recipients"
+            : "Select recipient",
         style: TextStyle(
           color: SecondaryColors.secondaryPurple,
           fontSize: CustomFontSize.large,
@@ -552,14 +531,11 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   // Build PreferredSize Widget
   PreferredSizeWidget _buildPreferredSizeWidget(BuildContext context) {
     return PreferredSize(
-      preferredSize: widget.personType == PersonType.THIRD_PARTY
-          ? Size.fromHeight(160)
-          : Size.fromHeight(80),
+      preferredSize: Size.fromHeight(160),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           children: [
-            if (widget.personType == PersonType.THIRD_PARTY)
               _buildDropDownOptions(context),
             _buildSearchBar()
           ],
@@ -575,7 +551,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       options: [
         "Groups",
         "All groups",
-        ...groups.map((group) => group.name).toList(),
+        ...roleGroups.map((group) => group.name).toList(),
       ],
       value: selectedGroup,
       onChanged: _updateGroups,
@@ -661,7 +637,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         }
       },
       label: Text(
-        "Okay",
+        "Next",
         style: TextStyle(
           color: Colors.white,
           fontSize: CustomFontSize.medium,

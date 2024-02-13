@@ -29,7 +29,6 @@ class AccountApiImpl implements AccountApi {
       //   logger.d(response);
       //   throw Exception(response['message']);
       // }
-      logger.d(response);
       List responseData = response;
       final List<AccountsModel> accounts =
           responseData.map((data) => AccountsModel.fromJson(data)).toList();

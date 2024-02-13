@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/all_contacts/contact_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/students.dart';
 
+import '../../screens/main/contacts/student/student_list.dart';
 import '../../screens/main/person/parent.dart';
 import '../../screens/main/reminder/reminder_types/sms_reminder/sms_reminder.dart';
 import '../../screens/main/transaction_records/paid_money/payment.dart';
@@ -174,10 +176,7 @@ List<HomeSection> homeSections(BuildContext context) {
       onPressed: () {
         nextScreen(
           context: context,
-          screen: const Students(
-            select: false,
-            option: StudentOption.studentContact,
-          ),
+          screen: const StudentContactListScreen(),
         );
       },
     ),
@@ -199,9 +198,7 @@ List<HomeSection> homeSections(BuildContext context) {
       onPressed: () {
         nextScreen(
             context: context,
-            screen: const Parents(
-              parentSection: ParentSection.contacts,
-            ));
+            screen: const ContactListScreen());
       },
     ),
     HomeButton(
@@ -290,7 +287,12 @@ List<HomeSection> homeSections(BuildContext context) {
           color: Colors.white,
         ),
       ),
-      onPressed: () {},
+      onPressed: () {
+        nextScreen(
+          context: context,
+          screen: const PeopleListInvoice(),
+        );
+      },
     ),
     HomeButton(
       title: "Transactions",

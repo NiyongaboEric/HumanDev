@@ -44,7 +44,7 @@ class _RecipientState extends State<Recipient> {
   var prefsModule = sl<SharedPreferenceModule>();
   List<RecipientModel> recipientOptions = [];
   List<RecipientModel> selectedRecipients = [];
-  List<RecipientModel> searchResults = [];
+  List<PersonModel> searchResults = [];
   List<RecipientModel> parents = [];
   List<PersonModel> allPeople = [];
   List<PersonModel> searchResultsAllPeople = [];
@@ -58,17 +58,17 @@ class _RecipientState extends State<Recipient> {
   String selectedOption = 'Option 1'; // Initialize the selected option
 
   // Toggle Forms
-  void toggleForm(int index) {
-    setState(() {
-      for (var i = 0; i < isSelected.length; i++) {
-        if (i == index) {
-          isSelected[i] = true;
-        } else {
-          isSelected[i] = false;
-        }
-      }
-    });
-  }
+  // void toggleForm(int index) {
+  //   setState(() {
+  //     for (var i = 0; i < isSelected.length; i++) {
+  //       if (i == index) {
+  //         isSelected[i] = true;
+  //       } else {
+  //         isSelected[i] = false;
+  //       }
+  //     }
+  //   });
+  // }
 
   // Get All Parents
   void _getParents() {
@@ -114,22 +114,21 @@ class _RecipientState extends State<Recipient> {
         showResults = false;
       });
     } else {
+      setState(() {
         showResults = true;
-        searchResults = recipientOptions
-            .toSet()
-            .toList()
+        searchResults = allPeople
             .where(
               (recipient) =>
-                  (recipient.companyName ?? "").toLowerCase().contains(query) ||
-                  (recipient.firstName ?? "").toLowerCase().contains(query) ||
-                  (recipient.lastName ?? "").toLowerCase().contains(query),
+                  (recipient.organizationName ?? "").toLowerCase().contains(query.toLowerCase()) ||
+                  (recipient.firstName ?? "").toLowerCase().contains(query.toLowerCase()) ||
+                  (recipient.lastName1 ?? "").toLowerCase().contains(query.toLowerCase()),
             )
             .toList();
-        searchResults.addAll(parents.toSet().toList().where((recipient) =>
-            (recipient.firstName ?? "").toLowerCase().contains(query) ||
-            (recipient.lastName ?? "").toLowerCase().contains(query)));
-      setState(() {
+        // searchResults.addAll(parents.toSet().toList().where((recipient) =>
+        //     (recipient.firstName ?? "").toLowerCase().contains(query.toLowerCase()) ||
+        //     (recipient.lastName ?? "").toLowerCase().contains(query.toLowerCase())));
       });
+      logger.i(recipientOptions);
     }
   }
 
@@ -294,30 +293,29 @@ class _RecipientState extends State<Recipient> {
   }
 
   addRecipient() async {
-    RecipientModel? recipient = await Navigator.push(
+    bool? refresh = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AddNewRecipient(),
       ),
     );
-    if (recipient != null) {
-      setState(() {
-        recipientOptions.add(recipient);
-      });
+    if (refresh != null && refresh) {
+      await Future.delayed(const Duration(seconds: 1));
+      _getParents();
     }
   }
 
   navigate(
     BuildContext context,
     JournalState state,
-    RecipientModel recipient,
+    PersonModel recipient,
   ) {
     var paymentRequest = JournalModel(
         recipientFirstName: recipient.firstName,
-        recipientLastName: recipient.lastName,
-        companyName: recipient.companyName,
+        recipientLastName: recipient.lastName1,
+        companyName: recipient.organizationName,
         recipientRole: recipient.role,
-        supplier: recipient.supplier,
+        // supplier: recipient.supplier,
         tags: state.journalData?.tags,
         amount: state.journalData?.amount,
         accountantId: state.journalData?.accountantId,
@@ -345,9 +343,6 @@ class _RecipientState extends State<Recipient> {
 
   @override
   Widget build(BuildContext context) {
-    searchController.addListener(() {
-      search(searchController.text);
-    });
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
         // TODO: implement listener
@@ -434,10 +429,10 @@ class _RecipientState extends State<Recipient> {
                                   onTap: () {
                                     navigate(context, state, recipient);
                                   },
-                                  leading: iconSelector(recipient.isPerson),
+                                  leading: iconSelector(!recipient.isLegal),
                                   title: Text(
-                                    recipient.companyName ??
-                                        "${recipient.firstName} ${recipient.lastName} (${recipient.role?.toLowerCase()})",
+                                    recipient.organizationName ??
+                                        "${recipient.firstName} ${recipient.lastName1} (${recipient.role?.toLowerCase() ?? "--"})",
                                     style: TextStyle(
                                       fontSize: CustomFontSize.large,
                                       color: SecondaryColors.secondaryRed,
@@ -489,16 +484,15 @@ class _RecipientState extends State<Recipient> {
                       child: ListView(
                         shrinkWrap: true,
                         children: [
-                          ...recipientOptions.map((recipient) {
-                            if (recipient.id != null) {
-                              return ListTile(
+                          // arrange in alphabetical order first then numbers
+                          ...allPeople.map((recipient) => ListTile(
                                 onTap: () {
                                   navigate(context, state, recipient);
                                 },
-                                leading: iconSelector(recipient.isPerson),
+                                leading: iconSelector(!recipient.isLegal),
                                 title: Text(
-                                  recipient.companyName ??
-                                      "${recipient.firstName} ${recipient.lastName}",
+                                  recipient.organizationName ??
+                                      "${recipient.firstName} ${recipient.lastName1}",
                                   style: TextStyle(
                                     fontSize: CustomFontSize.large,
                                     color: SecondaryColors.secondaryRed,
@@ -511,41 +505,38 @@ class _RecipientState extends State<Recipient> {
                                 //       });
                                 //     },
                                 //     icon: Icon(Icons.clear)),
-                              );
-                            } else {
-                              return Container();
-                            }
-                          }),
-                          ...allPeople.map((recipient) {
-                            return ListTile(
-                              onTap: () {
-                                navigate(
-                                    context,
-                                    state,
-                                    RecipientModel(
-                                      id: recipient.id,
-                                      firstName: recipient.firstName,
-                                      lastName: recipient.lastName1,
-                                      isPerson: true,
-                                    ));
-                              },
-                              leading: iconSelector(true),
-                              title: Text(
-                                "${recipient.firstName} ${recipient.lastName1}",
-                                style: TextStyle(
-                                  fontSize: CustomFontSize.large,
-                                  color: SecondaryColors.secondaryRed,
-                                ),
-                              ),
-                              // trailing: IconButton(
-                              //     onPressed: () {
-                              //       setState(() {
-                              //         recipientOptions.remove(recipient);
-                              //       });
-                              //     },
-                              //     icon: Icon(Icons.clear)),
-                            );
-                          }),
+                              )
+                          ),
+                          // ...allPeople.map((recipient) {
+                          //   return ListTile(
+                          //     onTap: () {
+                          //       navigate(
+                          //           context,
+                          //           state,
+                          //           RecipientModel(
+                          //             id: recipient.id,
+                          //             firstName: recipient.firstName,
+                          //             lastName: recipient.lastName1,
+                          //             isPerson: true,
+                          //           ));
+                          //     },
+                          //     leading: iconSelector(true),
+                          //     title: Text(
+                          //       "${recipient.firstName} ${recipient.lastName1}",
+                          //       style: TextStyle(
+                          //         fontSize: CustomFontSize.large,
+                          //         color: SecondaryColors.secondaryRed,
+                          //       ),
+                          //     ),
+                          //     // trailing: IconButton(
+                          //     //     onPressed: () {
+                          //     //       setState(() {
+                          //     //         recipientOptions.remove(recipient);
+                          //     //       });
+                          //     //     },
+                          //     //     icon: Icon(Icons.clear)),
+                          //   );
+                          // }),
                           ListTile(
                             onTap: addRecipient,
                             leading: Icon(

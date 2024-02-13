@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,7 +12,10 @@ import 'package:seymo_pay_mobile_application/data/person/model/person_request.da
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/all_contacts/contact_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/groups.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/student/parent_list.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/contacts/student/student_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/parent.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/students.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
@@ -157,7 +162,7 @@ class _PersonDetailsState extends State<PersonDetails> {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              const Parents(parentSection: ParentSection.students),
+              const ParentListScreen(),
         ),
       );
       parentList.add(ParentObject(
@@ -184,7 +189,7 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   // Gender option and change handler
-  String selectedGender = "Gender*";
+  String selectedGender = "Gender";
   void _changeGender(gender) {
     setState(() {
       selectedGender = gender;
@@ -199,7 +204,7 @@ class _PersonDetailsState extends State<PersonDetails> {
               firstName: firstNameController.text,
               middleName: middleNameController.text,
               lastName1: lastNameController.text,
-              gender: selectedGender == "Gender*" ? null : selectedGender,
+              gender: selectedGender == "Gender" ? null : selectedGender,
               phoneNumber1: phoneNumber?.completeNumber,
               phoneNumber2: phoneNumber2?.completeNumber,
               phoneNumber3: phoneNumber3?.completeNumber,
@@ -222,7 +227,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                   firstName: firstNameController.text,
                   middleName: middleNameController.text,
                   lastName1: lastNameController.text,
-                  gender: selectedGender != "Gender*" ? selectedGender : null,
+                  gender: selectedGender != "Gender" ? selectedGender : null,
                   phoneNumber1: phoneNumber?.completeNumber ??
                       widget.person!.phoneNumber1,
                   phoneNumber2: phoneNumber2?.completeNumber ??
@@ -327,13 +332,16 @@ class _PersonDetailsState extends State<PersonDetails> {
         toastBorderRadius: 12.0,
       );
       if (state.personResponse != null) {
-        // Navigator.pop(context, true);
         if (widget.contactVariant == ContactVariant.student) {
-          nextScreenAndRemoveAll(context: context, screen: HomePage());
-          nextScreen(
-              context: context,
-              screen: Students(
-                  select: false, option: StudentOption.studentContact));
+          Navigator.pop(context, true);
+          // nextScreenAndRemoveAll(context: context, screen: HomePage());
+          // nextScreen(
+          //     context: context,
+          //     screen: StudentContactListScreen());
+        } else {
+          // nextScreenAndRemoveAll(context: context, screen: HomePage());
+          // nextScreen(context: context, screen: ContactListScreen());
+          Navigator.pop(context, true);
         }
       }
     } else if (state.status == PersonStatus.error) {
@@ -399,7 +407,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       emailController2.text = widget.person!.email2 ?? "";
       emailController3.text = widget.person!.email3 ?? "";
       selectGroupList.addAll(widget.person!.groups!);
-      selectedGender = widget.person?.gender ?? "Gender*";
+      selectedGender = widget.person?.gender ?? "Gender";
       parentList.addAll(widget.person!.childRelations!
           .where((element) => element.relation == "PARENT")
           .map((e) => ParentObject(
@@ -568,7 +576,9 @@ class _PersonDetailsState extends State<PersonDetails> {
                       collapse: collapseAddress),
                   _buildPersonRelativeSection(),
                   _buildSection(
-                    widget.contactVariant == ContactVariant.student ? "Groups" : "Groups*",
+                    widget.contactVariant == ContactVariant.student
+                        ? "Groups"
+                        : "Groups*",
                     Icons.groups_2_rounded,
                     [
                       _buildGroupChip(),
@@ -610,31 +620,38 @@ class _PersonDetailsState extends State<PersonDetails> {
           },
           child: Container(),
         ),
-        IconButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate() &&
-                (phoneNumber == null ||
-                    phoneNumber != null && phoneNumber!.isValidNumber()) &&
-                (phoneNumber2 == null ||
-                    phoneNumber2 != null && phoneNumber!.isValidNumber()) &&
-                (phoneNumber3 == null ||
-                    phoneNumber3 != null && phoneNumber3!.isValidNumber()) &&
-                selectGroupList.isNotEmpty) {
-              saveData();
-            } else {
-              GFToast.showToast(
-                "Please fill all required fields",
-                context,
-                toastDuration: 5,
-                toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-                    ? GFToastPosition.TOP
-                    : GFToastPosition.BOTTOM,
-                backgroundColor: Colors.red,
-                toastBorderRadius: 12.0,
-              );
-            }
+        BlocBuilder<PersonBloc, PersonState>(
+          builder: (context, state) {
+            return IconButton(
+              onPressed: state.isLoading
+                    ? null
+                    : () {
+                if (_formKey.currentState!.validate() &&
+                    (phoneNumber == null ||
+                        phoneNumber != null && phoneNumber!.isValidNumber()) &&
+                    (phoneNumber2 == null ||
+                        phoneNumber2 != null && phoneNumber!.isValidNumber()) &&
+                    (phoneNumber3 == null ||
+                        phoneNumber3 != null &&
+                            phoneNumber3!.isValidNumber()) &&
+                    selectGroupList.isNotEmpty) {
+                  saveData();
+                } else {
+                  GFToast.showToast(
+                    "Please fill all required fields",
+                    context,
+                    toastDuration: 5,
+                    toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+                        ? GFToastPosition.TOP
+                        : GFToastPosition.BOTTOM,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                }
+              },
+              icon: const Icon(Icons.check_rounded),
+            );
           },
-          icon: const Icon(Icons.check_rounded),
         ),
       ],
     );
@@ -830,7 +847,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     return CustomDropDownMenu(
       color: _secondaryColorSelection(),
       options: const [
-        "Gender*",
+        "Gender",
         ...Constants.genders,
       ],
       value: selectedGender,

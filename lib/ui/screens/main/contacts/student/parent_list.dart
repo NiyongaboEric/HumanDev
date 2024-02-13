@@ -22,14 +22,14 @@ import '../person_details.dart';
 
 var sl = GetIt.instance;
 
-class ContactListScreen extends StatefulWidget {
-  const ContactListScreen({super.key});
+class ParentListScreen extends StatefulWidget {
+  const ParentListScreen({super.key});
 
   @override
-  State<ContactListScreen> createState() => _ContactListScreenState();
+  State<ParentListScreen> createState() => _ParentListScreenState();
 }
 
-class _ContactListScreenState extends State<ContactListScreen> {
+class _ParentListScreenState extends State<ParentListScreen> {
   bool logout = false;
   TextEditingController searchController = TextEditingController();
   ConnectivityResult _connectivityResult = ConnectivityResult.none;
@@ -77,14 +77,6 @@ class _ContactListScreenState extends State<ContactListScreen> {
     });
   }
 
-  // Filter Selected Group Contacts
-  List<PersonModel> filterSelectedGroupContacts(String group, List<PersonModel> contacts) {
-    if (group == "All groups") {
-      return contacts;
-    }
-    return contacts.where((element) => element.role == group).toList();
-  }
-
   // Get All Contacts
   void _getAllContacts() {
     context.read<PersonBloc>().add(const GetAllPersonEvent());
@@ -103,7 +95,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
       // Add the contact to the list
       contacts.addAll(
         state.persons.where(
-          (element) => element.role != Role.Student.name,
+          (element) => element.role == Role.Parent.name,
         ),
       );
       // Save the contacts to the shared preferences
@@ -137,7 +129,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
       groups.clear();
       // Add the groups to the list
       groups.addAll(state.groups!
-          .where((element) => element.isRole! && element.name != "Student")
+          .where((element) => element.isRole!)
           .map((e) => e.name!));
       // Save the groups to the shared preferences
       prefs.saveGroups(state.groups!);
@@ -161,11 +153,11 @@ class _ContactListScreenState extends State<ContactListScreen> {
     // TODO: implement initState
     // Get All contacts from Shared Preferences
     var contactsFromSharedPrefs = prefs.getAllContacts();
-    contacts.addAll(contactsFromSharedPrefs);
+    contacts.addAll(contactsFromSharedPrefs.where((element) => element.role != Role.Parent.name));
 
     // Get All Groups from Shared Preferences
     var groupsFromSharedPrefs = prefs.getGroups();
-    groups.addAll(groupsFromSharedPrefs.where((element) => element.isRole! && element.name != "Student").map((e) => e.name!));
+    groups.addAll(groupsFromSharedPrefs.where((element) => element.isRole!).map((e) => e.name!));
 
     _getAllContacts();
     _getAllGroups();
@@ -218,7 +210,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
           _handlePersonStateChange(context, state);
         },
         builder: (context, state) => Scaffold(
-          backgroundColor: Colors.green.shade50,
+          backgroundColor: Colors.pink.shade50,
           appBar: _buildAppBar(options),
           body: _buildBody(options, state),
         ),
@@ -228,9 +220,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
 
   // Get First Characters
   List<String> getFirstCharacters(List<PersonModel> contacts) {
-    // Group filtered Contacts
-    var filteredContacts = filterSelectedGroupContacts(selectedGroup, contacts);
-    return filteredContacts.map((contact) {
+    return contacts.map((contact) {
       return contact.firstName.substring(0, 1);
     }).toList();
   }
@@ -290,11 +280,11 @@ class _ContactListScreenState extends State<ContactListScreen> {
             ].join(" ").trim(),
             style: TextStyle(
                 fontSize: CustomFontSize.small,
-                color: SecondaryColors.secondaryLightGreen),
+                color: SecondaryColors.secondaryPink),
           ),
         ),
         Divider(
-          color: SecondaryColors.secondaryLightGreen.withOpacity(0.2),
+          color: SecondaryColors.secondaryPink.withOpacity(0.2),
         ),
       ],
     );
@@ -302,21 +292,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
 
   // On Contact Tile Tap
   void onStudentTileTap(PersonModel contact) async {
-    bool? refresh = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PersonDetails(
-          screenFunction: ScreenFunction.edit,
-          contactVariant: ContactVariant.others,
-          person: contact,
-        ),
-      ),
-    );
-    await Future.delayed(const Duration(seconds: 1));
-    logger.d("Update Refresh: $refresh");
-    if (refresh != null && refresh) {
-      _getAllContacts();
-    }
+    Navigator.pop(context, contact);
   }
 
   // Update Search Results
@@ -361,13 +337,13 @@ class _ContactListScreenState extends State<ContactListScreen> {
             height: 40,
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: Colors.green.shade200,
+              color: Colors.pink.shade200,
               borderRadius: BorderRadius.circular(100),
             ),
             child: Center(
               child: Text(symbol,
                   style: TextStyle(
-                      color: SecondaryColors.secondaryLightGreen,
+                      color: SecondaryColors.secondaryPink,
                       fontSize: CustomFontSize.small)),
             ),
           ),
@@ -379,7 +355,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
   // Build Scrollbar Options
   ScrollbarOptions _buildScrollbarOptions() {
     return ScrollbarOptions(
-      backgroundColor: Colors.green.shade50,
+      backgroundColor: Colors.pink.shade50,
     );
   }
 
@@ -398,14 +374,14 @@ class _ContactListScreenState extends State<ContactListScreen> {
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.6),
+          color: Colors.pink.withOpacity(0.6),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: Text(
             symbol,
             style: TextStyle(
-              color: SecondaryColors.secondaryLightGreen,
+              color: SecondaryColors.secondaryPink,
               fontSize: 63,
               fontWeight: FontWeight.bold,
             ),
@@ -418,12 +394,12 @@ class _ContactListScreenState extends State<ContactListScreen> {
   // Build App Bar
   AppBar _buildAppBar(AlphabetListViewOptions options) {
     return AppBar(
-      iconTheme: IconThemeData(color: SecondaryColors.secondaryLightGreen),
-      backgroundColor: Colors.green.shade100,
+      iconTheme: IconThemeData(color: SecondaryColors.secondaryPink),
+      backgroundColor: Colors.pink.shade100,
       title: Text(
-        "Manage contacts",
+        "Select parent",
         style: TextStyle(
-          color: SecondaryColors.secondaryLightGreen,
+          color: SecondaryColors.secondaryPink,
         ),
       ),
       centerTitle: true,
@@ -465,7 +441,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
           ),
         ),
       ],
-      bottom: _buildPreferredSize(),
+      // bottom: _buildPreferredSize(),
     );
   }
 
@@ -479,7 +455,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
           children: [
             // Contact Groups
             CustomDropDownMenu(
-              color: SecondaryColors.secondaryLightGreen,
+              color: SecondaryColors.secondaryPink,
               options: [
                 "Select group",
                 "All groups",
@@ -491,9 +467,9 @@ class _ContactListScreenState extends State<ContactListScreen> {
             CustomTextField(
               prefixIcon: Icon(
                 Icons.search_rounded,
-                color: SecondaryColors.secondaryLightGreen,
+                color: SecondaryColors.secondaryPink,
               ),
-              color: SecondaryColors.secondaryLightGreen,
+              color: SecondaryColors.secondaryPink,
               hintText: "Search...",
               controller: searchController,
               onChanged: search,
@@ -553,40 +529,5 @@ class _ContactListScreenState extends State<ContactListScreen> {
                         items: contactAlphabetView,
                       );
   }
-
-  // Build Bottom Navigation Bar
-  Widget _buildBottomNavigationBar(bool isSelect) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Divider(
-          color: CustomColor.grey.withOpacity(0.5),
-        ),
-        Container(
-          padding: const EdgeInsets.all(12),
-          color: Colors.transparent,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildBottomNavigationBarText(),
-              // _buildFloatingActionButton(isSelect),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Build Bottom Navigation Bar Text
-  Widget _buildBottomNavigationBarText() {
-    return Text(
-      "Select contacts",
-      style: TextStyle(
-        color: SecondaryColors.secondaryLightGreen,
-        fontSize: CustomFontSize.medium,
-      ),
-    );
-  }
-
   //
 }

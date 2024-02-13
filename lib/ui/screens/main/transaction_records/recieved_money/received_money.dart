@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/recieved_money/tuition_fee/tuition_fee_student_list.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
@@ -28,10 +29,7 @@ class _ReceivedMoneyState extends State<ReceivedMoney> {
         onPressed: () {
           nextScreen(
               context: context,
-              screen: const Students(
-                select: false,
-                option: StudentOption.tuition,
-              ));
+              screen: const TuitionFeeStudentListScreen());
         },
       ),
       HomeButton(

@@ -102,6 +102,14 @@ class _StudentsState extends State<Students> {
     });
   }
 
+    // Filter Selected Group Students
+  List<PersonModel> filterSelectedGroupContacts(String group) {
+    if (group == "All groups") {
+      return students;
+    }
+    return students.where((element) => element.role == group).toList();
+  }
+
   // Refresh Tokens
   void _refreshTokens() {
     var prefs = sl<SharedPreferenceModule>();
