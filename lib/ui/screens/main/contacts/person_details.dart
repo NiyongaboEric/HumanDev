@@ -848,7 +848,6 @@ class _PersonDetailsState extends State<PersonDetails> {
       color: _secondaryColorSelection(),
       options: const [
         "Gender",
-        "Gender",
         ...Constants.genders,
       ],
       value: selectedGender,
