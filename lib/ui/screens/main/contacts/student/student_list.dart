@@ -77,7 +77,8 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
   }
 
   // Filter Selected Group Contacts
-  List<PersonModel> filterSelectedGroupContacts(String group, List<PersonModel> contacts) {
+  List<PersonModel> filterSelectedGroupContacts(
+      String group, List<PersonModel> contacts) {
     if (group == "All groups") {
       return contacts;
     }
@@ -92,6 +93,35 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
   // Get All Groups
   void _getAllGroups() {
     context.read<GroupsBloc>().add(const GroupsEventGetGroups());
+  }
+
+  // Create or Update Student
+  void createOrUpdateStudent({
+    required ScreenFunction screenFunction,
+    PersonModel? student,
+  }) async {
+    PersonModel? studentData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PersonDetails(
+          screenFunction: screenFunction,
+          contactVariant: ContactVariant.student,
+          person: student,
+        ),
+      ),
+    );
+    if (studentData != null) {
+      int idx = students.indexWhere((element) => element.id == studentData.id);
+      setState(() {
+        // idx == -1 ? students.add(studentData) : students[idx] = studentData;
+        if (idx == -1) {
+          students.add(studentData);
+        } else {
+          students[idx] = studentData;
+        }
+      });
+      prefs.saveStudents(students);
+    }
   }
 
   // Handle Person State Change
@@ -300,23 +330,8 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
   }
 
   // On Student Tile Tap
-  void onStudentTileTap(PersonModel student) async {
-    bool? refresh = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PersonDetails(
-          screenFunction: ScreenFunction.edit,
-          contactVariant: ContactVariant.student,
-          person: student,
-        ),
-      ),
-    );
-    await Future.delayed(const Duration(seconds: 1));
-    if (refresh != null && refresh) {
-      logger.d("Update Refresh: $refresh");
-      _getAllStudents();
-    }
-  }
+  void onStudentTileTap(PersonModel student) => createOrUpdateStudent(
+      screenFunction: ScreenFunction.edit, student: student);
 
   // Update Search Results
   void updateSearchResults() {
@@ -442,22 +457,8 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
         //   child: Container(),
         // ),
         IconButton(
-          onPressed: () async {
-            var refresh = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PersonDetails(
-                  screenFunction: ScreenFunction.add,
-                  contactVariant: ContactVariant.student,
-                ),
-              ),
-            );
-            await Future.delayed(const Duration(seconds: 2));
-            logger.d("Create Refresh: $refresh");
-            if (refresh != null && refresh) {
-              _getAllStudents();
-            }
-          },
+          onPressed: () =>
+              createOrUpdateStudent(screenFunction: ScreenFunction.add),
           icon: const Icon(
             Icons.add_rounded,
             size: 28,

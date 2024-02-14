@@ -78,7 +78,8 @@ class _ContactListScreenState extends State<ContactListScreen> {
   }
 
   // Filter Selected Group Contacts
-  List<PersonModel> filterSelectedGroupContacts(String group, List<PersonModel> contacts) {
+  List<PersonModel> filterSelectedGroupContacts(
+      String group, List<PersonModel> contacts) {
     if (group == "All groups") {
       return contacts;
     }
@@ -165,7 +166,9 @@ class _ContactListScreenState extends State<ContactListScreen> {
 
     // Get All Groups from Shared Preferences
     var groupsFromSharedPrefs = prefs.getGroups();
-    groups.addAll(groupsFromSharedPrefs.where((element) => element.isRole! && element.name != "Student").map((e) => e.name!));
+    groups.addAll(groupsFromSharedPrefs
+        .where((element) => element.isRole! && element.name != "Student")
+        .map((e) => e.name!));
 
     _getAllContacts();
     _getAllGroups();
@@ -302,7 +305,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
 
   // On Contact Tile Tap
   void onStudentTileTap(PersonModel contact) async {
-    bool? refresh = await Navigator.push(
+    PersonModel? contactData = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PersonDetails(
@@ -312,11 +315,21 @@ class _ContactListScreenState extends State<ContactListScreen> {
         ),
       ),
     );
-    await Future.delayed(const Duration(seconds: 1));
-    logger.d("Update Refresh: $refresh");
-    if (refresh != null && refresh) {
-      _getAllContacts();
+    if (contactData != null) {
+      setState(() {
+        contacts[contacts.indexWhere(
+            (element) => element.id == contactData.id)] = contactData;
+      });
+      prefs.saveAllContacts(contacts);
     }
+    // setState(() {
+    //   if (contactData != null) {
+    //     contacts[contacts.indexWhere(
+    //         (element) => element.id == contactData.id)] = contactData;
+    //     // Save contacts to shared preferences
+    //     prefs.saveAllContacts(contacts);
+    //   }
+    // });
   }
 
   // Update Search Results
@@ -457,6 +470,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
             logger.d("Create Refresh: $refresh");
             if (refresh != null && refresh) {
               _getAllContacts();
+              _getAllContacts();
             }
           },
           icon: const Icon(
@@ -587,6 +601,8 @@ class _ContactListScreenState extends State<ContactListScreen> {
       ),
     );
   }
+
+  //
 
   //
 }
