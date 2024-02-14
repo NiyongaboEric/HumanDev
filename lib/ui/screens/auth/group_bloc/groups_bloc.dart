@@ -24,6 +24,8 @@ class GroupsBloc extends Bloc<GroupsEvent, GroupsState> {
     emit(state.copyWith(isLoading: true));
     try {
       final groups = await groupApiImpl.getGroups();
+      // Sort groups by isRole and then by name
+      groups.sort((a, b) => a.compareTo(b));
       sharedPreferenceModule.saveGroups(groups);
       logger.i("Status: ${state.isLoading}");
       emit(state.copyWith(

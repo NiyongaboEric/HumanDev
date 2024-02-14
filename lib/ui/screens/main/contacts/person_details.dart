@@ -541,7 +541,8 @@ class _PersonDetailsState extends State<PersonDetails> {
                                   )),
                             _buildEmailField(emailController, "Primary email"),
                             if (displayEmailField >= 2)
-                              _buildEmailField(emailController2, "Second email"),
+                              _buildEmailField(
+                                  emailController2, "Second email"),
                             if (displayEmailField >= 3)
                               _buildEmailField(emailController3, "Third email"),
                             if (displayEmailField < 3)
@@ -549,7 +550,8 @@ class _PersonDetailsState extends State<PersonDetails> {
                                   onPressed: () {
                                     setState(() {
                                       if (displayEmailField < 3) {
-                                        displayEmailField = displayEmailField + 1;
+                                        displayEmailField =
+                                            displayEmailField + 1;
                                       }
                                     });
                                   },
@@ -585,13 +587,15 @@ class _PersonDetailsState extends State<PersonDetails> {
                         btnAction: _updateGroupList,
                         collapse: collapseGroups,
                       ),
-                      selectGroupList.isEmpty ? Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                        child: Text(
-                          "At least one group is required",
-                          style: TextStyle(color: Colors.red),
-                        )
-                      ) : Container(),
+                      !selectGroupList.any((element) => element.isRole!)
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 5),
+                              child: Text(
+                                "At least one role is required",
+                                style: TextStyle(color: Colors.red),
+                              ))
+                          : Container(),
                       _buildTextArea(notesController, "Notes..."),
                       const SizedBox(height: 20),
                       _buildSection("Invoices", Icons.receipt, [],
@@ -643,11 +647,13 @@ class _PersonDetailsState extends State<PersonDetails> {
                           (phoneNumber3 == null ||
                               phoneNumber3 != null &&
                                   phoneNumber3!.isValidNumber()) &&
-                          selectGroupList.isNotEmpty) {
+                          selectGroupList.any((element) => element.isRole!)) {
                         saveData();
                       } else {
                         GFToast.showToast(
-                          "Please fill all required fields",
+                          !selectGroupList.any((element) => element.isRole!)
+                              ? "Please at at least one role"
+                              : "Please fill all required fields",
                           context,
                           toastDuration: 5,
                           toastPosition:
@@ -708,6 +714,11 @@ class _PersonDetailsState extends State<PersonDetails> {
         if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
           return "This field is required";
         }
+
+        // if (selectGroupList.isEmpty) {
+        //   groupController.text = "At least one group is required";
+        // }
+
 
         // if (selectGroupList.isEmpty) {
         //   groupController.text = "At least one group is required";
@@ -967,10 +978,16 @@ class _PersonDetailsState extends State<PersonDetails> {
                     ? null
                     : () {
                         if (_formKey.currentState!.validate() &&
-                          (phoneNumber == null  || phoneNumber  != null && phoneNumber!.isValidNumber()) &&
-                          (phoneNumber2 == null || phoneNumber2 != null && phoneNumber2!.isValidNumber()) &&
-                          (phoneNumber3 == null || phoneNumber3 != null && phoneNumber3!.isValidNumber()) &&
-                          selectGroupList.isNotEmpty) {
+                            (phoneNumber == null ||
+                                phoneNumber != null &&
+                                    phoneNumber!.isValidNumber()) &&
+                            (phoneNumber2 == null ||
+                                phoneNumber2 != null &&
+                                    phoneNumber2!.isValidNumber()) &&
+                            (phoneNumber3 == null ||
+                                phoneNumber3 != null &&
+                                    phoneNumber3!.isValidNumber()) &&
+                            selectGroupList.isNotEmpty) {
                           saveData();
                         } else {
                           GFToast.showToast(

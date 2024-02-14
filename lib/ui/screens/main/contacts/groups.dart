@@ -285,10 +285,11 @@ class _GroupsScreenState extends State<GroupsScreen> {
         Navigator.pop(context, group);
       },
       title: Text(
-        group.name!,
+        '${group.name!}${group.isRole! ? " (Role)" : ""}',
         style: TextStyle(
           color: _secondaryColorSelection(),
           fontSize: CustomFontSize.medium,
+          fontWeight: group.isRole! ? FontWeight.bold : FontWeight.normal,
         ),
       ),
     );

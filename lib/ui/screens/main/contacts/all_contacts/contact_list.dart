@@ -125,6 +125,35 @@ class _ContactListScreenState extends State<ContactListScreen> {
     context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
+  // Create or Update Contact
+  void createOrUpdateContact({
+    required ScreenFunction screenFunction,
+    PersonModel? contact,
+  }) async {
+    PersonModel? contactData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PersonDetails(
+          screenFunction: screenFunction,
+          contactVariant: ContactVariant.others,
+          person: contact,
+        ),
+      ),
+    );
+    if (contactData != null) {
+      int idx = contacts.indexWhere((element) => element.id == contactData.id);
+      setState(() {
+        // idx == -1 ? contacts.add(contactData) : contacts[idx] = contactData;
+        if (idx == -1) {
+          contacts.add(contactData);
+        } else {
+          contacts[idx] = contactData;
+        }
+      });
+      prefs.saveAllContacts(contacts);
+    }
+  }
+
   // Handle Person State Change
   void _handlePersonStateChange(BuildContext context, PersonState state) {
     if (state.status == PersonStatus.success) {
@@ -333,7 +362,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
   }
 
   // On Contact Tile Tap
-  void onStudentTileTap(PersonModel contact) => createOrUpdateStudent(
+  void onStudentTileTap(PersonModel contact) => createOrUpdateContact(
         screenFunction: ScreenFunction.edit,
         contact: contact,
       );
@@ -462,7 +491,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
         //   child: Container(),
         // ),
         IconButton(
-          onPressed: () => createOrUpdateStudent(
+          onPressed: () => createOrUpdateContact(
             screenFunction: ScreenFunction.add,
           ),
           icon: const Icon(
