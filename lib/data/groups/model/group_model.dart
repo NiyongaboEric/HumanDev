@@ -1,4 +1,4 @@
-class Group {
+class Group implements Comparable<Group> {
   final int? id;
   final String? name;
   final bool? isRole;
@@ -31,5 +31,17 @@ class Group {
       'isActive': isActive,
       'spaceId': spaceId,
     };
+  }
+  
+  @override
+  int compareTo(Group other) {    
+    // TODO: implement compareTo    
+    // Compare by isRole and then by name
+    if (this.isRole == other.isRole) {
+      return this.name!.compareTo(other.name!);
+    } else {
+      return this.isRole! ? -1 : 1;
+    }
+
   }
 }

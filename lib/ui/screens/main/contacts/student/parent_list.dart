@@ -87,6 +87,35 @@ class _ParentListScreenState extends State<ParentListScreen> {
     context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
+  // Create or Update Contact
+  void createOrUpdateContact({
+    required ScreenFunction screenFunction,
+    PersonModel? contact,
+  }) async {
+    PersonModel? contactData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PersonDetails(
+          screenFunction: screenFunction,
+          contactVariant: ContactVariant.others,
+          person: contact,
+        ),
+      ),
+    );
+    if (contactData != null) {
+      int idx = contacts.indexWhere((element) => element.id == contactData.id);
+      setState(() {
+        // idx == -1 ? contacts.add(contactData) : contacts[idx] = contactData;
+        if (idx == -1) {
+          contacts.add(contactData);
+        } else {
+          contacts[idx] = contactData;
+        }
+      });
+      prefs.saveAllContacts(contacts);
+    }
+  }
+
   // Handle Person State Change
   void _handlePersonStateChange(BuildContext context, PersonState state) {
     if (state.status == PersonStatus.success) {
@@ -153,11 +182,14 @@ class _ParentListScreenState extends State<ParentListScreen> {
     // TODO: implement initState
     // Get All contacts from Shared Preferences
     var contactsFromSharedPrefs = prefs.getAllContacts();
-    contacts.addAll(contactsFromSharedPrefs.where((element) => element.role != Role.Parent.name));
+    contacts.addAll(contactsFromSharedPrefs
+        .where((element) => element.role != Role.Parent.name));
 
     // Get All Groups from Shared Preferences
     var groupsFromSharedPrefs = prefs.getGroups();
-    groups.addAll(groupsFromSharedPrefs.where((element) => element.isRole!).map((e) => e.name!));
+    groups.addAll(groupsFromSharedPrefs
+        .where((element) => element.isRole!)
+        .map((e) => e.name!));
 
     _getAllContacts();
     _getAllGroups();
@@ -411,72 +443,16 @@ class _ParentListScreenState extends State<ParentListScreen> {
           },
           child: Container(),
         ),
-        // Auth Bloc Listener
-        // BlocListener<PersonBloc, PersonState>(
-        //   listener: (context, state) {
-        //     _handlePersonStateChange(context, state);
-        //   },
-        //   child: Container(),
-        // ),
         IconButton(
-          onPressed: () async {
-            var refresh = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PersonDetails(
-                  screenFunction: ScreenFunction.add,
-                  contactVariant: ContactVariant.others,
-                ),
-              ),
-            );
-            await Future.delayed(const Duration(seconds: 2));
-            logger.d("Create Refresh: $refresh");
-            if (refresh != null && refresh) {
-              _getAllContacts();
-            }
-          },
+          onPressed: () => createOrUpdateContact(
+            screenFunction: ScreenFunction.add,
+          ),
           icon: const Icon(
             Icons.add_rounded,
             size: 28,
           ),
         ),
       ],
-      // bottom: _buildPreferredSize(),
-    );
-  }
-
-  // Build Preferred Size
-  PreferredSize _buildPreferredSize() {
-    return PreferredSize(
-      preferredSize: Size(double.infinity, 170),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Column(
-          children: [
-            // Contact Groups
-            CustomDropDownMenu(
-              color: SecondaryColors.secondaryPink,
-              options: [
-                "Select group",
-                "All groups",
-                ...groups,
-              ],
-              value: selectedGroup,
-              onChanged: updateSelectedGroup,
-            ),
-            CustomTextField(
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: SecondaryColors.secondaryPink,
-              ),
-              color: SecondaryColors.secondaryPink,
-              hintText: "Search...",
-              controller: searchController,
-              onChanged: search,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
