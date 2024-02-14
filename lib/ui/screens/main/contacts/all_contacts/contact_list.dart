@@ -86,6 +86,35 @@ class _ContactListScreenState extends State<ContactListScreen> {
     return contacts.where((element) => element.role == group).toList();
   }
 
+    // Create or Update Student
+  void createOrUpdateStudent({
+    required ScreenFunction screenFunction,
+    PersonModel? contact,
+  }) async {
+    PersonModel? contactData = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PersonDetails(
+          screenFunction: screenFunction,
+          contactVariant: ContactVariant.others,
+          person: contact,
+        ),
+      ),
+    );
+    if (contactData != null) {
+      int idx = contacts.indexWhere((element) => element.id == contactData.id);
+      setState(() {
+        // idx == -1 ? contacts.add(contactData) : contacts[idx] = contactData;
+        if (idx == -1) {
+          contacts.add(contactData);
+        } else {
+          contacts[idx] = contactData;
+        }
+      });
+      prefs.saveAllContacts(contacts);
+    }
+  }
+
   // Get All Contacts
   void _getAllContacts() {
     context.read<PersonBloc>().add(const GetAllPersonEvent());
@@ -304,33 +333,10 @@ class _ContactListScreenState extends State<ContactListScreen> {
   }
 
   // On Contact Tile Tap
-  void onStudentTileTap(PersonModel contact) async {
-    PersonModel? contactData = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PersonDetails(
-          screenFunction: ScreenFunction.edit,
-          contactVariant: ContactVariant.others,
-          person: contact,
-        ),
-      ),
-    );
-    if (contactData != null) {
-      setState(() {
-        contacts[contacts.indexWhere(
-            (element) => element.id == contactData.id)] = contactData;
-      });
-      prefs.saveAllContacts(contacts);
-    }
-    // setState(() {
-    //   if (contactData != null) {
-    //     contacts[contacts.indexWhere(
-    //         (element) => element.id == contactData.id)] = contactData;
-    //     // Save contacts to shared preferences
-    //     prefs.saveAllContacts(contacts);
-    //   }
-    // });
-  }
+  void onStudentTileTap(PersonModel contact) => createOrUpdateStudent(
+        screenFunction: ScreenFunction.edit,
+        contact: contact,
+      );
 
   // Update Search Results
   void updateSearchResults() {
@@ -456,23 +462,9 @@ class _ContactListScreenState extends State<ContactListScreen> {
         //   child: Container(),
         // ),
         IconButton(
-          onPressed: () async {
-            var refresh = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PersonDetails(
-                  screenFunction: ScreenFunction.add,
-                  contactVariant: ContactVariant.others,
-                ),
-              ),
-            );
-            await Future.delayed(const Duration(seconds: 2));
-            logger.d("Create Refresh: $refresh");
-            if (refresh != null && refresh) {
-              _getAllContacts();
-              _getAllContacts();
-            }
-          },
+          onPressed: () => createOrUpdateStudent(
+            screenFunction: ScreenFunction.add,
+          ),
           icon: const Icon(
             Icons.add_rounded,
             size: 28,
