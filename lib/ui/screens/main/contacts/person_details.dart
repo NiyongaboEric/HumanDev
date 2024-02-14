@@ -196,7 +196,6 @@ class _PersonDetailsState extends State<PersonDetails> {
   }
 
   saveData() {
-    logger.i("phone number: ${phoneNumber?.completeNumber}");
     if (widget.screenFunction == ScreenFunction.add) {
       context.read<PersonBloc>().add(
             AddPersonEvent(PersonRequest(
@@ -483,120 +482,131 @@ class _PersonDetailsState extends State<PersonDetails> {
             appBar: _buildAppBar(),
             body: Form(
               key: _formKey,
-              child: ListView(
+              child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                children: [
-                  const SizedBox(height: 20),
-                  _buildCircleAvatar(),
-                  const SizedBox(height: 20),
-                  _buildTextField(firstNameController, "First name*"),
-                  _buildTextField(middleNameController, "Middle name"),
-                  _buildTextField(lastNameController, "Last name*"),
-                  _buildDatePicker(),
-                  const SizedBox(height: 20),
-                  _buildGenderDropDown(),
-                  const SizedBox(height: 20),
-                  _buildSection(
-                      "Contacts",
-                      Icons.contact_page_rounded,
-                      [
-                        _buildPhoneNumberField(phoneNumberController,
-                            phoneNumber, "Primary number", (updatedNumber) {
-                          phoneNumber = updatedNumber;
-                        }),
-                        if (displayPhoneNumberField >= 2)
-                          _buildPhoneNumberField(
-                            phoneNumberController2,
-                            phoneNumber2,
-                            "Second number",
-                            (updatedNumber) {
-                              phoneNumber2 = updatedNumber;
-                            },
-                          ),
-                        if (displayPhoneNumberField >= 3)
-                          _buildPhoneNumberField(
-                            phoneNumberController3,
-                            phoneNumber3,
-                            "Third number",
-                            (updatedNumber) {
-                              phoneNumber3 = updatedNumber;
-                            },
-                          ),
-                        // SizedBox(height: 5),
-                        if (displayPhoneNumberField < 3)
-                          TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  if (displayPhoneNumberField < 3) {
-                                    displayPhoneNumberField =
-                                        displayPhoneNumberField + 1;
-                                  }
-                                });
-                              },
-                              child: Text(
-                                "Add another number",
-                                style: TextStyle(
-                                    color: _secondaryColorSelection()),
-                              )),
-                        _buildEmailField(emailController, "Primary email"),
-                        if (displayEmailField >= 2)
-                          _buildEmailField(emailController2, "Second email"),
-                        if (displayEmailField >= 3)
-                          _buildEmailField(emailController3, "Third email"),
-                        if (displayEmailField < 3)
-                          TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  if (displayEmailField < 3) {
-                                    displayEmailField = displayEmailField + 1;
-                                  }
-                                });
-                              },
-                              child: Text(
-                                "Add another email",
-                                style: TextStyle(
-                                  color: _secondaryColorSelection(),
-                                  decoration: TextDecoration.underline,
-                                ),
-                              )),
-                      ],
-                      collapse: collapseContacts),
-                  _buildSection(
-                      "Address",
-                      Icons.home_rounded,
-                      [
-                        _buildTextField(streetController, "Street"),
-                        _buildTextField(cityController, "City"),
-                        _buildTextField(stateController, "State"),
-                        _buildTextField(zipController, "Zip"),
-                      ],
-                      collapse: collapseAddress),
-                  _buildPersonRelativeSection(),
-                  _buildSection(
-                    widget.contactVariant == ContactVariant.student
-                        ? "Groups"
-                        : "Groups*",
-                    Icons.groups_2_rounded,
-                    [
-                      _buildGroupChip(),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      _buildCircleAvatar(),
+                      const SizedBox(height: 20),
+                      _buildTextField(firstNameController, "First name*"),
+                      _buildTextField(middleNameController, "Middle name"),
+                      _buildTextField(lastNameController, "Last name*"),
+                      _buildDatePicker(),
+                      const SizedBox(height: 20),
+                      _buildGenderDropDown(),
+                      const SizedBox(height: 20),
+                      _buildSection(
+                          "Contacts",
+                          Icons.contact_page_rounded,
+                          [
+                            _buildPhoneNumberField(phoneNumberController,
+                                phoneNumber, "Primary number", (updatedNumber) {
+                              phoneNumber = updatedNumber;
+                            }),
+                            if (displayPhoneNumberField >= 2)
+                              _buildPhoneNumberField(
+                                phoneNumberController2,
+                                phoneNumber2,
+                                "Second number",
+                                (updatedNumber) {
+                                  phoneNumber2 = updatedNumber;
+                                },
+                              ),
+                            if (displayPhoneNumberField >= 3)
+                              _buildPhoneNumberField(
+                                phoneNumberController3,
+                                phoneNumber3,
+                                "Third number",
+                                (updatedNumber) {
+                                  phoneNumber3 = updatedNumber;
+                                },
+                              ),
+                            // SizedBox(height: 5),
+                            if (displayPhoneNumberField < 3)
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      if (displayPhoneNumberField < 3) {
+                                        displayPhoneNumberField =
+                                            displayPhoneNumberField + 1;
+                                      }
+                                    });
+                                  },
+                                  child: Text(
+                                    "Add another number",
+                                    style: TextStyle(
+                                        color: _secondaryColorSelection()),
+                                  )),
+                            _buildEmailField(emailController, "Primary email"),
+                            if (displayEmailField >= 2)
+                              _buildEmailField(emailController2, "Second email"),
+                            if (displayEmailField >= 3)
+                              _buildEmailField(emailController3, "Third email"),
+                            if (displayEmailField < 3)
+                              TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      if (displayEmailField < 3) {
+                                        displayEmailField = displayEmailField + 1;
+                                      }
+                                    });
+                                  },
+                                  child: Text(
+                                    "Add another email",
+                                    style: TextStyle(
+                                      color: _secondaryColorSelection(),
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  )),
+                          ],
+                          collapse: collapseContacts),
+                      _buildSection(
+                          "Address",
+                          Icons.home_rounded,
+                          [
+                            _buildTextField(streetController, "Street"),
+                            _buildTextField(cityController, "City"),
+                            _buildTextField(stateController, "State"),
+                            _buildTextField(zipController, "Zip"),
+                          ],
+                          collapse: collapseAddress),
+                      _buildPersonRelativeSection(),
+                      _buildSection(
+                        widget.contactVariant == ContactVariant.student
+                            ? "Groups"
+                            : "Groups*",
+                        Icons.groups_2_rounded,
+                        [
+                          _buildGroupChip(),
+                        ],
+                        isAddButton: true,
+                        btnAction: _updateGroupList,
+                        collapse: collapseGroups,
+                      ),
+                      selectGroupList.isEmpty ? Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                        child: Text(
+                          "At least one group is required",
+                          style: TextStyle(color: Colors.red),
+                        )
+                      ) : Container(),
+                      _buildTextArea(notesController, "Notes..."),
+                      const SizedBox(height: 20),
+                      _buildSection("Invoices", Icons.receipt, [],
+                          collapse: collapseInvoices),
+                      _buildSection(
+                          "Pending payments", Icons.attach_money_rounded, [],
+                          collapse: collapsePendingPayments),
+                      const SizedBox(height: 20),
+                      Divider(
+                        color: _primaryColorSelection(),
+                      ),
+                      _buildSaveButton(),
                     ],
-                    isAddButton: true,
-                    btnAction: _updateGroupList,
-                    collapse: collapseGroups,
                   ),
-                  _buildTextArea(notesController, "Notes..."),
-                  const SizedBox(height: 20),
-                  _buildSection("Invoices", Icons.receipt, [],
-                      collapse: collapseInvoices),
-                  _buildSection(
-                      "Pending payments", Icons.attach_money_rounded, [],
-                      collapse: collapsePendingPayments),
-                  const SizedBox(height: 20),
-                  Divider(
-                    color: _primaryColorSelection(),
-                  ),
-                  _buildSaveButton(saveData),
-                ],
+                ),
               ),
             ),
           );
@@ -698,6 +708,11 @@ class _PersonDetailsState extends State<PersonDetails> {
         if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
           return "This field is required";
         }
+
+        // if (selectGroupList.isEmpty) {
+        //   groupController.text = "At least one group is required";
+        // }
+
         if (hintText.endsWith("*") && value!.trim().isEmpty) {
           return "Invalid characters";
         }
@@ -938,7 +953,7 @@ class _PersonDetailsState extends State<PersonDetails> {
     );
   }
 
-  Widget _buildSaveButton(Function()? onPressed) {
+  Widget _buildSaveButton() {
     return BlocBuilder<PersonBloc, PersonState>(
       builder: (context, state) {
         return Padding(
@@ -952,17 +967,11 @@ class _PersonDetailsState extends State<PersonDetails> {
                     ? null
                     : () {
                         if (_formKey.currentState!.validate() &&
-                            (phoneNumber == null ||
-                                phoneNumber != null &&
-                                    phoneNumber!.isValidNumber()) &&
-                            (phoneNumber2 == null ||
-                                phoneNumber2 != null &&
-                                    phoneNumber!.isValidNumber()) &&
-                            (phoneNumber3 == null ||
-                                phoneNumber3 != null &&
-                                    phoneNumber3!.isValidNumber()) &&
-                            selectGroupList.isNotEmpty) {
-                          onPressed!();
+                          (phoneNumber == null  || phoneNumber  != null && phoneNumber!.isValidNumber()) &&
+                          (phoneNumber2 == null || phoneNumber2 != null && phoneNumber2!.isValidNumber()) &&
+                          (phoneNumber3 == null || phoneNumber3 != null && phoneNumber3!.isValidNumber()) &&
+                          selectGroupList.isNotEmpty) {
+                          saveData();
                         } else {
                           GFToast.showToast(
                             "Please fill all required fields",
