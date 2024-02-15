@@ -576,9 +576,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                           collapse: collapseAddress),
                       _buildPersonRelativeSection(),
                       _buildSection(
-                        widget.contactVariant == ContactVariant.student
-                            ? "Groups"
-                            : "Groups*",
+                        "Groups",
                         Icons.groups_2_rounded,
                         [
                           _buildGroupChip(),
@@ -587,15 +585,6 @@ class _PersonDetailsState extends State<PersonDetails> {
                         btnAction: _updateGroupList,
                         collapse: collapseGroups,
                       ),
-                      !selectGroupList.any((element) => element.isRole!)
-                          ? Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5),
-                              child: Text(
-                                "At least one role is required",
-                                style: TextStyle(color: Colors.red),
-                              ))
-                          : Container(),
                       _buildTextArea(notesController, "Notes..."),
                       const SizedBox(height: 20),
                       _buildSection("Invoices", Icons.receipt, [],
@@ -646,8 +635,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                                   phoneNumber!.isValidNumber()) &&
                           (phoneNumber3 == null ||
                               phoneNumber3 != null &&
-                                  phoneNumber3!.isValidNumber()) &&
-                          selectGroupList.any((element) => element.isRole!)) {
+                                  phoneNumber3!.isValidNumber())) {
                         saveData();
                       } else {
                         GFToast.showToast(
@@ -714,11 +702,6 @@ class _PersonDetailsState extends State<PersonDetails> {
         if ((value == null || value.isEmpty) && hintText.endsWith("*")) {
           return "This field is required";
         }
-
-        // if (selectGroupList.isEmpty) {
-        //   groupController.text = "At least one group is required";
-        // }
-
 
         // if (selectGroupList.isEmpty) {
         //   groupController.text = "At least one group is required";
@@ -986,8 +969,8 @@ class _PersonDetailsState extends State<PersonDetails> {
                                     phoneNumber2!.isValidNumber()) &&
                             (phoneNumber3 == null ||
                                 phoneNumber3 != null &&
-                                    phoneNumber3!.isValidNumber()) &&
-                            selectGroupList.isNotEmpty) {
+                                    phoneNumber3!.isValidNumber())
+                            ) {
                           saveData();
                         } else {
                           GFToast.showToast(
