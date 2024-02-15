@@ -86,46 +86,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
     return contacts.where((element) => element.role == group).toList();
   }
 
-    // Create or Update Student
-  void createOrUpdateStudent({
-    required ScreenFunction screenFunction,
-    PersonModel? contact,
-  }) async {
-    PersonModel? contactData = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PersonDetails(
-          screenFunction: screenFunction,
-          contactVariant: ContactVariant.others,
-          person: contact,
-        ),
-      ),
-    );
-    if (contactData != null) {
-      int idx = contacts.indexWhere((element) => element.id == contactData.id);
-      setState(() {
-        // idx == -1 ? contacts.add(contactData) : contacts[idx] = contactData;
-        if (idx == -1) {
-          contacts.add(contactData);
-        } else {
-          contacts[idx] = contactData;
-        }
-      });
-      prefs.saveAllContacts(contacts);
-    }
-  }
-
-  // Get All Contacts
-  void _getAllContacts() {
-    context.read<PersonBloc>().add(const GetAllPersonEvent());
-  }
-
-  // Get All Groups
-  void _getAllGroups() {
-    context.read<GroupsBloc>().add(const GroupsEventGetGroups());
-  }
-
-  // Create or Update Contact
+  // Create or Update Student
   void createOrUpdateContact({
     required ScreenFunction screenFunction,
     PersonModel? contact,
@@ -142,16 +103,31 @@ class _ContactListScreenState extends State<ContactListScreen> {
     );
     if (contactData != null) {
       int idx = contacts.indexWhere((element) => element.id == contactData.id);
-      setState(() {
-        // idx == -1 ? contacts.add(contactData) : contacts[idx] = contactData;
+      if (contactData.groups?.any((element) => element.name == "Student") ??
+          false) {
+        if (idx != -1) {
+          contacts.removeAt(idx);
+        }
+      } else {
         if (idx == -1) {
           contacts.add(contactData);
         } else {
           contacts[idx] = contactData;
         }
-      });
+      }
+      setState(() {});
       prefs.saveAllContacts(contacts);
     }
+  }
+
+  // Get All Contacts
+  void _getAllContacts() {
+    context.read<PersonBloc>().add(const GetAllPersonEvent());
+  }
+
+  // Get All Groups
+  void _getAllGroups() {
+    context.read<GroupsBloc>().add(const GroupsEventGetGroups());
   }
 
   // Handle Person State Change
