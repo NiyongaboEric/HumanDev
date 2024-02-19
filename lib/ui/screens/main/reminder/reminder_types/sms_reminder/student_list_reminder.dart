@@ -421,21 +421,19 @@ class _SMSReminderStudentListScreenState
     if (person.childRelations == null ||
         person.childRelations!.isEmpty ||
         person.childRelations!.any((element) =>
-                (element.phoneNumber1 == null && element.phoneNumber1!.isEmpty)
-            // (element.phoneNumber2 == null && element.phoneNumber2!.isEmpty) ||
-            // (element.phoneNumber3 == null && element.phoneNumber3!.isEmpty)
-            )) {
-      return Image.asset("assets/icons/null_number.png",
-          width: 20, height: 20, color: Colors.red);
-    } else {
+          (element.phoneNumber1 != null && element.phoneNumber1!.isNotEmpty) ||
+          (element.phoneNumber2 != null && element.phoneNumber2!.isNotEmpty) ||
+          (element.phoneNumber3 != null && element.phoneNumber3!.isNotEmpty))) {
       return const SizedBox();
+    } else {
+      return Image.asset("assets/icons/null_number.png", width: 20, height: 20, color: Colors.red);
     }
   }
 
   // Build Subtitle Row
   Row? _buildSubtitleRow(PersonModel person) => Row(children: [
         _buildSubtitleText(person),
-        _buildNullNumberImageForSubtitle(person)
+        // _buildNullNumberImageForSubtitle(person)
       ]);
 
   // Build Subtitle Text
@@ -526,9 +524,11 @@ class _SMSReminderStudentListScreenState
     // Check if no phone number found for parent
     if (person.childRelations == null ||
         person.childRelations!.every((element) =>
-            element.phoneNumber1 == null &&
-            element.phoneNumber2 == null &&
-            element.phoneNumber3 == null)) {
+          (element.phoneNumber1 == null || (element.phoneNumber1 != null && element.phoneNumber1!.isEmpty)) &&
+          (element.phoneNumber2 == null || (element.phoneNumber2 != null && element.phoneNumber2!.isEmpty)) &&
+          (element.phoneNumber3 == null || (element.phoneNumber3 != null && element.phoneNumber3!.isEmpty))
+        )
+      ) {
       GFToast.showToast(
         "No phone number found for parent",
         context,
