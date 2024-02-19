@@ -5,6 +5,7 @@ import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
 import '../../../../../utilities/navigation.dart';
+import 'student_list_reminder.dart';
 
 class SMSReminder extends StatefulWidget {
   const SMSReminder({super.key});
@@ -23,9 +24,7 @@ class _SMSReminderState extends State<SMSReminder> {
         action: () {
           nextScreen(
               context: context,
-              screen: const Parents(
-                parentSection: ParentSection.sms,
-              ));
+              screen: const SMSReminderStudentListScreen());
         },
       ),
       SMSReminderModel(
@@ -34,9 +33,7 @@ class _SMSReminderState extends State<SMSReminder> {
         action: () {
           nextScreen(
               context: context,
-              screen: const Parents(
-                parentSection: ParentSection.sms,
-              ));
+              screen: const SMSReminderStudentListScreen());
         },
       ),
     ];

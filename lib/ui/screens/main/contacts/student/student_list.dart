@@ -112,14 +112,18 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
     );
     if (studentData != null) {
       int idx = students.indexWhere((element) => element.id == studentData.id);
-      setState(() {
-        // idx == -1 ? students.add(studentData) : students[idx] = studentData;
+      if ((studentData.groups?.any((element) => element.name == "Student") ?? false)) {
         if (idx == -1) {
           students.add(studentData);
         } else {
           students[idx] = studentData;
+        }        
+      } else {
+        if (idx != -1) {
+          students.removeAt(idx);
         }
-      });
+      }
+      setState(() {});
       prefs.saveStudents(students);
     }
   }
@@ -260,7 +264,9 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
     // Group filtered Contacts
     var filteredContacts = filterSelectedGroupContacts(selectedGroup, contacts);
     return filteredContacts.map((contact) {
-      return contact.firstName.isNotEmpty ? contact.firstName.substring(0, 1) : "";
+      return contact.firstName.isNotEmpty
+          ? contact.firstName.substring(0, 1)
+          : "";
     }).toList();
   }
 
