@@ -1114,64 +1114,66 @@ class _ParentsState extends State<Parents> {
                     parentSection == ParentSection.sendSMS
                 ? Padding(
                     padding: const EdgeInsets.only(right: 20),
-                    child: FloatingActionButton.extended(
-                      backgroundColor: parentSection == ParentSection.sendSMS
-                          ? [
-                              ...selectedAllPeopleSendSMS,
-                              ...selectedStudentsSendSMS,
-                              ...selectedParentsSendSMS,
-                              ...selectedTeachersSendSMS,
-                              ...selectedSuppliersSendSMS,
-                              ...selectedSchoolAdministratorsSendSMS,
-                              ...selectedcustomGroupPeople
-                            ].isEmpty
-                              ? Colors.blue.shade200
-                              : PrimaryColors.primaryDeepBlue
-                          : parentSection == ParentSection.sms
-                              ? selectedParents.isEmpty
-                                  ? Colors.grey.shade300
-                                  : Colors.orange.shade100
-                              : selectedParents.isEmpty
-                                  ? Colors.grey
-                                  : Colors.red.shade100,
-                      onPressed: parentSection == ParentSection.sendSMS
-                          ? [
-                              ...selectedAllPeopleSendSMS,
-                              ...selectedStudentsSendSMS,
-                              ...selectedParentsSendSMS,
-                              ...selectedTeachersSendSMS,
-                              ...selectedSuppliersSendSMS,
-                              ...selectedSchoolAdministratorsSendSMS,
-                              ...selectedcustomGroupPeople
-                            ].isEmpty
-                              ? null
-                              : () {
-                                  saveDataSendSMS();
-                                }
-                          : selectedParents.isEmpty
-                              ? null
-                              : () {
-                                  saveData();
-                                },
-                      label: SizedBox(
-                        width: 80,
-                        child: Center(
-                          child: Text(
-                            "Next",
-                            style: TextStyle(
-                                fontSize: CustomFontSize.large,
-                                color: parentSection == ParentSection.sendSMS
-                                    ? [].isEmpty
-                                        ? Colors.white
-                                        : secondaryColorSelection(parentSection)
-                                    : selectedParents.isEmpty
-                                        ? Colors.grey
-                                        : secondaryColorSelection(
-                                            parentSection)),
+                    child: parentSection == ParentSection.sms && allPeople.length == 0
+                      ? Container()
+                      : FloatingActionButton.extended(
+                        backgroundColor: parentSection == ParentSection.sendSMS
+                            ? [
+                                ...selectedAllPeopleSendSMS,
+                                ...selectedStudentsSendSMS,
+                                ...selectedParentsSendSMS,
+                                ...selectedTeachersSendSMS,
+                                ...selectedSuppliersSendSMS,
+                                ...selectedSchoolAdministratorsSendSMS,
+                                ...selectedcustomGroupPeople
+                              ].isEmpty
+                                ? Colors.blue.shade200
+                                : PrimaryColors.primaryDeepBlue
+                            : parentSection == ParentSection.sms
+                                ? selectedParents.isEmpty
+                                    ? Colors.grey.shade300
+                                    : Colors.orange.shade100
+                                : selectedParents.isEmpty
+                                    ? Colors.grey
+                                    : Colors.red.shade100,
+                        onPressed: parentSection == ParentSection.sendSMS
+                            ? [
+                                ...selectedAllPeopleSendSMS,
+                                ...selectedStudentsSendSMS,
+                                ...selectedParentsSendSMS,
+                                ...selectedTeachersSendSMS,
+                                ...selectedSuppliersSendSMS,
+                                ...selectedSchoolAdministratorsSendSMS,
+                                ...selectedcustomGroupPeople
+                              ].isEmpty
+                                ? null
+                                : () {
+                                    saveDataSendSMS();
+                                  }
+                            : selectedParents.isEmpty
+                                ? null
+                                : () {
+                                    saveData();
+                                  },
+                        label: SizedBox(
+                          width: 80,
+                          child: Center(
+                            child: Text(
+                              "Next",
+                              style: TextStyle(
+                                  fontSize: CustomFontSize.large,
+                                  color: parentSection == ParentSection.sendSMS
+                                      ? [].isEmpty
+                                          ? Colors.white
+                                          : secondaryColorSelection(parentSection)
+                                      : selectedParents.isEmpty
+                                          ? Colors.grey
+                                          : secondaryColorSelection(
+                                              parentSection)),
+                            ),
                           ),
                         ),
                       ),
-                    ),
                   )
                 : null,
             body: state.isLoading &&
@@ -1204,6 +1206,21 @@ class _ParentsState extends State<Parents> {
                               ),
                             ),
                           )
+
+
+                        : parentSection == ParentSection.sms && allPeople.length == 0
+                        ? Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(top: 10),
+                            child: Text(
+                              "No students with with due pending payment",
+                              style: TextStyle(
+                                fontSize: 18
+                              ),
+                            )
+                          )
+
+
                         : AlphabetListView(
                             items: buildAlphabetListView,
                             options: buildAlphabetListViewOptions,
@@ -1266,8 +1283,15 @@ class _ParentsState extends State<Parents> {
 
       bool isAlphabetMatch = false;
       var result = selectedPeople.map((person) {
+        // bool hasFirstName = person.firstName.isNotEmpty ? true : false;
+        // bool hasInvoice = person.firstName.isNotEmpty ? true : false;
+        // if (hasFirstName) {
+        //   if (hasInvoice) {
+        //   }
+        // print("......${person.firstName}.........${person.studentInvoices}...........");
+        // print("0.....${person.firstName}........${person.lastName2}.....${isFirstName}.....${person.studentInvoices}");
+        // print("......... ${person.studentInvoices != null        ? person.studentInvoices!.first.invoiceDate                : person.studentInvoices!.first.currency} ${person.totalDue} }");         
         if (person.firstName.startsWith(alphabet)) {
-          
           if (
             currentSelectedGroupSpace != allGroups && 
             currentSelectedGroupSpace != Role.Student.name &&
@@ -1970,7 +1994,13 @@ class _ParentsState extends State<Parents> {
             _buildDropDownGroups(),
           // _buildSizedBox(),
           _buildCustomGroups(),
-          _buildCustomTextField(),
+
+
+          widget.parentSection == ParentSection.sms && allPeople.length == 0
+          ? Container()
+          : _buildCustomTextField(),
+
+
           // _buildParentSelectionSendSMS(toggleOptionsSendSMS),
           // _buildSizedBox(),
           _buildCustomizeParentSelectionSendSMSSearch(),
