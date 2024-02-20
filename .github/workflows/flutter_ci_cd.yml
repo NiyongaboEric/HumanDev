@@ -4,14 +4,27 @@ on:
   push:
     branches: [ "main","dev" ]
   pull_request:
-    branches: [ "main","dev"  ]
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.pub-cache
+            ~/flutter/.pub-cache
+            ~/android/.gradle/caches
+            ~/android/.gradle/wrapper
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pub-
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -46,13 +59,13 @@ jobs:
           fi
           echo "}" >> lib/data/constants/constants.dart
 
-      - name: Build APK
-        run: flutter build apk --release
-
       - name: Get app version
         run: |
           APP_VERSION=$(grep -oP 'version: \K(.+)' pubspec.yaml)
           echo "App Version: $APP_VERSION"
+
+      - name: Build APK
+        run: flutter build apk --release
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
