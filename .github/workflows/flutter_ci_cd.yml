@@ -61,6 +61,7 @@ jobs:
         run: |
           APP_VERSION=$(grep -oP 'version: \K(.+)' pubspec.yaml)
           echo "App Version: $APP_VERSION"
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
 
       - name: Build APK
         run: flutter build apk --release
