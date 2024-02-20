@@ -22,9 +22,7 @@ jobs:
             ~/flutter/.pub-cache
             ~/android/.gradle/caches
             ~/android/.gradle/wrapper
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-pub-
+          key: ${{ runner.os }}-pub-gradle-${{ hashFiles('**/*.yaml') }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
