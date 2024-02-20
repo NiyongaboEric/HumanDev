@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:seymo_pay_mobile_application/data/invoice/model/invoice_request.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/colors.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -24,7 +25,9 @@ class ItemsDataSource extends DataGridSource {
                   ? int.parse(e.getCells()[3].value)
                   : (e.getCells()[3].value as double).toInt(),
               taxAmount: 0,
-              taxRate: int.parse(e.getCells()[4].value.toString().split(" ").first)/100,
+              taxRate:
+                  int.parse(e.getCells()[4].value.toString().split(" ").first) /
+                      100,
             ))
         .toList();
   }
@@ -86,7 +89,8 @@ class ItemsDataSource extends DataGridSource {
 
     if (column.columnName == "vat") displayText = displayText.split(" ").first;
 
-    final bool isNumericType = column.columnName == 'quantity' || column.columnName == 'vat';
+    final bool isNumericType =
+        column.columnName == 'quantity' || column.columnName == 'vat';
 
     final bool isDoubleType = column.columnName == 'price';
 
@@ -99,6 +103,7 @@ class ItemsDataSource extends DataGridSource {
         textAlign:
             isNumericType || isDoubleType ? TextAlign.right : TextAlign.left,
         decoration: InputDecoration(
+          // hintText: "Enter value",
           fillColor: SecondaryColors.secondaryPurple,
           focusColor: SecondaryColors.secondaryPurple,
           hoverColor: SecondaryColors.secondaryPurple,
@@ -108,13 +113,18 @@ class ItemsDataSource extends DataGridSource {
             color: SecondaryColors.secondaryPurple,
             fontSize: CustomFontSize.small),
         cursorColor: SecondaryColors.secondaryPurple,
+        inputFormatters: [
+          isNumericType || isDoubleType
+              ? FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+              : FilteringTextInputFormatter.singleLineFormatter
+        ],
         keyboardType: isNumericType || isDoubleType
             ? TextInputType.number
             : TextInputType.text,
         onChanged: (String value) {
           if (value.isNotEmpty) {
             if (isNumericType) {
-              if(column.columnName == "vat" && int.parse(value) > 100){
+              if (column.columnName == "vat" && int.parse(value) > 100) {
                 newCellValue = 100;
                 return;
               }

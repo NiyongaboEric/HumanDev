@@ -256,7 +256,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
         setState(() {
           if (widget.invoiceTableType == InvoiceTableType.ITEMS) {
             itemsDataSource.rows.add(DataGridRow(cells: [
-              DataGridCell<String>(columnName: 'items', value: 'New item'),
+              DataGridCell<String>(columnName: 'items', value: 'New item name'),
               DataGridCell<String>(columnName: 'quantity', value: '0'),
               DataGridCell<String>(columnName: 'price', value: '0'),
               DataGridCell<String>(columnName: 'total', value: '0'),
@@ -500,6 +500,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                             // rowHeight: 55,
                             shrinkWrapRows: true,
                             // columnWidthMode: ColumnWidthMode.fitByCellValue,
+                            
                             source: widget.invoiceTableType ==
                                     InvoiceTableType.ITEMS
                                 ? itemsDataSource
@@ -536,7 +537,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                               InvoiceTableType.ITEMS) {
                             itemsDataSource.rows.add(DataGridRow(cells: [
                               DataGridCell<String>(
-                                  columnName: 'items', value: 'New item'),
+                                  columnName: 'items', value: 'New item name'),
                               DataGridCell<String>(
                                   columnName: 'quantity', value: '0'),
                               DataGridCell<String>(
@@ -594,18 +595,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                         ),
                         SizedBox(width: 5),
                         Text(
-                          itemsDataSource.rows.length == 1
-                              ? itemsDataSource.rows.first
-                                          .getCells()[1]
-                                          .value
-                                          .toString() ==
-                                      "New item"
-                                  ? "0"
-                                  : itemsDataSource.rows.first
-                                      .getCells()[3]
-                                      .value
-                                      .toString()
-                              : itemsDataSource.rows
+                          itemsDataSource.rows
                                   .map((e) => double.parse(
                                       e.getCells()[3].value.toString()))
                                   .toList()

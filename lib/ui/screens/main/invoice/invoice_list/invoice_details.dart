@@ -491,12 +491,12 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               key: const Key("save-as-draft"),
               onPressed: () {
                 logger.e(invoiceItems.length.toString());
-                if (invoiceItems.length == 1 &&
-                    paymentSchedules.length == 1 &&
-                    invoiceItems.first.description.toLowerCase() ==
-                        "new item") {
+                if (invoiceItems.any((element) =>
+                    // element.description.isEmpty ||
+                    element.grossPrice == 0 ||
+                    element.quantity == 0)) {
                   GFToast.showToast(
-                    "Please add at least one item",
+                    "Please fill all fields in the invoice items section",
                     context,
                     toastPosition: GFToastPosition.BOTTOM,
                     toastDuration: 5,
@@ -505,12 +505,34 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                   );
                   return;
                 }
-                if (invoiceItems.first.grossPrice! <= 0 ||
-                    invoiceItems.first.quantity <= 0) {
-                  logger.wtf(invoiceItems.first.grossPrice);
-                  logger.wtf(invoiceItems.first.quantity);
+                // New item's description cannot be "new item"
+                if (invoiceItems.any((element) =>
+                    element.description.isEmpty)){
                   GFToast.showToast(
-                    "Invalid item character",
+                    "Invoice name should not be empty",
+                    context,
+                    toastPosition: GFToastPosition.BOTTOM,
+                    toastDuration: 5,
+                    backgroundColor: Colors.red,
+                    toastBorderRadius: 12.0,
+                  );
+                  return;
+                }
+                // if (invoiceItems.any((element) => element.grossPrice! <= 0) ||
+                //     invoiceItems.any((element) => element.quantity <= 0)) {
+                //   GFToast.showToast(
+                //     "Invalid price or quantity value",
+                //     context,
+                //     toastPosition: GFToastPosition.BOTTOM,
+                //     toastDuration: 5,
+                //     backgroundColor: Colors.red,
+                //     toastBorderRadius: 12.0,
+                //   );
+                //   return;
+                // }
+                if (paymentSchedules.any((element)=>element.dueAmount == 0)) {
+                  GFToast.showToast(
+                    "Please fill all fields in the payment schedule section",
                     context,
                     toastPosition: GFToastPosition.BOTTOM,
                     toastDuration: 5,
@@ -540,7 +562,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                     "Please ensure the sum of all payment schedules due amounts equals the sum of all invoice items total amounts",
                     context,
                     toastPosition: GFToastPosition.BOTTOM,
-                    toastDuration: 5,
+                    toastDuration: 15,
                     backgroundColor: Colors.red,
                     toastBorderRadius: 12.0,
                   );
