@@ -73,4 +73,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: app-release
-          path: build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
+          path: build/app/outputs/flutter-apk/*.apk
