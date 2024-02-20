@@ -31,27 +31,43 @@ class RequestInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
       logger.e("Token expired");
-      final refreshedToken = await _refreshToken(err.requestOptions);
-      if (refreshedToken != null) {
-        handler.resolve(await Dio().fetch(err.requestOptions));
-      } else {
-        super.onError(err, handler);
+      logger.e(err.response?.data['message']);
+      if (err.response?.data['message'] == "Invalid refresh token.") {
+        logger.wtf("Invalid refresh token");
+        return handler.next(err);
+      }
+      try {
+        final refreshedToken = await _refreshToken(err.requestOptions);
+        logger.e("Token refresh");
+        // if (refreshedToken != null) {
+        handler.resolve(await sl<Dio>().fetch(
+          err.requestOptions
+            ..headers["Authorization"] = "Bearer ${refreshedToken.accessToken}",
+        ));
+        // } else {
+        //   logger.e("Token refresh failed");
+        //   handler.next(err);
+        // }
+      } catch (error) {
+        logger.e("Token refresh failed");
+        handler.next(err);
       }
     } else {
-      super.onError(err, handler);
+      handler.next(err);
     }
   }
 
-  Future<TokenResponse?> _refreshToken(RequestOptions options) async {
+  Future<TokenResponse> _refreshToken(RequestOptions options) async {
     final token = pref.getToken();
-    if (token == null) return null;
-
-    final newToken = await authApiImpl.refresh(RefreshRequest(refresh: token.refreshToken));
-    if (newToken != null) {
+    if (token == null) throw Exception("Token is null");
+    try {
+      final newToken = await authApiImpl
+          .refresh(RefreshRequest(refresh: token.refreshToken));
       pref.saveToken(newToken);
-      options.headers["Authorization"] = "Bearer ${newToken.accessToken}";
+      // options.headers["Authorization"] = "Bearer ${newToken.accessToken}";
       return newToken;
+    } catch (e) {
+      throw Exception(e);
     }
-    return null;
   }
 }

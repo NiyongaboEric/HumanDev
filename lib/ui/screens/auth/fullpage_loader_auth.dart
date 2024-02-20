@@ -1,4 +1,3 @@
-
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +10,7 @@ import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/space_bloc/space_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/tags_bloc/tags_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/home/homepage.dart';
+import 'package:seymo_pay_mobile_application/ui/utilities/constants.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/navigation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -58,7 +58,8 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
 
   // Logout
   void _logout() {
-    context.read<AuthBloc>().add(const AuthEventLogout());
+    preferences.clear();
+    nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
   }
 
   // Get Groups
@@ -152,19 +153,21 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
   }
 
   // Handle Logout State Change
-  void _handleLogoutStateChange(BuildContext context, AuthState state) {
-    if (!logout) {
-      return;
-    }
-    if (state.logoutMessage != null) {
-      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
-    }
-    if (state.logoutFailure != null) {
-      var prefs = sl<SharedPreferenceModule>();
-      prefs.clear();
-      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
-    }
-  }
+  // void _handleLogoutStateChange(BuildContext context, AuthState state) {
+  //   logger.d("Logout: $logout");
+  //   if (!logout) {
+  //     return;
+  //   }
+  //     preferences.clear();
+  //     nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+  //   if (state.logoutMessage != null) {
+  //   }
+  //   // if (state.logoutFailure != null) {
+  //   //   var prefs = sl<SharedPreferenceModule>();
+  //   //   prefs.clear();
+  //   //   nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+  //   // }
+  // }
 
   // Handle Space State Change
   void _handleSpaceStateChange(BuildContext context, SpaceState state) {
@@ -180,10 +183,12 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
       }
     }
     if (state.status == SpaceStateStatus.error) {
-      if (state.errorMessage == "Unauthorized" ||
-          state.errorMessage == "Exception: Unauthorized") {
-        _refreshTokens();
-      }
+      // if (state.errorMessage == "Unauthorized" ||
+      //     state.errorMessage == "Exception: Unauthorized") {
+      //   _refreshTokens();
+      // }
+      logger.i(state.errorMessage);
+      _logout();
     }
   }
 
@@ -294,8 +299,8 @@ class _FullPageLoaderAuthState extends State<FullPageLoaderAuth> {
               // TODO: implement refresh listener
               if (mounted) {
                 if (isCurrentPage) {
-                  _handleRefreshStateChange(context, state);
-                  _handleLogoutStateChange(context, state);
+                  // _handleRefreshStateChange(context, state);
+                  // _handleLogoutStateChange(context, state);
                 }
               }
             },
