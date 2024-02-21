@@ -84,9 +84,9 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-#          name: app-release
+          name: app-release
 #          path: build/app/outputs/flutter-apk/app-release.apk
-          name: seymo_v$APP_VERSION
+#          name: seymo_v${{ env.APP_VERSION }}
           path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
 
   release:
@@ -98,8 +98,8 @@ jobs:
         env:
           appVersion: ${{ needs.build.outputs.appVersion }}
         with:
-#          name: app-release
-          name: seymo_v${{ env.appVersion }}
+          name: app-release
+#          name: seymo_v${{ env.appVersion }}
           path: build/app/outputs/flutter-apk/
 
       - name: Create Release and Upload APK to Release
