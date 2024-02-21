@@ -72,5 +72,31 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v2
         with:
-          name: app-release
+          name: seymo_v$APP_VERSION
           path: build/app/outputs/flutter-apk/*.apk
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.build.outputs.APP_VERSION }}
+          release_name: Release ${{ needs.build.outputs.APP_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload APKs to Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/seymo_v${{ needs.build.outputs.APP_VERSION }}/
+          asset_name: seymo_v${{ needs.build.outputs.APP_VERSION }}.apk
+          asset_content_type: application/vnd.android.package-archive
