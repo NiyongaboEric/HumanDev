@@ -74,8 +74,8 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-#      - name: Rename APK
-#        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
 
 #      - name: Check files in folder
 #        run: |
@@ -84,10 +84,10 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
-#          name: seymo_v$APP_VERSION
-#          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
+#          name: app-release
+#          path: build/app/outputs/flutter-apk/app-release.apk
+          name: seymo_v$APP_VERSION
+          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
 
   release:
     needs: build
@@ -95,8 +95,11 @@ jobs:
     steps:
       - name: Download APKs
         uses: actions/download-artifact@v4
+        env:
+          appVersion: ${{ needs.build.outputs.appVersion }}
         with:
-          name: app-release
+#          name: app-release
+          name: seymo_v${{ env.appVersion }}
           path: build/app/outputs/flutter-apk/
 
       - name: Create Release and Upload APK to Release
@@ -105,36 +108,11 @@ jobs:
         env:
           GITHUB_REPOSITORY: my_gh_org/my_gh_repo
           appVersion: ${{ needs.build.outputs.appVersion }}
-#        if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: build/app/outputs/flutter-apk/app-release.apk
+#          files: build/app/outputs/flutter-apk/app-release.apk
+          files: build/app/outputs/flutter-apk/seymo_v${{ env.appVersion }}.apk
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Release ${{ env.appVersion }}
+          name: Release v${{ env.appVersion }}
           tag_name: v${{ env.appVersion }}
           draft: false
           prerelease: false
-
-#      - name: Create Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          appVersion: ${{ needs.build.outputs.appVersion }}
-#        with:
-#          tag_name: v${{ env.appVersion }}
-#          release_name: Release ${{ env.appVersion }}
-#          draft: false
-#          prerelease: false
-
-#      - name: Upload APKs to Release
-#        id: upload-release-asset
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: build/app/outputs/flutter-apk/app-release.apk
-#          asset_name: app-release.apk
-##          asset_name: seymo_v${{ needs.build.outputs.app_version }}.apk
-##          asset_name: seymo_v${{ env.APP_VERSION }}.apk
-#          asset_content_type: application/vnd.android.package-archive
