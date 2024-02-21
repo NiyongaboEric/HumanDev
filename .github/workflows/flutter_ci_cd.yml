@@ -93,11 +93,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Show app version
-        env:
-          appVersion: ${{ needs.build.outputs.appVersion }}
-        run: |
-          echo "App Version: '${{ env.appVersion }}'"
+      - name: Download APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/
 
       - name: Create Release and Upload APK to Release
         id: create_and_release
