@@ -70,23 +70,35 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
+#      - name: Rename APK
+#        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
 
-      - name: Check files in folder
-        run: |
-          ls build/app/outputs/flutter-apk
+#      - name: Check files in folder
+#        run: |
+#          ls build/app/outputs/flutter-apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v2
         with:
-          name: seymo_v$APP_VERSION
-          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+#          name: seymo_v$APP_VERSION
+#          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
 
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Show app version
+        run: |
+          echo "App Version 0.1: '${{ APP_VERSION }}'"
+          echo "App Version 0.2: ${{ env.APP_VERSION }}'"
+          APP_VERSION=${{ needs.build.outputs.app_version }}
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          echo "App Version 1: '${{ needs.build.outputs.app_version }}'"
+          echo "App Version 2: '$APP_VERSION'"
+          echo "App Version 3: '${{ env.APP_VERSION }}'"
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
