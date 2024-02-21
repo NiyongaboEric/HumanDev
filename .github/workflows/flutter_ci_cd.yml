@@ -73,7 +73,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: seymo_v$APP_VERSION
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
+#          path: build/app/outputs/flutter-apk/*.apk
 
   release:
     needs: build
@@ -95,8 +96,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ APP_VERSION }}
-          release_name: Release ${{ APP_VERSION }}
+          tag_name: v${{ env.APP_VERSION }}
+          release_name: Release ${{ env.APP_VERSION }}
           draft: false
           prerelease: false
 
