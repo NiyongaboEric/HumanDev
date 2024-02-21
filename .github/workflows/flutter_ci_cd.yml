@@ -91,8 +91,7 @@ jobs:
     steps:
       - name: Show app version
         run: |
-          echo "App Version 0.1: '${{ APP_VERSION }}'"
-          echo "App Version 0.2: ${{ env.APP_VERSION }}'"
+          echo "App Version 0: ${{ env.APP_VERSION }}'"
           APP_VERSION=${{ needs.build.outputs.app_version }}
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
           echo "App Version 1: '${{ needs.build.outputs.app_version }}'"
@@ -118,6 +117,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: build/app/outputs/flutter-apk/
-          asset_name: seymo_v${{ needs.build.outputs.app_version }}.apk
+          asset_name: app-release.apk
+#          asset_name: seymo_v${{ needs.build.outputs.app_version }}.apk
 #          asset_name: seymo_v${{ env.APP_VERSION }}.apk
           asset_content_type: application/vnd.android.package-archive
