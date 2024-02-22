@@ -439,8 +439,10 @@ class _SMSReminderStudentListScreenState
           Text(
             fullName.length > 24 ? '${fullName.substring(0, 11)}...' : fullName,
             style: TextStyle(
-                color: SecondaryColors.secondaryOrange,
-                fontSize: CustomFontSize.small),
+              color: SecondaryColors.secondaryOrange,
+              fontSize: CustomFontSize.small,
+              fontWeight: FontWeight.w500
+            ),
           ),
           const SizedBox(width: 10),
           _buildNullNumberImage(person),
@@ -478,18 +480,17 @@ class _SMSReminderStudentListScreenState
               "${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}",
               style: TextStyle(
                   fontSize: CustomFontSize.small,
-                  color: SecondaryColors.secondaryOrange),
+                  color: Color(0xFFF522402),
+                  
+                ),
             )
           : Text(
-            // ${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}
-              "No due amount",
+              "No due payment",
               style: TextStyle(
                   fontSize: CustomFontSize.small,
-                  color: SecondaryColors.secondaryOrange),
+                  color: Color(0xFF80624A)),
             )
           ,
-
-
         ),
       );
   // Build Null Number Image For Subtitle
@@ -516,11 +517,19 @@ class _SMSReminderStudentListScreenState
   // Build Checkbox
   Widget? _buildCheckbox(PersonModel person) => SizedBox.square(
         dimension: 25,
-        child: Checkbox(
-          activeColor: SecondaryColors.secondaryOrange,
-          value: getCheckboxValue(person),
-          onChanged: (value) => onCheckboxChanged(person, value),
-        ),
+        child: (person.studentInvoices != null && person.studentInvoices!.isNotEmpty)
+          ?
+            Checkbox(
+              activeColor: Color(0xFFFD9C02),
+              value: getCheckboxValue(person),
+              onChanged: (value) => onCheckboxChanged(person, value),
+            )
+          :
+            Checkbox(
+              value: getCheckboxValue(person),
+              onChanged: (value) => {},
+              side: BorderSide(color: Colors.grey),
+            ),
       );
   // On Checkbox Changed
   onCheckboxChanged(PersonModel person, bool? value) {
