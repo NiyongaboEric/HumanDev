@@ -91,6 +91,10 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+
+    outputs:
+      appVersion: ${{ needs.build.outputs.appVersion }}
+
     steps:
       - name: Download APKs
         uses: actions/download-artifact@v4
@@ -121,7 +125,7 @@ jobs:
           echo "Download URL: $download_url"
 
   deploy:
-    needs: build
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout target repository
@@ -133,7 +137,7 @@ jobs:
 
       - name: Merge from main
         env:
-          appVersion: ${{ needs.build.outputs.appVersion }}
+          appVersion: ${{ needs.release.outputs.appVersion }}
         run: |
           git checkout main
           git pull
@@ -153,7 +157,7 @@ jobs:
 
       - name: Commit and push changes to target repository
         env:
-          appVersion: ${{ needs.build.outputs.appVersion }}
+          appVersion: ${{ needs.release.outputs.appVersion }}
         run: |
           ls public/app
           git config user.name "GitHub Actions"
@@ -166,7 +170,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         env:
-          appVersion: ${{ needs.build.outputs.appVersion }}
+          appVersion: ${{ needs.release.outputs.appVersion }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "Update APK to version ${{ env.appVersion }}"
