@@ -53,11 +53,11 @@ jobs:
         run: |
           echo "class ApiConstants {" >> lib/data/constants/constants.dart
           if [[ $GITHUB_REF == refs/heads/main ]]; then
-            echo MAIN BRANCH
-            echo "static const String baseAuthUrl = 'https://dev.auth.seymo.ai';" >> lib/data/constants/constants.dart
+            echo MAIN BRANCH URL: ${{ secrets.PROD_AUTH_URL }}
+            echo "static const String baseAuthUrl = '${{ secrets.PROD_AUTH_URL }}';" >> lib/data/constants/constants.dart
           else
-            echo DEV BRANCH
-            echo "static const String baseAuthUrl = 'https://dev.auth.seymo.ai';" >> lib/data/constants/constants.dart
+            echo DEV BRANCH URL: ${{ secrets.DEV_AUTH_URL }}
+            echo "static const String baseAuthUrl = '${{ secrets.DEV_AUTH_URL }}';" >> lib/data/constants/constants.dart
           fi
           echo "}" >> lib/data/constants/constants.dart
 
@@ -113,9 +113,5 @@ jobs:
           release_data=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/HumanDevIP/Pay-FrontEnd-MobileApp/releases/latest")
           download_url=$(echo "$release_data" | jq -r '.assets[0].browser_download_url')
-          echo "::set-output name=download_url::$download_url"
-
-      - name: Use release artifact URL
-        run: |
-          download_url=$RELEASE_DOWNLOAD_URL
+          echo "release_data: $release_data"
           echo "Download URL: $download_url"
