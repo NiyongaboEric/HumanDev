@@ -50,14 +50,17 @@ jobs:
       #   run: dart test
 
       - name: Generate constants file
+        env:
+          PROD_AUTH_URL: ${{ secrets.PROD_AUTH_URL }}
+          DEV_AUTH_URL: ${{ secrets.DEV_AUTH_URL }}
         run: |
           echo "class ApiConstants {" >> lib/data/constants/constants.dart
           if [[ $GITHUB_REF == refs/heads/main ]]; then
-            echo MAIN BRANCH
-            echo "static const String baseAuthUrl = '${{ secrets.PROD_AUTH_URL }}';" >> lib/data/constants/constants.dart
+            echo MAIN BRANCH URL $PROD_AUTH_URL
+            echo "static const String baseAuthUrl = '$PROD_AUTH_URL';" >> lib/data/constants/constants.dart
           else
-            echo DEV BRANCH
-            echo "static const String baseAuthUrl = '${{ secrets.DEV_AUTH_URL }}';" >> lib/data/constants/constants.dart
+            echo DEV BRANCH URL $DEV_AUTH_URL
+            echo "static const String baseAuthUrl = '$DEV_AUTH_URL';" >> lib/data/constants/constants.dart
           fi
           echo "}" >> lib/data/constants/constants.dart
 
