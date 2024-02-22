@@ -421,9 +421,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                                         onPressed: () {
                                           // Remove the row from the data source.
                                           setState(() {
-                                            itemsDataSource.rows.removeAt(
-                                                itemsDataSource.rows
-                                                    .indexOf(e));
+                                            itemsDataSource.rows.remove(e);
                                             // Save Items
                                             widget.savedItems!(
                                                 itemsDataSource.savedItem());
@@ -595,12 +593,13 @@ class _InvoiceTableState extends State<InvoiceTable> {
                         ),
                         SizedBox(width: 5),
                         Text(
+                          itemsDataSource.rows.isNotEmpty?
                           itemsDataSource.rows
                                   .map((e) => double.parse(
                                       e.getCells()[3].value.toString()))
                                   .toList()
                                   .reduce((value, element) => value + element)
-                                  .toString(),
+                                  .toString() : '0.0',
                           style: TextStyle(
                             color: SecondaryColors.secondaryPurple,
                             fontSize: CustomFontSize.medium,
