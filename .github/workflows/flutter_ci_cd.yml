@@ -113,5 +113,4 @@ jobs:
           release_data=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/HumanDevIP/Pay-FrontEnd-MobileApp/releases/latest")
           download_url=$(echo "$release_data" | jq -r '.assets[0].browser_download_url')
-          echo "release_data: $release_data"
           echo "Download URL: $download_url"
