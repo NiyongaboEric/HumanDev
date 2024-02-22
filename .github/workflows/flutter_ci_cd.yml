@@ -73,7 +73,11 @@ jobs:
           echo "appVersion=$APP_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build APK
-        run: flutter build apk --release
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          echo "APP BUILD NUMBER: $BUILD_NUMBER"
+          flutter build apk --release --build-number=$BUILD_NUMBER
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo.apk
