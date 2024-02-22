@@ -10,6 +10,9 @@
 .svn/
 migrate_working_dir/
 
+# This file will be dinamically created in the ci-cd pipeline
+/lib/data/constants/constants.dart
+
 # IntelliJ related
 *.iml
 *.ipr
