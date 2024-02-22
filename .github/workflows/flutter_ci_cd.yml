@@ -68,25 +68,18 @@ jobs:
           echo "App Version: $APP_VERSION"
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
           echo "appVersion=$APP_VERSION" >> $GITHUB_OUTPUT
-#          echo "::set-output name=app_version::$APP_VERSION"
 
       - name: Build APK
         run: flutter build apk --release
 
       - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo_v$APP_VERSION.apk
-
-#      - name: Check files in folder
-#        run: |
-#          ls build/app/outputs/flutter-apk
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/seymo.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-#          path: build/app/outputs/flutter-apk/app-release.apk
-#          name: seymo_v${{ env.APP_VERSION }}
-          path: build/app/outputs/flutter-apk/seymo_v${{ env.APP_VERSION }}.apk
+          path: build/app/outputs/flutter-apk/seymo.apk
 
   release:
     needs: build
@@ -98,7 +91,6 @@ jobs:
           appVersion: ${{ needs.build.outputs.appVersion }}
         with:
           name: app-release
-#          name: seymo_v${{ env.appVersion }}
           path: build/app/outputs/flutter-apk/
 
       - name: Create Release and Upload APK to Release
@@ -108,10 +100,22 @@ jobs:
           GITHUB_REPOSITORY: my_gh_org/my_gh_repo
           appVersion: ${{ needs.build.outputs.appVersion }}
         with:
-#          files: build/app/outputs/flutter-apk/app-release.apk
-          files: build/app/outputs/flutter-apk/seymo_v${{ env.appVersion }}.apk
+          files: build/app/outputs/flutter-apk/seymo.apk
           token: ${{ secrets.GITHUB_TOKEN }}
           name: Release v${{ env.appVersion }}
           tag_name: v${{ env.appVersion }}
           draft: false
           prerelease: false
+
+      - name: Get release information
+        id: release_info
+        run: |
+          release_data=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/HumanDevIP/Pay-FrontEnd-MobileApp/releases/latest")
+          download_url=$(echo "$release_data" | jq -r '.assets[0].browser_download_url')
+          echo "::set-output name=download_url::$download_url"
+
+      - name: Use release artifact URL
+        run: |
+          download_url=$RELEASE_DOWNLOAD_URL
+          echo "Download URL: $download_url"
