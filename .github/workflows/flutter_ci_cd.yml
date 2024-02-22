@@ -3,13 +3,10 @@ name: Flutter CI-CD
 on:
   push:
     branches: [ "main","dev" ]
-  pull_request:
-    branches: [ "main" ]
-    paths-ignore:
-      - 'dev/**'
 
 jobs:
   build:
+    if: "!contains(tolower(github.event.head_commit.message), 'merge')"
     runs-on: ubuntu-latest
 
     outputs:
