@@ -188,6 +188,7 @@ class PersonModel {
   final List<Group>? groups;
   final int? totalDue;
   final List<InvoiceModel>? studentInvoices;
+  final String? notes;
 
   // Get Role from 1st group
   String? get role {
@@ -233,6 +234,7 @@ class PersonModel {
     this.groups,
     this.totalDue,
     this.studentInvoices,
+    this.notes
   });
 
   factory PersonModel.fromJson(Map<String, dynamic> json) {
@@ -284,6 +286,7 @@ class PersonModel {
           ? List<InvoiceModel>.from((json['studentInvoices'] as List)
               .map((x) => InvoiceModel.fromJson(x)))
           : null,
+      notes: json['notes']
     );
   }
 
@@ -322,6 +325,7 @@ class PersonModel {
           ? relativeRelations!.map((x) => x.toJson()).toList()
           : null,
       'groups': groups != null ? groups!.map((x) => x.toJson()).toList() : null,
+      'notes': notes
     };
   }
 }

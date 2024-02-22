@@ -214,6 +214,13 @@ class _PersonDetailsState extends State<PersonDetails> {
                   selectGroupList.map((e) => e.id!).toList().toSet().toList(),
               personChildRelations: parentList.map((e) => e.relation).toList(),
               isLegal: false,
+              address: Address(
+                street: streetController.text,
+                city: cityController.text,
+                state: stateController.text,
+                zip: zipController.text,
+              ),
+              notes: notesController.text
             )),
           );
     } else {
@@ -271,6 +278,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                     zip: zipController.text,
                   ),
                   isDeactivated: widget.person!.isDeactivated,
+                  notes: notesController.text
                 )),
               );
         }
@@ -418,6 +426,7 @@ class _PersonDetailsState extends State<PersonDetails> {
       selectedDate = widget.person!.dateOfBirth != null
           ? DateTime.parse(widget.person!.dateOfBirth!)
           : DateTime.now();
+      notesController.text = widget.person!.notes ?? "";
     } else {
       if (widget.contactVariant == ContactVariant.student) {
         // Get the student role

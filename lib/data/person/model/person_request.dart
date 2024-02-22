@@ -22,6 +22,7 @@ class PersonRequest {
   final List<PersonChildRelation>? personChildRelations;
   final String? organizationName;
   final List<int>? groupIds;
+  final String? notes;
 
   const PersonRequest({
     this.id,
@@ -45,6 +46,7 @@ class PersonRequest {
     this.personChildRelations,
     this.organizationName,
     this.groupIds,
+    this.notes
   });
 
   Map<String, dynamic> toJson() {
@@ -68,6 +70,7 @@ class PersonRequest {
       "personChildRelations": personChildRelations?.map((e) => e.toJson()).toList(),
       'organizationName': organizationName,
       'groupIds': groupIds,
+      'notes': notes
     };
   }
 }
@@ -98,6 +101,7 @@ class UpdatePersonRequest {
   final List<PersonChildRelation>? connectPersonChildRelations;
   final List<int>? disconnectPersonChildRelations;
   final bool isDeactivated;
+  final String? notes;
 
   const UpdatePersonRequest({
     this.id,
@@ -125,6 +129,7 @@ class UpdatePersonRequest {
     this.connectPersonChildRelations,
     this.disconnectPersonChildRelations,
     required this.isDeactivated,
+    this.notes
   });
 
   Map<String, dynamic> toJson() {
@@ -154,6 +159,7 @@ class UpdatePersonRequest {
       'connectPersonChildRelations': connectPersonChildRelations,
       'disconnectPersonChildRelations': disconnectPersonChildRelations,
       'isDeactivated': isDeactivated,
+      'notes': notes
     };
   }
 }
