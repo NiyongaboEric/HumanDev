@@ -51,8 +51,8 @@ jobs:
 
       - name: Generate constants file
         env:
-          PROD_AUTH_URL: ${{ secrets.PROD_AUTH_URL }}
-          DEV_AUTH_URL: ${{ secrets.DEV_AUTH_URL }}
+          PROD_AUTH_URL: ${{ vars.PROD_AUTH_URL }}
+          DEV_AUTH_URL: ${{ vars.DEV_AUTH_URL }}
         run: |
           echo "class ApiConstants {" >> lib/data/constants/constants.dart
           if [[ $GITHUB_REF == refs/heads/main ]]; then
