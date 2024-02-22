@@ -24,7 +24,7 @@ class _SMSReminderState extends State<SMSReminder> {
         action: () {
           nextScreen(
               context: context,
-              screen: const SMSReminderStudentListScreen());
+              screen: SMSReminderStudentListScreen(checkOnlyDuePayment: false));
         },
       ),
       SMSReminderModel(
@@ -33,7 +33,7 @@ class _SMSReminderState extends State<SMSReminder> {
         action: () {
           nextScreen(
               context: context,
-              screen: const SMSReminderStudentListScreen());
+              screen: SMSReminderStudentListScreen(checkOnlyDuePayment: true,));
         },
       ),
     ];

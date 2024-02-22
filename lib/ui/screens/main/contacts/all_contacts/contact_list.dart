@@ -268,7 +268,13 @@ class _ContactListScreenState extends State<ContactListScreen> {
     // Group filtered Contacts
     var filteredContacts = filterSelectedGroupContacts(selectedGroup, contacts);
     return filteredContacts.map((contact) {
-      return contact.firstName.substring(0, 1);
+      logger.wtf(contact.firstName);
+      // return contact.firstName?.substring(0, 1) ?? "";
+
+       return contact.firstName.isNotEmpty
+        ? contact.firstName.substring(0, 1)
+        : "";
+
     }).toList();
   }
 

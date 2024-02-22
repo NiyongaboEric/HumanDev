@@ -22,7 +22,8 @@ import '../../blocs/reminder_bloc.dart';
 var sl = GetIt.instance;
 
 class SMSReminderStudentListScreen extends StatefulWidget {
-  const SMSReminderStudentListScreen({super.key});
+  SMSReminderStudentListScreen({super.key, required this.checkOnlyDuePayment});
+  bool checkOnlyDuePayment;
 
   @override
   State<SMSReminderStudentListScreen> createState() =>
@@ -35,7 +36,9 @@ class _SMSReminderStudentListScreenState
   TextEditingController searchController = TextEditingController();
   var prefs = sl<SharedPreferenceModule>();
   List<PersonModel> searchResults = [];
+  List<PersonModel> searchWithDuePendingResults = [];
   List<PersonModel> students = [];
+  List<PersonModel> studentsWithDuePending = [];
   List<PersonModel> selectedStudents = [];
   List<ChildRelation> selectedParents = <ChildRelation>[];
   // Groups
@@ -60,6 +63,15 @@ class _SMSReminderStudentListScreenState
       setState(() {
         showResults = true;
         searchResults = students
+            .where((element) =>
+                element.firstName.toLowerCase().contains(query.toLowerCase()) ||
+                (element.middleName ?? "")
+                    .toLowerCase()
+                    .contains(query.toLowerCase()) ||
+                element.lastName1.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+
+        searchWithDuePendingResults = studentsWithDuePending
             .where((element) =>
                 element.firstName.toLowerCase().contains(query.toLowerCase()) ||
                 (element.middleName ?? "")
@@ -155,8 +167,14 @@ class _SMSReminderStudentListScreenState
     if (state.status == PersonStatus.success) {
       // Clear the list of students
       students.clear();
+      studentsWithDuePending.clear();
       // Add the students to the list
       students.addAll(
+        state.persons.where(
+          (element) => element.role == Role.Student.name
+        ),
+      );
+      studentsWithDuePending.addAll(
         state.persons.where(
           (element) =>
               element.role == Role.Student.name &&
@@ -268,7 +286,8 @@ class _SMSReminderStudentListScreenState
     // TODO: implement initState
     // Get All Students from Shared Preferences
     var studentsFromSharedPrefs = prefs.getStudents();
-    students.addAll(studentsFromSharedPrefs.where((element) =>
+    students.addAll(studentsFromSharedPrefs);
+    studentsWithDuePending.addAll(studentsFromSharedPrefs.where((element) =>
         (element.studentInvoices != null &&
             element.studentInvoices!.isNotEmpty)));
 
@@ -286,15 +305,19 @@ class _SMSReminderStudentListScreenState
   @override
   Widget build(BuildContext context) {
     // Initialize the alphabet view
+
+    var displayStudents = widget.checkOnlyDuePayment ? studentsWithDuePending : students;
+    var displaySearchStudents = widget.checkOnlyDuePayment ? searchWithDuePendingResults : searchResults;
+
     studentAlphabetView = buildAlphabetView(
-      getFirstCharacters(students),
-      students,
+      getFirstCharacters(displayStudents),
+      displayStudents,
     );
 
     // Initialize the search result alphabet view
     searchResultAlphabetView = buildAlphabetView(
-      getFirstCharacters(searchResults),
-      searchResults,
+      getFirstCharacters(displaySearchStudents),
+      displaySearchStudents,
     );
 
     // Initialize the alphabet list view options
@@ -323,7 +346,11 @@ class _SMSReminderStudentListScreenState
           // extendBody: true,
           backgroundColor: Colors.orange.shade50,
           floatingActionButton:
-              students.isNotEmpty ? _buildFloatingActionButton() : null,
+            widget.checkOnlyDuePayment
+              ? 
+                studentsWithDuePending.isNotEmpty ? _buildFloatingActionButton() : null 
+              : 
+                students.isNotEmpty ? _buildFloatingActionButton() : null,
           appBar: _buildAppBar(options),
           body: _buildBody(options, state),
         ),
@@ -394,6 +421,10 @@ class _SMSReminderStudentListScreenState
           title: _buildTitleRow(fullName, student),
           subtitle: _buildSubtitleRow(student),
           trailing: _buildCheckbox(student),
+          // trailing: student.studentInvoices != null && student.studentInvoices!.isNotEmpty 
+          //   ?  _buildCheckbox(student)
+          //   :  Container()
+          // ,
         ),
         Divider(
           color: SecondaryColors.secondaryOrange.withOpacity(0.2),
@@ -441,12 +472,24 @@ class _SMSReminderStudentListScreenState
         child: FittedBox(
           alignment: Alignment.centerLeft,
           fit: BoxFit.scaleDown,
-          child: Text(
-            "${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}",
-            style: TextStyle(
-                fontSize: CustomFontSize.small,
-                color: SecondaryColors.secondaryOrange),
-          ),
+          child: 
+          person.studentInvoices != null && person.studentInvoices!.isNotEmpty
+          ? Text(
+              "${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}",
+              style: TextStyle(
+                  fontSize: CustomFontSize.small,
+                  color: SecondaryColors.secondaryOrange),
+            )
+          : Text(
+            // ${DateFormat('dd MMM yy').format(DateTime.parse(person.studentInvoices!.first.invoiceDate))} - Due: ${person.studentInvoices!.first.currency} ${person.totalDue}
+              "No due amount",
+              style: TextStyle(
+                  fontSize: CustomFontSize.small,
+                  color: SecondaryColors.secondaryOrange),
+            )
+          ,
+
+
         ),
       );
   // Build Null Number Image For Subtitle
@@ -632,7 +675,12 @@ class _SMSReminderStudentListScreenState
       ),
       centerTitle: true,
       actions: [_buildReminderBlocListener()],
-      bottom: students.isNotEmpty? _buildPreferredSize(): null,
+      bottom: 
+        widget.checkOnlyDuePayment
+          ? 
+            studentsWithDuePending.isNotEmpty ? _buildPreferredSize() : null 
+          : 
+            students.isNotEmpty ? _buildPreferredSize() : null
     );
   }
 
@@ -700,7 +748,7 @@ class _SMSReminderStudentListScreenState
 
   // Build Body
   Widget _buildBody(AlphabetListViewOptions options, PersonState state) {
-    return state.isLoading && students.isEmpty
+    return state.isLoading
         ? const Center(
             child: GFLoader(
               type: GFLoaderType.ios,
@@ -717,37 +765,71 @@ class _SMSReminderStudentListScreenState
                   ),
                 ),
               )
-            : showResults
+            : widget.checkOnlyDuePayment
+            // showResults
+              ? showResults 
+                ? searchWithDuePendingResults.isEmpty
+                  ? Center(
+                      child: Text(
+                        "No results found",
+                        style: TextStyle(
+                          color: SecondaryColors.secondaryOrange,
+                          fontSize: CustomFontSize.medium,
+                        ),
+                      ),
+                    )
+                  : AlphabetListView(
+                    items: searchResultAlphabetView,
+                    options: options,
+                  )
+                : studentsWithDuePending.isEmpty
+                  ? Center(
+                      child: Text(
+                        "No students found",
+                        // Center text
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          // fontWeight: FontWeight.bold,
+                          color: SecondaryColors.secondaryOrange,
+                          fontSize: 20,
+                        ),
+                      ),
+                    )
+                  : AlphabetListView(
+                    options: options,
+                    items: studentAlphabetView,
+                  )
+              : showResults
                 ? searchResults.isEmpty
-                    ? Center(
-                        child: Text(
-                          "No results found",
-                          style: TextStyle(
-                            color: SecondaryColors.secondaryOrange,
-                            fontSize: CustomFontSize.medium,
-                          ),
+                  ? Center(
+                      child: Text(
+                        "No results found",
+                        style: TextStyle(
+                          color: SecondaryColors.secondaryOrange,
+                          fontSize: CustomFontSize.medium,
                         ),
-                      )
-                    : AlphabetListView(
-                        items: searchResultAlphabetView,
-                        options: options,
-                      )
+                      ),
+                    )
+                  : AlphabetListView(
+                    items: searchResultAlphabetView,
+                    options: options,
+                  )
                 : students.isEmpty
-                    ? Center(
-                        child: Text(
-                          "There are no students behind payments schedules.",
-                          // Center text
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            // fontWeight: FontWeight.bold,
-                            color: SecondaryColors.secondaryOrange,
-                            fontSize: 20,
-                          ),
+                  ? Center(
+                      child: Text(
+                        "No students found",
+                        // Center text
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          // fontWeight: FontWeight.bold,
+                          color: SecondaryColors.secondaryOrange,
+                          fontSize: 20,
                         ),
-                      )
-                    : AlphabetListView(
-                        options: options,
-                        items: studentAlphabetView,
-                      );
+                      ),
+                    )
+                  : AlphabetListView(
+                    options: options,
+                    items: studentAlphabetView,
+                  );
   }
 }
