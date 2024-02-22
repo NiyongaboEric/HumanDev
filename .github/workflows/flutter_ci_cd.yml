@@ -191,8 +191,7 @@ jobs:
             const repository = context.repo
 
             await github.rest.pulls.merge({
-              merge_method: "merge",
-              owner: repository.owner,
-              pull_number: pullRequest.number,
-              repo: repository.repo,
-            })
+                    merge_method: "merge",
+                    owner: repository.owner,
+                    pull_number: pullRequest.number,
+                    repo: repository.repo})
