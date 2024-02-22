@@ -53,10 +53,10 @@ jobs:
         run: |
           echo "class ApiConstants {" >> lib/data/constants/constants.dart
           if [[ $GITHUB_REF == refs/heads/main ]]; then
-            echo MAIN BRANCH URL: ${{ secrets.PROD_AUTH_URL }}
+            echo MAIN BRANCH
             echo "static const String baseAuthUrl = '${{ secrets.PROD_AUTH_URL }}';" >> lib/data/constants/constants.dart
           else
-            echo DEV BRANCH URL: ${{ secrets.DEV_AUTH_URL }}
+            echo DEV BRANCH
             echo "static const String baseAuthUrl = '${{ secrets.DEV_AUTH_URL }}';" >> lib/data/constants/constants.dart
           fi
           echo "}" >> lib/data/constants/constants.dart
