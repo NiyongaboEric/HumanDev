@@ -30,7 +30,9 @@ var sl = GetIt.instance;
 enum PersonType { STUDENT, THIRD_PARTY }
 
 class PeopleListInvoice extends StatefulWidget {
-  const PeopleListInvoice({super.key,});
+  const PeopleListInvoice({
+    super.key,
+  });
 
   @override
   State<PeopleListInvoice> createState() => _PeopleListInvoiceState();
@@ -98,11 +100,18 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   }
 
   // Filter Selected Group Contacts
-  List<PersonModel> filterSelectedGroupContacts(String group, List<PersonModel> contacts) {
+  List<PersonModel> filterSelectedGroupContacts(
+      String group, List<PersonModel> contacts) {
     if (group == "All groups") {
       return contacts;
     }
-    return contacts.where((element) => element.role == group).toList();
+    // Filter contacts by group
+    var filteredContacts = contacts
+        .where((element) =>
+            element.groups?.any((element) => element.name == group) ?? false)
+        .toList();
+    if (filteredContacts.length == 0) logger.f("No contacts found");
+    return filteredContacts;
   }
 
   // Logout
@@ -142,17 +151,20 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         people.clear();
       });
       // Handle Success
-      for (var person in state.persons) {
-        if (person.role == Role.Student.name) {
-          if (!people.contains(person)) {
-            people.add(person);
-          } else {
-            people.remove(person);
-          }
-        }
-      }
-      var offlineStudentList = json.encode(people);
-      preferences.setString("students", offlineStudentList);
+      // for (var person in state.persons) {
+      //   if (person.role == Role.Student.name) {
+      //     if (!people.contains(person)) {
+      //       people.add(person);
+      //     } else {
+      //       people.remove(person);
+      //     }
+      //   }
+      // }
+      setState(() {
+        people.addAll(state.persons);
+      });
+      // var offlineStudentList = json.encode(people);
+      // preferences.setString("students", offlineStudentList);
     }
     if (state.status == PersonStatus.error) {
       GFToast.showToast(
@@ -178,7 +190,8 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         if (state.groups == null) return;
         // groups.add("All groups");
         roleGroups.addAll(state.groups!.where((element) => element.isRole!));
-        nonRoleGroups.addAll(state.groups!.where((element) => !element.isRole!));
+        nonRoleGroups
+            .addAll(state.groups!.where((element) => !element.isRole!));
       });
     }
     if (state.status == GroupStateStatus.error) {
@@ -244,7 +257,6 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
 
   @override
   Widget build(BuildContext context) {
-
     // Initialize the AlphabetListViewOptions
     final AlphabetListViewOptions options =
         _buildAlphabetListViewOptions(updateSelectionState);
@@ -287,38 +299,38 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
             backgroundColor: BackgroundColors.bgPurple,
             appBar: _buildAppBar(),
             floatingActionButton:
-                isSelect
-                    ? _buildFloatingActionButton()
-                    : Container(),
+                isSelect ? _buildFloatingActionButton() : Container(),
             body: _buildBody(options, state),
           );
         },
       ),
     );
   }
+
   // Get First Characters
   List<String> getFirstCharacters(List<PersonModel> contacts) {
     // Group filtered Contacts
     var filteredContacts = filterSelectedGroupContacts(selectedGroup, contacts);
+    logger.i(filteredContacts.map((e) => e.firstName).toList());
     return filteredContacts.map((contact) {
       // return contact.firstName.substring(0, 1);
 
       return contact.firstName.isNotEmpty
-        ? contact.firstName.substring(0, 1)
-        : "";
+          ? contact.firstName.substring(0, 1)
+          : "#";
     }).toList();
   }
 
-
   List<AlphabetListViewItemGroup> buildAlphabetView(
-      List<String> firstCharacters, List<PersonModel> students) {
+      List<String> firstCharacters, List<PersonModel> contact) {
+        var filteredContacts = filterSelectedGroupContacts(selectedGroup, contact);
     return firstCharacters.map(
       (alphabet) {
         // Include student name starting with number or special character
-        students.sort((a, b) => a.firstName.compareTo(b.firstName));
+        filteredContacts.sort((a, b) => a.firstName.compareTo(b.firstName));
         return AlphabetListViewItemGroup(
           tag: alphabet,
-          children: buildStudentListTiles(alphabet, students),
+          children: buildStudentListTiles(alphabet, filteredContacts),
         );
       },
     ).toList();
@@ -510,9 +522,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
         color: SecondaryColors.secondaryPurple,
       ),
       title: Text(
-        isSelect
-            ? "Select recipients"
-            : "Select recipient",
+        isSelect ? "Select recipients" : "Select recipient",
         style: TextStyle(
           color: SecondaryColors.secondaryPurple,
           fontSize: CustomFontSize.large,
@@ -539,10 +549,7 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
-          children: [
-              _buildDropDownOptions(context),
-            _buildSearchBar()
-          ],
+          children: [_buildDropDownOptions(context), _buildSearchBar()],
         ),
       ),
     );
@@ -592,7 +599,17 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
                     fontSize: 20,
                   ),
                 ),
-              )
+              ):
+              filterSelectedGroupContacts(selectedGroup, people).isEmpty
+                ? Center(
+                    child: Text(
+                      "No person found",
+                      style: TextStyle(
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  )
             : showResults
                 ? searchResults.isEmpty
                     ? const Center(
