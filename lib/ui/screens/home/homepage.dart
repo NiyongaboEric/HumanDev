@@ -73,6 +73,10 @@ class _HomePageState extends State<HomePage> {
   // Handle Space Name Change State
   void _handleSpaceNameChangeState(BuildContext context, SpaceState state) {
     if (state.status == SpaceStateStatus.success) {
+      setState(() {
+        updatedName = state.spaces.first.name!;
+        nameUpdated = true;
+      });
       GFToast.showToast(
         "Space name changed successfully",
         context,
@@ -82,10 +86,6 @@ class _HomePageState extends State<HomePage> {
             : GFToastPosition.BOTTOM,
         backgroundColor: Colors.green.shade800,
       );
-      setState(() {
-        updatedName = state.spaces.first.name!;
-        nameUpdated = true;
-      });
       logger.f(state.spaces.first.name);
     }
     if (state.status == SpaceStateStatus.error) {
@@ -219,16 +219,26 @@ class _HomePageState extends State<HomePage> {
       iconTheme: IconThemeData(
         color: SecondaryColors.secondaryOrange,
       ),
-      title: Text(
-        updatedName.isNotEmpty
-            ? updatedName
-            : space?.name == "Your first space!"
-                ? "Seymo"
-                : space!.name!,
+      title: 
+      
+      Text(
+        state.spaces.first.name!.isNotEmpty ?  "${state.spaces.first.name}" : "Seymo",
         style: TextStyle(
           color: SecondaryColors.secondaryOrange,
         ),
       ),
+      
+      // Text(
+      //   updatedName.isNotEmpty
+      //       ? updatedName
+      //       : space?.name == "Your first space!"
+      //           ? "Seymo"
+      //           : space!.name!,
+      //   style: TextStyle(
+      //     color: SecondaryColors.secondaryOrange,
+      //   ),
+      // ),
+
       backgroundColor: const Color(0xFFF5E8D3),
       centerTitle: true,
       actions: [
