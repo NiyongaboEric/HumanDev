@@ -116,9 +116,8 @@ class _SendSMSState extends State<SendSMS> {
   void initState() {
     // TODO: implement initState
     var space = prefs.getSpaces();
-    logger.d("space: ${space[0].spaceSettings}");
-    // messageController.text =
-    //     space[0].spaceSettings?.smsTemplates?.en?.reminder ?? "";
+    messageController.text =
+        space[0].spaceSettings?.smsTemplates.en.reminder ?? "";
     super.initState();
   }
 
@@ -222,28 +221,6 @@ class _SendSMSState extends State<SendSMS> {
                     color: SecondaryColors.secondaryOrange,
                   ),
                 ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.end,
-                //   children: [
-                //     GestureDetector(
-                //       onTap: () {
-                //         setState(() {
-                //           expandRecipients = !expandRecipients;
-                //         });
-                //       },
-                //       child: Text(
-                //         expandRecipients ? "see less" : "see more",
-                //         // Underline text
-                //         style: TextStyle(
-                //           decoration: TextDecoration.underline,
-                //           fontSize: CustomFontSize.extraSmall,
-                //           color:
-                //               SecondaryColors.secondaryOrange.withOpacity(0.65),
-                //         ),
-                //       ),
-                //     )
-                //   ],
-                // ),
                 const SizedBox(height: 30),
                 CustomTextArea(
                   color: SecondaryColors.secondaryOrange,

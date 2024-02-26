@@ -58,7 +58,7 @@ class Space {
     return {
       'id': id,
       'name': name,
-      // 'spaceSettings': spaceSettings?.toJson(),
+      'spaceSettings': spaceSettings?.toJson(),
       'language': language,
       'country': country,
       'timezone': timezone,
@@ -82,6 +82,12 @@ class SpaceSettings {
       smsTemplates: SmsTemplates.fromJson(json['smsTemplates']),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'smsTemplates': smsTemplates.toJson(),
+    };
+  }
 }
 
 class SmsTemplates {
@@ -93,6 +99,12 @@ class SmsTemplates {
     return SmsTemplates(
       en: SmsTemplate.fromJson(json['en']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'en': en.toJson(),
+    };
   }
 }
 
@@ -116,6 +128,15 @@ class SmsTemplate {
       receivedMoney: json['receivedMoney'],
       receivedMoneyParty: json['receivedMoneyParty'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'reminder': reminder,
+      'paidMoney': paidMoney,
+      'receivedMoney': receivedMoney,
+      'receivedMoneyParty': receivedMoneyParty,
+    };
   }
 }
 
