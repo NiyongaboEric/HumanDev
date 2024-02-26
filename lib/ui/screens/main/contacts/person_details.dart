@@ -648,9 +648,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                         saveData();
                       } else {
                         GFToast.showToast(
-                          !selectGroupList.any((element) => element.isRole!)
-                              ? "Please at at least one role"
-                              : "Please fill all required fields",
+                          "Please enter first name and last name",
                           context,
                           toastDuration: 5,
                           toastPosition:
@@ -983,7 +981,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                           saveData();
                         } else {
                           GFToast.showToast(
-                            "Please fill all required fields",
+                            "Please enter first name and last name",
                             context,
                             toastDuration: 5,
                             toastPosition:
