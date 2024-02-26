@@ -284,6 +284,18 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
 
   @override
   Widget build(BuildContext context) {
+    var parentFullName = widget.person!.childRelations!.isNotEmpty
+        ? ([
+            widget.person?.childRelations?.first.firstName ?? "",
+            widget.person?.childRelations?.first.middleName ?? "",
+            widget.person?.childRelations?.first.lastName1 ?? ""
+          ].join(" "))
+        : "";
+    var studentFullName = [
+      widget.person?.firstName ?? "",
+      widget.person?.middleName ?? "",
+      widget.person?.lastName1 ?? ""
+    ].join(" ");
     return VisibilityDetector(
       key: Key("invoice-details"),
       onVisibilityChanged: (visibilityInfo) {
@@ -314,10 +326,12 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
             const SizedBox(height: 20),
             _buildNames(
                 widget.person != null
-                    ? "${widget.person?.childRelations?.first.firstName ?? ""} ${widget.person?.childRelations?.first.lastName1 ?? ""}"
+                    ? parentFullName.trim().isNotEmpty
+                        ? parentFullName
+                        : studentFullName
                     : "${widget.persons!.length.toString()} recipients",
                 widget.person != null
-                    ? "${widget.person?.firstName ?? ""} ${widget.person?.lastName1 ?? ""}"
+                    ? studentFullName
                     : "${widget.persons!.length.toString()} students"),
             const SizedBox(height: 20),
             _buildDatePicker(),
@@ -493,8 +507,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                 logger.e(invoiceItems.length.toString());
                 if (invoiceItems.any((element) =>
                     // element.description.isEmpty ||
-                    element.grossPrice == 0 ||
-                    element.quantity == 0)) {
+                    element.grossPrice == 0 || element.quantity == 0)) {
                   GFToast.showToast(
                     "Please fill all fields in the invoice items section",
                     context,
@@ -506,8 +519,8 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                   return;
                 }
                 // New item's description cannot be "new item"
-                if (invoiceItems.any((element) =>
-                    element.description.isEmpty)){
+                if (invoiceItems
+                    .any((element) => element.description.isEmpty)) {
                   GFToast.showToast(
                     "Invoice name should not be empty",
                     context,
@@ -530,7 +543,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                 //   );
                 //   return;
                 // }
-                if (paymentSchedules.any((element)=>element.dueAmount == 0)) {
+                if (paymentSchedules.any((element) => element.dueAmount == 0)) {
                   GFToast.showToast(
                     "Please fill all fields in the payment schedule section",
                     context,

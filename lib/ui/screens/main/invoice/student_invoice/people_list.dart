@@ -395,14 +395,14 @@ class _PeopleListInvoiceState extends State<PeopleListInvoice> {
   void onPersonTileTap(PersonModel student) {
     if (!isSelect) {
       try {
-        if (student.childRelations == null || student.childRelations!.isEmpty) {
-          GFToast.showToast("No assigned relative", context,
-              toastPosition: GFToastPosition.BOTTOM,
-              toastBorderRadius: 12.0,
-              toastDuration: 6,
-              backgroundColor: Colors.red);
-          return;
-        }
+        // if (student.childRelations == null || student.childRelations!.isEmpty) {
+        //   GFToast.showToast("No assigned relative", context,
+        //       toastPosition: GFToastPosition.BOTTOM,
+        //       toastBorderRadius: 12.0,
+        //       toastDuration: 6,
+        //       backgroundColor: Colors.red);
+        //   return;
+        // }
         nextScreen(
             context: context,
             screen: InvoiceDetails(
