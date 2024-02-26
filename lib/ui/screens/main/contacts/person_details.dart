@@ -849,13 +849,13 @@ class _PersonDetailsState extends State<PersonDetails> {
       },
     );
 
-    return DatePicker(
+    return  DatePicker(
       pickerTimeLime: PickerTimeLime.past,
-      bgColor: Colors.white.withOpacity(0.3),
+      bgColor: widget.contactVariant == ContactVariant.student ? BackgroundColors.bgPink : BackgroundColors.bgLightGreen,
       date: selectedDate,
       onSelect: _changeDate,
-      pickerColor: tertiaryColor,
-      borderColor: _secondaryColorSelection(),
+      pickerColor: widget.contactVariant == ContactVariant.student ? Colors.pink : Colors.green,
+      borderColor: _secondaryColorSelection(), //SecondaryColors.secondaryPurple,
     );
   }
 
