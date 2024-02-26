@@ -73,6 +73,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/SeymoLogo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
+  remove_alpha_ios: true # Remove alpha from iOS icons, default true
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
