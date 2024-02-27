@@ -16,3 +16,10 @@ final class SpaceEventUpdateSpaceName extends SpaceEvent {
 
   const SpaceEventUpdateSpaceName(this.spaceName);
 }
+
+// Update Standard Items
+final class SpaceEventUpdateStandardItems extends SpaceEvent {
+  final List<StandardItem> standardItems;
+
+  const SpaceEventUpdateStandardItems(this.standardItems);
+}

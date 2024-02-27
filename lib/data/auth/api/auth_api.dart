@@ -31,7 +31,7 @@ class AuthApiImpl implements AuthApi {
     // TODO: implement register
     var interceptor = sl.get<RequestInterceptor>();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/registration",
+    final res = await dio.post("/auth/registration",
         data: registrationRequest.toJson());
     logger.e(res.data);
     if (res.statusCode == 201) {
@@ -90,7 +90,7 @@ class AuthApiImpl implements AuthApi {
     var prefs = sl<SharedPreferenceModule>();
     var token = prefs.getToken();
     var dio = sl.get<Dio>()..interceptors.add(interceptor);
-    final res = await dio.post("${ApiConstants.baseAuthUrl}/auth/logout",
+    final res = await dio.post("/auth/logout",
         data: token?.refreshToken);
     logger.f(res.data);
     if (res.statusCode == 200) {

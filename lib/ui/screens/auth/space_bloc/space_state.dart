@@ -3,6 +3,7 @@ part of 'space_bloc.dart';
 enum SpaceStateStatus {
   initial,
   success,
+  updateSuccess,
   error,
 }
 

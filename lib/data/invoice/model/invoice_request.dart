@@ -184,7 +184,7 @@ class PaymentScheduleRequest {
 class InvoiceItemRequest {
   final int quantity;
   final String description;
-  final int? grossPrice;
+  final double? grossPrice;
   final int? netPrice;
   final int? taxAmount;
   final double? taxRate;

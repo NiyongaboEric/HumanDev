@@ -12,6 +12,8 @@ abstract class SpaceApi {
   Future<List<Space>> getSpaces();
   // Update Space
   Future<Space> updateSpace(String name);
+  // Update Standard Items
+  Future<Space> updateStandardItems(List<StandardItem> standardItems);
 }
 
 class SpaceApiImpl implements SpaceApi {
@@ -61,6 +63,41 @@ class SpaceApiImpl implements SpaceApi {
       var interceptor = sl.get<RequestInterceptor>();
       var dio = sl.get<Dio>()..interceptors.add(interceptor);
       final res = await dio.patch("/space/$spaceID", data: {"name": name});
+      if (res.statusCode == 200 || res.statusCode == 202) {
+        var response = res.data;
+
+        if (response is Map && response['statusCode'] != null) {
+          logger.d(response);
+          throw Exception(response['message']);
+        }
+        final Space space = Space.fromJson(response);
+        return space;
+      } else {
+        // Handle non-200 status codes
+        logger.e("Request failed with status: ${res.statusCode}");
+        throw Exception(res.data["message"]);
+      }
+    } on DioException catch (error) {
+      // Handle Dio errors and other exceptions
+      logger.e(
+          "An error occurred: ${error.response?.data["message"] ?? "Network Error"}");
+      throw Exception(error.response?.data["message"] ?? "Network Error");
+    }
+  }
+
+  // Update Standard Items
+  Future<Space> updateStandardItems(List<StandardItem> standardItems) async {
+    var prefs = sl<SharedPreferenceModule>();
+    var space = prefs.getSpaces().first;
+    try {
+      var interceptor = sl.get<RequestInterceptor>();
+      var dio = sl.get<Dio>()..interceptors.add(interceptor);
+      final res = await dio.patch("/space/${space.id}", data: {
+        "spaceSettings": {
+          "smsTemplates": space.spaceSettings?.smsTemplates,
+          "standardItem": standardItems.map((e) => e.toJson()).toList(),
+        }
+      });
       if (res.statusCode == 200 || res.statusCode == 202) {
         var response = res.data;
 

@@ -19,10 +19,13 @@ class ItemsDataSource extends DataGridSource {
               description: e.getCells()[0].value.toString(),
               quantity: int.parse(e.getCells()[1].value.toString()),
               grossPrice: e.getCells()[2].value is String
-                  ? int.parse(e.getCells()[2].value)
-                  : (e.getCells()[2].value as double).toInt(),
+                  ? double.parse(e.getCells()[2].value)
+                  : e.getCells()[2].value is int
+                    ? (e.getCells()[2].value as int).toDouble()
+                    : e.getCells()[2].value,
               total: e.getCells()[3].value is String
-                  ? int.parse(e.getCells()[3].value)
+                  ? parseToNum(e.getCells()[3].value)
+                  // ? int.parse(e.getCells()[3].value)
                   : (e.getCells()[3].value as double).toInt(),
               taxAmount: 0,
               taxRate:
@@ -30,6 +33,21 @@ class ItemsDataSource extends DataGridSource {
                       100,
             ))
         .toList();
+  }
+
+  int parseToNum(String numStr) {
+    num? parsedNumber = num.tryParse(numStr);
+
+    if (parsedNumber != null) {
+      if (parsedNumber is int) {
+        int intValue = parsedNumber;
+        return intValue;
+      } else if (parsedNumber is double) {
+        double doubleValue = parsedNumber;
+        return doubleValue.toInt();
+      }
+    }
+    return 0;
   }
 
   ItemsDataSource(List<ItemsTable> items) {

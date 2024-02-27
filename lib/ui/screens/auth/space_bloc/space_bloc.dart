@@ -17,6 +17,7 @@ class SpaceBloc extends Bloc<SpaceEvent, SpaceState> {
       : super(const SpaceState()) {
     on<SpaceEventGetSpaces>(_getSpaces);
     on<SpaceEventUpdateSpaceName>(_updateSpaceName);
+    on<SpaceEventUpdateStandardItems>(_updateStandardItems);
   }
 
   Future<void> _getSpaces(
@@ -67,6 +68,41 @@ class SpaceBloc extends Bloc<SpaceEvent, SpaceState> {
       Space space = await spaceApiImpl.updateSpace(event.spaceName);
       emit(state.copyWith(
         status: SpaceStateStatus.success,
+        spaces: [space],
+        isLoading: false,
+      ));
+    } on Exception catch (error) {
+      logger.w(error);
+      emit(state.copyWith(
+        errorMessage: error.toString(),
+        status: SpaceStateStatus.error,
+        isLoading: false,
+      ));
+      emit(state.copyWith(
+        errorMessage: null,
+        isLoading: false,
+      ));
+    } finally {
+      emit(state.copyWith(
+        isLoading: false,
+        status: SpaceStateStatus.initial,
+        errorMessage: null,
+      ));
+    }
+  }
+
+  // Update Standard Items
+  Future<void> _updateStandardItems(
+      SpaceEventUpdateStandardItems event, Emitter<SpaceState> emit) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final token = sharedPreferenceModule.getToken();
+      if (token == null) {
+        throw Exception("No Token: Unauthorized");
+      }
+      Space space = await spaceApiImpl.updateStandardItems(event.standardItems);
+      emit(state.copyWith(
+        status: SpaceStateStatus.updateSuccess,
         spaces: [space],
         isLoading: false,
       ));

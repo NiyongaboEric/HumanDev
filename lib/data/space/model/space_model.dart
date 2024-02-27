@@ -58,7 +58,7 @@ class Space {
     return {
       'id': id,
       'name': name,
-      'spaceSettings': spaceSettings?.toJson(),
+      'spaceSettings': spaceSettings?.toJson() ?? "null",
       'language': language,
       'country': country,
       'timezone': timezone,
@@ -74,20 +74,36 @@ class Space {
 
 class SpaceSettings {
   SmsTemplates smsTemplates;
+  List<StandardItem>? standardItem;
 
-  SpaceSettings({required this.smsTemplates});
+  SpaceSettings({
+    required this.smsTemplates,
+    this.standardItem,
+  });
 
   factory SpaceSettings.fromJson(Map<String, dynamic> json) {
     return SpaceSettings(
       smsTemplates: SmsTemplates.fromJson(json['smsTemplates']),
+      standardItem: json['standardItem'] != null
+          ? (json['standardItem'] as List)
+              .map((e) => StandardItem.fromJson(e))
+              .toList()
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'smsTemplates': smsTemplates.toJson(),
+      'standardItem': standardItem?.map((e) => e.toJson()).toList() ?? null,
     };
   }
+
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'smsTemplates': smsTemplates.toJson(),
+  //   };
+  // }
 }
 
 class SmsTemplates {
@@ -235,5 +251,29 @@ class LegalEntityPerson {
       personDeactivatedById: json['personDeactivatedById'],
       legalEntitySpaceId: json['legalEntitySpaceId'],
     );
+  }
+}
+
+class StandardItem {
+  final String? name;
+  final dynamic? price;
+
+  StandardItem({
+    this.name,
+    this.price,
+  });
+
+  factory StandardItem.fromJson(Map<String, dynamic> json) {
+    return StandardItem(
+      name: json['name'],
+      price: json['price'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'price': price,
+    };
   }
 }
