@@ -246,7 +246,6 @@ class _InvoiceTableState extends State<InvoiceTable> {
 
   @override
   void initState() {
-    // TODO: implement initState
     if (widget.paymentSchedules != null) {
       paymentSchedule = getPaymentSchedule();
     }
@@ -521,6 +520,7 @@ class _InvoiceTableState extends State<InvoiceTable> {
                           setState(() {
                             itemsDataSource.rows.remove(e);
                             widget.savedItems!(itemsDataSource.savedItem());
+                            itemsDataSource.notifyListeners();
                           });
                         },
                         icon: Icon(
