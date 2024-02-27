@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
@@ -142,6 +143,12 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
           ? companyNameController.text
           : null,
       isLegal: isSelected[1],
+      groupIds: isSelected[0]
+          ? groupSpace
+              .where((element) => element.name == currentSelectedGroupSpace)
+              .map((e) => e.id!)
+              .toList()
+          : [groupSpace.firstWhere((element) => element.name == "Supplier").id!],
     )));
   }
 
@@ -162,12 +169,9 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
 
   // Handle Person Change State
   void _handlePersonStateChange(BuildContext context, PersonState state) {
-    if (state.status == PersonStatus.success) {
+    if (state.status == PersonStatus.createSuccess) {
       // Handle Success
-        Navigator.pop(
-          context,
-          true
-        );
+      Navigator.pop(context, state.personResponse);
     }
     if (state.status == PersonStatus.error) {
       logger.e(state.errorMessage);
@@ -249,6 +253,9 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
             color: SecondaryColors.secondaryRed,
             hintText: "First Name",
             controller: recipientFirstNameController,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
+            ],
             validator: (val) {
               if (val!.isEmpty) {
                 return "Please enter a first name";
@@ -261,6 +268,9 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
               color: SecondaryColors.secondaryRed,
               hintText: "Last Name",
               controller: recipientLastNameController,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
+              ],
               validator: (val) {
                 if (val!.isEmpty) {
                   return "Please enter a last name";
@@ -268,30 +278,40 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
                 return null;
               }),
           const SizedBox(height: 20),
-
-          GroupDropdownMenu(
-            groupSpace: groupSpace,
-            handleChangeDropdownItem: updateRole,
-            btnstyle: const ButtonStyle(
-              foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              enabledBorder: OutlineInputBorder(
-                gapPadding: 0,
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                  color: SecondaryColors.secondaryRed,
-                  width: 1,
-                ),
-              ),
-            ),
-            leadingIcon: Icon(Icons.filter_list_alt,
-                color: SMSRecipientColors.primaryColor),
-            menuStyle: const MenuStyle(
-              backgroundColor: MaterialStatePropertyAll<Color>(
-                  Color.fromARGB(255, 255, 255, 255)),
-            ),
+          CustomDropDownMenu(
+            color: SecondaryColors.secondaryRed,
+            options: [
+              "Select group",
+              ...groupSpace.where((element) => element.isRole! && element.name != "Supplier").map((group) {
+                return group.name;
+              }).toList(),
+            ],
+            value: currentSelectedGroupSpace,
+            onChanged: updateRole,
           ),
+          // GroupDropdownMenu(
+          //   groupSpace: groupSpace,
+          //   handleChangeDropdownItem: updateRole,
+          //   btnstyle: const ButtonStyle(
+          //     foregroundColor: MaterialStatePropertyAll<Color>(Colors.black),
+          //   ),
+          //   inputDecorationTheme: InputDecorationTheme(
+          //     enabledBorder: OutlineInputBorder(
+          //       gapPadding: 0,
+          //       borderRadius: BorderRadius.circular(10),
+          //       borderSide: BorderSide(
+          //         color: SecondaryColors.secondaryRed,
+          //         width: 1,
+          //       ),
+          //     ),
+          //   ),
+          //   leadingIcon: Icon(Icons.filter_list_alt,
+          //       color: SMSRecipientColors.primaryColor),
+          //   menuStyle: const MenuStyle(
+          //     backgroundColor: MaterialStatePropertyAll<Color>(
+          //         Color.fromARGB(255, 255, 255, 255)),
+          //   ),
+          // ),
           // formHasErrors ? textErrors : Container(),
           const SizedBox(height: 75),
           Row(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 
 import '../../utilities/custom_colors.dart';
@@ -19,6 +20,7 @@ class CustomTextField extends StatefulWidget {
   final double? heightSize;
   final Widget? prefixIcon;
   final EdgeInsets? contentPadding;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     super.key,
@@ -37,6 +39,7 @@ class CustomTextField extends StatefulWidget {
     this.isDense,
     this.heightSize, 
     this.contentPadding,
+    this.inputFormatters,
   });
 
   @override
@@ -74,6 +77,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         keyboardType: widget.inputType ?? TextInputType.text,
         textCapitalization: widget.textCapitalization ?? TextCapitalization.sentences,
         cursorColor: widget.color,
+        inputFormatters: widget.inputFormatters,
         style: const TextStyle(fontSize: 24),
         decoration: InputDecoration(
           hintText: widget.hintText,

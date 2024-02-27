@@ -42,10 +42,10 @@ class _RecipientState extends State<Recipient> {
   var preferences = sl<SharedPreferences>();
   var prefs = sl<SharedPreferences>();
   var prefsModule = sl<SharedPreferenceModule>();
-  List<RecipientModel> recipientOptions = [];
-  List<RecipientModel> selectedRecipients = [];
+  List<PersonModel> recipientOptions = [];
+  List<PersonModel> selectedRecipients = [];
   List<PersonModel> searchResults = [];
-  List<RecipientModel> parents = [];
+  List<PersonModel> parents = [];
   List<PersonModel> allPeople = [];
   List<PersonModel> searchResultsAllPeople = [];
   // List<PersonModel> recipientOptionsAllPeople = [];
@@ -94,7 +94,7 @@ class _RecipientState extends State<Recipient> {
   }
 
   // Set Selected Students
-  void _onSelected(bool selected, RecipientModel dataName) {
+  void _onSelected(bool selected, PersonModel dataName) {
     if (selected == true) {
       setState(() {
         selectedRecipients.add(dataName);
@@ -119,9 +119,15 @@ class _RecipientState extends State<Recipient> {
         searchResults = allPeople
             .where(
               (recipient) =>
-                  (recipient.organizationName ?? "").toLowerCase().contains(query.toLowerCase()) ||
-                  (recipient.firstName ?? "").toLowerCase().contains(query.toLowerCase()) ||
-                  (recipient.lastName1 ?? "").toLowerCase().contains(query.toLowerCase()),
+                  (recipient.organizationName ?? "")
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
+                  (recipient.firstName ?? "")
+                      .toLowerCase()
+                      .contains(query.toLowerCase()) ||
+                  (recipient.lastName1 ?? "")
+                      .toLowerCase()
+                      .contains(query.toLowerCase()),
             )
             .toList();
         // searchResults.addAll(parents.toSet().toList().where((recipient) =>
@@ -194,8 +200,7 @@ class _RecipientState extends State<Recipient> {
       logger.e(state.errorMessage);
       if (state.errorMessage == "Invalid refresh token." ||
           state.errorMessage == "Exception: Invalid refresh token." ||
-          state.errorMessage == "Exception: Unauthorized"
-      ) {
+          state.errorMessage == "Exception: Unauthorized") {
         _refreshTokens();
       } else {
         GFToast.showToast(
@@ -279,13 +284,13 @@ class _RecipientState extends State<Recipient> {
     if (value != null) {
       List<dynamic> decodedValue = json.decode(value);
       recipientOptions.addAll(
-        decodedValue.map((model) => RecipientModel.fromJson(model)).toList(),
+        decodedValue.map((model) => PersonModel.fromJson(model)).toList(),
       );
     }
     if (valueParents != null) {
       List<dynamic> decodedValue = json.decode(valueParents);
       parents.addAll(
-        decodedValue.map((model) => RecipientModel.fromJson(model)).toList(),
+        decodedValue.map((model) => PersonModel.fromJson(model)).toList(),
       );
     }
     _getParents();
@@ -293,16 +298,29 @@ class _RecipientState extends State<Recipient> {
   }
 
   addRecipient() async {
-    bool? refresh = await Navigator.push(
+    PersonModel? recipient = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AddNewRecipient(),
       ),
     );
-    if (refresh != null && refresh) {
-      await Future.delayed(const Duration(seconds: 1));
-      _getParents();
+    logger.i(recipient?.toJson());
+    if (recipient == null) return;
+    int index = allPeople.indexWhere((element) => element.id == recipient.id);
+    if (index != -1) {
+      logger.wtf("Exists");
+      allPeople[index] = recipient;
+      return;
+    } else {
+      logger.i("Does not exist");
+      allPeople.add(recipient);
+      setState(() {});
     }
+
+    // if (refresh != null && refresh) {
+    //   await Future.delayed(const Duration(seconds: 1));
+    //   _getParents();
+    // }
   }
 
   navigate(
@@ -343,6 +361,16 @@ class _RecipientState extends State<Recipient> {
 
   @override
   Widget build(BuildContext context) {
+    // Sort All People Alphabetically by First Name and also Company Name
+    allPeople.sort((a, b) {
+      return a.isLegal && b.isLegal
+          ? a.organizationName!.compareTo(b.organizationName!)
+          : a.firstName.compareTo(b.firstName);
+    });
+    // Sort Search Results Alphabetically
+    searchResults.sort((a, b) {
+      return a.firstName.compareTo(b.firstName);
+    });
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
         // TODO: implement listener
@@ -364,8 +392,8 @@ class _RecipientState extends State<Recipient> {
             actions: [
               BlocListener<PersonBloc, PersonState>(
                 listener: (context, state) {
-                    // TODO: implement listener
-                    _handleParentsStateChange(context, state);
+                  // TODO: implement listener
+                  _handleParentsStateChange(context, state);
                 },
                 child: Container(),
               ),
@@ -505,8 +533,7 @@ class _RecipientState extends State<Recipient> {
                                 //       });
                                 //     },
                                 //     icon: Icon(Icons.clear)),
-                              )
-                          ),
+                              )),
                           // ...allPeople.map((recipient) {
                           //   return ListTile(
                           //     onTap: () {
