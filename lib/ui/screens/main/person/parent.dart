@@ -565,6 +565,7 @@ class _ParentsState extends State<Parents> {
         return PersonDetails(
           screenFunction: ScreenFunction.edit,
           contactVariant: ContactVariant.student,
+          isParent: true,
           person: personData,
         );
       case ParentSection.sendSMS:
@@ -575,6 +576,7 @@ class _ParentsState extends State<Parents> {
         return PersonDetails(
           screenFunction: ScreenFunction.edit,
           contactVariant: ContactVariant.others,
+          isParent: true,
           person: personData,
         );
       default:
@@ -1944,6 +1946,9 @@ class _ParentsState extends State<Parents> {
                     builder: (context) => PersonDetails(
                       screenFunction: ScreenFunction.add,
                       contactVariant: ContactVariant.others,
+                      isParent: widget.parentSection == ParentSection.students
+                          ? false
+                          : true,
                     ),
                   ));
 

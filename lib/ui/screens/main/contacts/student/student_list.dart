@@ -106,6 +106,7 @@ class _StudentContactListScreenState extends State<StudentContactListScreen> {
         builder: (context) => PersonDetails(
           screenFunction: screenFunction,
           contactVariant: ContactVariant.student,
+          isParent: false,
           person: student,
         ),
       ),

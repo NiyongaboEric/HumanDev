@@ -48,11 +48,13 @@ class PersonDetails extends StatefulWidget {
   final ScreenFunction screenFunction;
   final ContactVariant contactVariant;
   final PersonModel? person;
+  final bool isParent;
   final String? role;
   const PersonDetails({
     Key? key,
     required this.screenFunction,
     required this.contactVariant,
+    required this.isParent,
     this.person,
     this.role,
   }) : super(key: key);
@@ -199,87 +201,87 @@ class _PersonDetailsState extends State<PersonDetails> {
     if (widget.screenFunction == ScreenFunction.add) {
       context.read<PersonBloc>().add(
             AddPersonEvent(PersonRequest(
-              firstName: firstNameController.text,
-              middleName: middleNameController.text,
-              lastName1: lastNameController.text,
-              gender: selectedGender == "Gender" ? null : selectedGender,
-              phoneNumber1: phoneNumber?.completeNumber,
-              phoneNumber2: phoneNumber2?.completeNumber,
-              phoneNumber3: phoneNumber3?.completeNumber,
-              email1: emailController.text,
-              email2: emailController2.text,
-              email3: emailController3.text,
-              dateOfBirth: selectedDate.toString(),
-              groupIds:
-                  selectGroupList.map((e) => e.id!).toList().toSet().toList(),
-              personChildRelations: parentList.map((e) => e.relation).toList(),
-              isLegal: false,
-              address: Address(
-                street: streetController.text,
-                city: cityController.text,
-                state: stateController.text,
-                zip: zipController.text,
-              ),
-              notes: notesController.text
-            )),
+                firstName: firstNameController.text,
+                middleName: middleNameController.text,
+                lastName1: lastNameController.text,
+                gender: selectedGender == "Gender" ? null : selectedGender,
+                phoneNumber1: phoneNumber?.completeNumber,
+                phoneNumber2: phoneNumber2?.completeNumber,
+                phoneNumber3: phoneNumber3?.completeNumber,
+                email1: emailController.text,
+                email2: emailController2.text,
+                email3: emailController3.text,
+                dateOfBirth: selectedDate.toString(),
+                groupIds:
+                    selectGroupList.map((e) => e.id!).toList().toSet().toList(),
+                personChildRelations:
+                    parentList.map((e) => e.relation).toList(),
+                isLegal: false,
+                address: Address(
+                  street: streetController.text,
+                  city: cityController.text,
+                  state: stateController.text,
+                  zip: zipController.text,
+                ),
+                notes: notesController.text)),
           );
     } else {
       try {
         if (widget.screenFunction == ScreenFunction.edit) {
           context.read<PersonBloc>().add(
                 UpdatePersonEvent(UpdatePersonRequest(
-                  id: widget.person!.id,
-                  firstName: firstNameController.text,
-                  middleName: middleNameController.text,
-                  lastName1: lastNameController.text,
-                  gender: selectedGender != "Gender" ? selectedGender : null,
-                  phoneNumber1: phoneNumber?.completeNumber ??
-                      widget.person!.phoneNumber1,
-                  phoneNumber2: phoneNumber2?.completeNumber ??
-                      widget.person!.phoneNumber2,
-                  phoneNumber3: phoneNumber3?.completeNumber ??
-                      widget.person!.phoneNumber3,
-                  email1: emailController.text,
-                  email2: emailController2.text,
-                  email3: emailController3.text,
-                  dateOfBirth: selectedDate.toString(),
-                  connectGroupIds: selectGroupList
-                      .where((element) => !widget.person!.groups!
-                          .map((e) => e.id)
-                          .toList()
-                          .contains(element.id))
-                      .map((e) => e.id!)
-                      .toList(),
-                  disconnectGroupIds: widget.person!.groups!
-                      .where((element) => !selectGroupList.contains(element))
-                      .map((e) => e.id!)
-                      .toList(),
-                  connectPersonChildRelations: parentList
-                      .where((element) => !widget.person!.childRelations!
-                          .map((e) => e.id)
-                          .toList()
-                          .contains(element.relation.relativePersonId))
-                      .map((e) => e.relation)
-                      .toList(),
-                  disconnectPersonChildRelations: widget.person!.childRelations!
-                      .where((element) => !parentList
-                          .map((e) => e.relation.relativePersonId)
-                          .toList()
-                          .contains(element.id))
-                      .map((e) => e.id!)
-                      .toList(),
-                  isLegal: widget.person!.isLegal,
-                  VATId: widget.person!.VATId,
-                  taxId: widget.person!.taxId,
-                  address: Address(
-                    street: streetController.text,
-                    city: cityController.text,
-                    state: stateController.text,
-                    zip: zipController.text,
-                  ),
-                  isDeactivated: widget.person!.isDeactivated,
-                  notes: notesController.text
-                )),
+                    id: widget.person!.id,
+                    firstName: firstNameController.text,
+                    middleName: middleNameController.text,
+                    lastName1: lastNameController.text,
+                    gender: selectedGender != "Gender" ? selectedGender : null,
+                    phoneNumber1: phoneNumber?.completeNumber ??
+                        widget.person!.phoneNumber1,
+                    phoneNumber2: phoneNumber2?.completeNumber ??
+                        widget.person!.phoneNumber2,
+                    phoneNumber3: phoneNumber3?.completeNumber ??
+                        widget.person!.phoneNumber3,
+                    email1: emailController.text,
+                    email2: emailController2.text,
+                    email3: emailController3.text,
+                    dateOfBirth: selectedDate.toString(),
+                    connectGroupIds: selectGroupList
+                        .where((element) => !widget.person!.groups!
+                            .map((e) => e.id)
+                            .toList()
+                            .contains(element.id))
+                        .map((e) => e.id!)
+                        .toList(),
+                    disconnectGroupIds: widget.person!.groups!
+                        .where((element) => !selectGroupList.contains(element))
+                        .map((e) => e.id!)
+                        .toList(),
+                    connectPersonChildRelations: parentList
+                        .where((element) => !widget.person!.childRelations!
+                            .map((e) => e.id)
+                            .toList()
+                            .contains(element.relation.relativePersonId))
+                        .map((e) => e.relation)
+                        .toList(),
+                    disconnectPersonChildRelations: widget
+                        .person!.childRelations!
+                        .where((element) => !parentList
+                            .map((e) => e.relation.relativePersonId)
+                            .toList()
+                            .contains(element.id))
+                        .map((e) => e.id!)
+                        .toList(),
+                    isLegal: widget.person!.isLegal,
+                    VATId: widget.person!.VATId,
+                    taxId: widget.person!.taxId,
+                    address: Address(
+                      street: streetController.text,
+                      city: cityController.text,
+                      state: stateController.text,
+                      zip: zipController.text,
+                    ),
+                    isDeactivated: widget.person!.isDeactivated,
+                    notes: notesController.text)),
               );
         }
       } catch (e) {
@@ -330,7 +332,10 @@ class _PersonDetailsState extends State<PersonDetails> {
         state.status == PersonStatus.createSuccess) {
       logger.wtf(state.personResponse?.toJson());
       state.personResponse != null
-          ? Navigator.pop(context, state.personResponse)
+          ? {
+              Navigator.pop(context, state.personResponse),
+              if(widget.isParent) Navigator.pop(context, state.personResponse)
+            }
           : null;
       GFToast.showToast(
         state.successMessage,
@@ -434,6 +439,12 @@ class _PersonDetailsState extends State<PersonDetails> {
           (element) => element.name == "Student",
         );
         selectGroupList.add(studentGroup);
+      }
+      if (widget.isParent) {
+        var parentGroup = groups.firstWhere(
+          (element) => element.name == "Parent",
+        );
+        selectGroupList.add(parentGroup);
       }
     }
     // Reset Person State
@@ -849,13 +860,18 @@ class _PersonDetailsState extends State<PersonDetails> {
       },
     );
 
-    return  DatePicker(
+    return DatePicker(
       pickerTimeLime: PickerTimeLime.past,
-      bgColor: widget.contactVariant == ContactVariant.student ? BackgroundColors.bgPink : BackgroundColors.bgLightGreen,
+      bgColor: widget.contactVariant == ContactVariant.student
+          ? BackgroundColors.bgPink
+          : BackgroundColors.bgLightGreen,
       date: selectedDate,
       onSelect: _changeDate,
-      pickerColor: widget.contactVariant == ContactVariant.student ? Colors.pink : Colors.green,
-      borderColor: _secondaryColorSelection(), //SecondaryColors.secondaryPurple,
+      pickerColor: widget.contactVariant == ContactVariant.student
+          ? Colors.pink
+          : Colors.green,
+      borderColor:
+          _secondaryColorSelection(), //SecondaryColors.secondaryPurple,
     );
   }
 
@@ -976,8 +992,7 @@ class _PersonDetailsState extends State<PersonDetails> {
                                     phoneNumber2!.isValidNumber()) &&
                             (phoneNumber3 == null ||
                                 phoneNumber3 != null &&
-                                    phoneNumber3!.isValidNumber())
-                            ) {
+                                    phoneNumber3!.isValidNumber())) {
                           saveData();
                         } else {
                           GFToast.showToast(

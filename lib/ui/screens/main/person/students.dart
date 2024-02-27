@@ -565,6 +565,7 @@ class _StudentsState extends State<Students> {
             builder: (context) => PersonDetails(
               screenFunction: ScreenFunction.edit,
               contactVariant: ContactVariant.student,
+              isParent: false,
               person: student,
             ),
           ),
@@ -707,6 +708,7 @@ class _StudentsState extends State<Students> {
                     builder: (context) => PersonDetails(
                       screenFunction: ScreenFunction.add,
                       contactVariant: ContactVariant.student,
+                      isParent: false,
                     ),
                   ),
                 );

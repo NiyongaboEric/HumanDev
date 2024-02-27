@@ -97,6 +97,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
         builder: (context) => PersonDetails(
           screenFunction: screenFunction,
           contactVariant: ContactVariant.others,
+          isParent: false,
           person: contact,
         ),
       ),

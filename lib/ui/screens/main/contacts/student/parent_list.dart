@@ -98,6 +98,7 @@ class _ParentListScreenState extends State<ParentListScreen> {
         builder: (context) => PersonDetails(
           screenFunction: screenFunction,
           contactVariant: ContactVariant.others,
+          isParent: true,
           person: contact,
         ),
       ),
