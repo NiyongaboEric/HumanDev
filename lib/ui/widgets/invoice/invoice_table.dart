@@ -411,19 +411,24 @@ class _InvoiceTableState extends State<InvoiceTable> {
                 itemsDataSource.rows.removeWhere((row) => toRemove.any((e) => e.name?.trim() == row.getCells()[0].value.toString().trim()));
 
                 // print('ADD: ${toAdd.map((e) => e.name).toList().join(', ')}');
-                itemsDataSource.rows
-                    .addAll(toAdd.map((e) => DataGridRow(cells: [
-                          DataGridCell<String>(
-                              columnName: 'items', value: e.name),
-                          DataGridCell<String>(
-                              columnName: 'quantity', value: '1'),
-                          DataGridCell<String>(
-                              columnName: 'price', value: '${e.price}'),
-                          DataGridCell<String>(
-                              columnName: 'total', value: '${e.price}'),
-                          DataGridCell<String>(columnName: 'vat', value: '0 %'),
-                        ])));
-                setState(() {});
+                for(ItemFee itemFee in toAdd) {
+                  DataGridRow newGridRow = DataGridRow(cells: [
+                    DataGridCell<String>(
+                        columnName: 'items', value: itemFee.name),
+                    DataGridCell<String>(
+                        columnName: 'quantity', value: '1'),
+                    DataGridCell<String>(
+                        columnName: 'price', value: '${itemFee.price}'),
+                    DataGridCell<String>(
+                        columnName: 'total', value: '${itemFee.price}'),
+                    DataGridCell<String>(columnName: 'vat', value: '0 %'),
+                  ]);
+                  setState(() {
+                    itemsDataSource.rows.add(newGridRow);
+                    itemsDataSource.notifyListeners();
+                  });
+                }
+
               }
             },
             label: Text("Add std item",
