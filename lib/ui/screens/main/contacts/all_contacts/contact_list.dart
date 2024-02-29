@@ -38,6 +38,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
   List<PersonModel> searchResults = [];
   List<PersonModel> contacts = [];
   List<PersonModel> selectedContacts = [];
+
   // Groups
   List<String> groups = [];
   String selectedGroup = "All groups";
@@ -272,17 +273,25 @@ class _ContactListScreenState extends State<ContactListScreen> {
       logger.wtf(contact.firstName);
       // return contact.firstName?.substring(0, 1) ?? "";
 
-       return contact.firstName.isNotEmpty
-        ? contact.firstName.substring(0, 1)
-        : "";
-
+      return contact.firstName.isNotEmpty
+          ? contact.firstName.substring(0, 1)
+          : "";
     }).toList();
   }
 
   // Build Alphabet View
   List<AlphabetListViewItemGroup> buildAlphabetView(
-      List<String> firstCharacters, List<PersonModel> contacts) {
-    return firstCharacters.map(
+    List<String> firstCharacters,
+    List<PersonModel> contacts,
+  ) {
+    final firstCharactersSet = firstCharacters.toSet();
+
+    firstCharactersSet
+        .removeWhere((element) => (!RegExp(r'[a-zA-Z]').hasMatch(element)));
+
+    firstCharactersSet.add('#');
+
+    return firstCharactersSet.map(
       (alphabet) {
         selectedGroupPeople() {
           if (selectedGroup == groups[0]) {
@@ -290,12 +299,29 @@ class _ContactListScreenState extends State<ContactListScreen> {
           }
         }
 
-        contacts.sort((a, b) => a.firstName.compareTo(b.firstName));
+        // final fcContacts = contacts
+        //     .where((element) => element.firstName.startsWith(alphabet))
+        //     .toList();
+        final fcContacts = contacts.where(
+          (element) {
+            if (alphabet == '#' &&
+                !RegExp(r'[a-zA-Z]').hasMatch(element.firstName[0])) {
+              return true;
+            } else {
+              return element.firstName.startsWith(alphabet);
+            }
+          },
+        ).toList();
+
+        fcContacts.sort((a, b) => a.firstName.compareTo(b.firstName));
         return AlphabetListViewItemGroup(
           tag: alphabet,
-          children: buildStudentListTiles(
-            alphabet,
-            contacts,
+          children: fcContacts.map(
+            (contact) {
+              return buildStudentTile(
+                contact,
+              );
+            },
           ),
         );
       },
@@ -304,7 +330,9 @@ class _ContactListScreenState extends State<ContactListScreen> {
 
   // Build Contact List Tiles
   List<Widget> buildStudentListTiles(
-      String alphabet, List<PersonModel> contacts) {
+    String alphabet,
+    List<PersonModel> contacts,
+  ) {
     return contacts.map((contact) {
       if (contact.firstName.startsWith(alphabet)) {
         return buildStudentTile(
@@ -606,7 +634,7 @@ class _ContactListScreenState extends State<ContactListScreen> {
     );
   }
 
-  //
+//
 
-  //
+//
 }
