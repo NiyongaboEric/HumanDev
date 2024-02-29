@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../data/groups/model/group_model.dart';
+import '../../../../data/space/model/space_model.dart';
 import '../../../utilities/colors.dart';
 import '../../../utilities/custom_colors.dart';
 import '../../../utilities/font_sizes.dart';
@@ -52,12 +53,15 @@ class Students extends StatefulWidget {
 }
 
 class _StudentsState extends State<Students> {
+  var prefs = sl.get<SharedPreferenceModule>();
+  late Space space;
+  late String defaultCurrency;
   bool logout = false;
   TextEditingController searchController = TextEditingController();
   ConnectivityResult _connectivityResult = ConnectivityResult.none;
   final Connectivity _connectivity = Connectivity();
   var preferences = sl<SharedPreferences>();
-  var prefs = sl<SharedPreferenceModule>();
+  // var prefs = sl<SharedPreferenceModule>();
   List<PersonModel> searchResults = [];
   List<PersonModel> students = [];
   List<PersonModel> selectedStudents = [];
@@ -197,7 +201,6 @@ class _StudentsState extends State<Students> {
   void createJournalRecord() {
     // TODO: implement createJournalRecord
     var accounts = prefs.getAccounts();
-    var space = prefs.getSpaces().first;
     context.read<JournalBloc>().add(
           AddNewReceivedMoneyJournalEvent(
             selectedStudents.map((student) {
@@ -211,7 +214,7 @@ class _StudentsState extends State<Students> {
                     .id,
                 subaccountPersonId: student.id,
                 amount: 85,
-                currency: space.currency ?? "GHS",
+                currency: defaultCurrency,
                 reason: "Feeding Fees",
                 sendSMS: false,
                 isInvoicePayment: false,
@@ -233,7 +236,6 @@ class _StudentsState extends State<Students> {
   // Save Offline
   saveOffline() {
     var accounts = prefs.getAccounts();
-    var space = prefs.getSpaces().first;
     List<OfflineModel> offlineTuitionFee = [];
     List<ReceivedMoneyJournalRequest> feedingFeesRequest = [];
     String? value = preferences.getString("offlineFeedingFee");
@@ -251,7 +253,7 @@ class _StudentsState extends State<Students> {
             accounts.firstWhere((element) => element.name.name == "CASH").id,
         subaccountPersonId: 1,
         amount: 85,
-        currency: space.currency ?? "GHS",
+        currency: defaultCurrency,
         reason: "Feeding Fees",
         sendSMS: false,
         studentPersonId: 1,
@@ -374,7 +376,10 @@ class _StudentsState extends State<Students> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    super.initState();
+    Space space = prefs.getSpaces().first;
+    defaultCurrency = space.currency ?? 'GHS';
+
     _connectivity.onConnectivityChanged.listen((result) {
       _connectivityResult = result;
     });
@@ -410,7 +415,6 @@ class _StudentsState extends State<Students> {
       }
     }
     _getAllStudents();
-    super.initState();
   }
 
   @override
@@ -837,7 +841,7 @@ class _StudentsState extends State<Students> {
 
   Widget _buildBottomNavigationBarText() {
     return selectedStudents.isEmpty
-        ? Text("GHS 85.00 per student",
+        ? Text("$defaultCurrency 85.00 per student",
             style: TextStyle(
               fontSize: CustomFontSize.small,
               color: _secondaryColorSelection(widget.option),
@@ -850,7 +854,7 @@ class _StudentsState extends State<Students> {
                     fontSize: CustomFontSize.small,
                     color: _secondaryColorSelection(widget.option),
                   )),
-              Text("GHS ${selectedStudents.length * 85}",
+              Text("$defaultCurrency ${selectedStudents.length * 85}",
                   style: TextStyle(
                     fontSize: CustomFontSize.small,
                     color: _secondaryColorSelection(widget.option),

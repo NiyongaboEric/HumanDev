@@ -17,10 +17,9 @@ import '../../../../../data/account/model/account_model.dart';
 import '../../../../../data/constants/logger.dart';
 import '../../../../../data/constants/shared_prefs.dart';
 import '../../../../../data/journal/model/request_model.dart';
+import '../../../../../data/space/model/space_model.dart';
 import '../../../../utilities/custom_colors.dart';
 import '../../../../widgets/inputs/drop_down_menu.dart';
-import '../../../auth/auth_bloc/auth_bloc.dart';
-import '../../../auth/login.dart';
 
 var sl = GetIt.instance;
 
@@ -32,14 +31,22 @@ class LogPayment extends StatefulWidget {
 }
 
 class _LogPaymentState extends State<LogPayment> {
+  var prefs = sl.get<SharedPreferenceModule>();
+  late Space space;
+  late String selectedCurrency;
   // Text Editing Controller
   TextEditingController amountController = TextEditingController();
   TextEditingController otherController = TextEditingController();
-  String selectedCurrency = 'GHS';
   DateTime date = DateTime.now();
   var preferences = sl<SharedPreferenceModule>();
   bool logout = false;
-  // JournalState? state;
+
+  @override
+  void initState() {
+    super.initState();
+    Space space = prefs.getSpaces().first;
+    selectedCurrency = space.currency ?? 'GHS';
+  } // JournalState? state;
 
   // Update Payment Method
   void updatePaymentMethod(value) {
@@ -50,11 +57,11 @@ class _LogPaymentState extends State<LogPayment> {
   }
 
   // Update Currency
-  void updateCurrency(value) {
-    setState(() {
-      selectedCurrency = value;
-    });
-  }
+  // void updateCurrency(value) {
+  //   setState(() {
+  //     selectedCurrency = value;
+  //   });
+  // }
 
   // Payment Method Buttons
 
@@ -93,9 +100,9 @@ class _LogPaymentState extends State<LogPayment> {
   }
 
   // Logout
-  void _logout() {
-    context.read<AuthBloc>().add(AuthEventLogout());
-  }
+  // void _logout() {
+  //   context.read<AuthBloc>().add(AuthEventLogout());
+  // }
 
   // Handle Journal State Change
   void _handleJournalStateChange(BuildContext context, JournalState state) {
@@ -128,63 +135,63 @@ class _LogPaymentState extends State<LogPayment> {
   }
 
   // Handle Get User Data State Change
-  void _handleRefreshStateChange(BuildContext context, AuthState state) {
-    // var prefs = sl<SharedPreferenceModule>();
-    if (logout) {
-      return;
-    }
-    if (state.status == AuthStateStatus.authenticated) {
-      // navigate(context, state);
-      if (state.refreshFailure != null) {
-        GFToast.showToast(
-          state.refreshFailure,
-          context,
-          toastBorderRadius: 8.0,
-          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-              ? GFToastPosition.TOP
-              : GFToastPosition.BOTTOM,
-          backgroundColor: CustomColor.red,
-        );
-      }
-    }
-    if (state.status == AuthStateStatus.unauthenticated) {
-      print("Error...: ${state.refreshFailure}");
-      if (state.refreshFailure != null &&
-          state.refreshFailure!.contains("Invalid refresh token")) {
-        logger.w("Invalid refresh token");
-        setState(() {
-          logout = true;
-        });
-        _logout();
-      } else {
-        GFToast.showToast(
-          state.refreshFailure,
-          context,
-          toastBorderRadius: 8.0,
-          toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
-              ? GFToastPosition.TOP
-              : GFToastPosition.BOTTOM,
-          backgroundColor: CustomColor.red,
-          toastDuration: 6,
-        );
-      }
-    }
-  }
+  // void _handleRefreshStateChange(BuildContext context, AuthState state) {
+  //   // var prefs = sl<SharedPreferenceModule>();
+  //   if (logout) {
+  //     return;
+  //   }
+  //   if (state.status == AuthStateStatus.authenticated) {
+  //     // navigate(context, state);
+  //     if (state.refreshFailure != null) {
+  //       GFToast.showToast(
+  //         state.refreshFailure,
+  //         context,
+  //         toastBorderRadius: 8.0,
+  //         toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+  //             ? GFToastPosition.TOP
+  //             : GFToastPosition.BOTTOM,
+  //         backgroundColor: CustomColor.red,
+  //       );
+  //     }
+  //   }
+  //   if (state.status == AuthStateStatus.unauthenticated) {
+  //     print("Error...: ${state.refreshFailure}");
+  //     if (state.refreshFailure != null &&
+  //         state.refreshFailure!.contains("Invalid refresh token")) {
+  //       logger.w("Invalid refresh token");
+  //       setState(() {
+  //         logout = true;
+  //       });
+  //       _logout();
+  //     } else {
+  //       GFToast.showToast(
+  //         state.refreshFailure,
+  //         context,
+  //         toastBorderRadius: 8.0,
+  //         toastPosition: MediaQuery.of(context).viewInsets.bottom != 0
+  //             ? GFToastPosition.TOP
+  //             : GFToastPosition.BOTTOM,
+  //         backgroundColor: CustomColor.red,
+  //         toastDuration: 6,
+  //       );
+  //     }
+  //   }
+  // }
 
   // Handle Logout State Change
-  void _handleLogoutStateChange(BuildContext context, AuthState state) {
-    if (!logout) {
-      return;
-    }
-    if (state.logoutMessage != null) {
-      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
-    }
-    if (state.logoutFailure != null) {
-      var prefs = sl<SharedPreferenceModule>();
-      prefs.clear();
-      nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
-    }
-  }
+  // void _handleLogoutStateChange(BuildContext context, AuthState state) {
+  //   if (!logout) {
+  //     return;
+  //   }
+  //   if (state.logoutMessage != null) {
+  //     nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+  //   }
+  //   if (state.logoutFailure != null) {
+  //     var prefs = sl<SharedPreferenceModule>();
+  //     prefs.clear();
+  //     nextScreenAndRemoveAll(context: context, screen: const LoginScreen());
+  //   }
+  // }
 
   // Update Date
   updateDate(DateTime date) {
@@ -197,7 +204,6 @@ class _LogPaymentState extends State<LogPayment> {
   Widget build(BuildContext context) {
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
-        // TODO: implement listener
         _handleJournalStateChange(context, state);
       },
       builder: (context, state) {
@@ -366,7 +372,7 @@ class _LogPaymentState extends State<LogPayment> {
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: Text(
-                      "GHS",
+                      selectedCurrency,
                       style: TextStyle(
                         fontSize: CustomFontSize.extraLarge,
                         color: SecondaryColors.secondaryRed.withOpacity(0.7),
