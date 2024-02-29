@@ -40,11 +40,14 @@ class PaymentScheduleDataSource extends DataGridSource {
   List<PaymentScheduleRequest> savedPaymentSchedule() {
     return _paymentSchedule
         .map<PaymentScheduleRequest>((e) => PaymentScheduleRequest(
-              dueDate: e.getCells()[0].value.toString().toLowerCase() == "new date"
+              dueDate: e.getCells()[0].value.toString().toLowerCase() ==
+                      "new date"
                   ? DateTime.now().toIso8601String()
                   : e.getCells()[0].value is DateTime
-                    ? (e.getCells()[0].value as DateTime).toIso8601String()
-                    : DateFormat('dd MMM yyyy').parse(e.getCells()[0].value).toIso8601String(),
+                      ? (e.getCells()[0].value as DateTime).toIso8601String()
+                      : DateFormat('dd MMM yyyy')
+                          .parse(e.getCells()[0].value)
+                          .toIso8601String(),
               dueAmount: e.getCells()[1].value is String
                   ? int.parse(e.getCells()[1].value)
                   : (e.getCells()[1].value as double).toInt(),
@@ -107,6 +110,8 @@ class PaymentScheduleDataSource extends DataGridSource {
 
     final bool isDateType = column.columnName == 'date';
 
+    bool _datePickerOpened = false;
+
     return Container(
       padding: const EdgeInsets.all(8.0),
       alignment: isNumericType ? Alignment.centerRight : Alignment.centerLeft,
@@ -114,38 +119,44 @@ class PaymentScheduleDataSource extends DataGridSource {
           ?
           // Launch Date Picker
           FutureBuilder(
-              future: Future.delayed(Duration.zero),
+              future: _datePickerOpened ? null : Future.delayed(Duration.zero),
               builder: (BuildContext context, AsyncSnapshot snapshot) {
                 SchedulerBinding.instance.addPostFrameCallback((_) {
-                  showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2101),
-                      builder: (context, child) {
-                        return Theme(
-                          data: ThemeData(
-                            colorScheme: ColorScheme.fromSwatch(
-                              primarySwatch: tertiaryColor,
+                  if (!_datePickerOpened) {
+                    _datePickerOpened = true;
+                    showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData(
+                              colorScheme: ColorScheme.fromSwatch(
+                                primarySwatch: tertiaryColor,
+                              ),
+                              useMaterial3: true,
+                              textTheme: Theme.of(context).textTheme,
                             ),
-                            useMaterial3: true,
-                            textTheme: Theme.of(context).textTheme,
-                          ),
-                          child: child!,
-                        );
-                      }).then((value) => {
-                        // Allow only past, future or both dates based on pickerTimeLine
-                        if (value != null)
-                          {
-                            newCellValue = Constants.dateFormatParser(
-                                value.toIso8601String()),
-                                savedPaymentSchedule(),
-                            notifyListeners(),
-                            Navigator.of(context).pop(),
-                          }
-                      });
+                            child: child!,
+                          );
+                        }).then((value) => {
+                          // Allow only past, future or both dates based on pickerTimeLine
+                          if (value != null)
+                            {
+                              newCellValue = Constants.dateFormatParser(
+                                  value.toIso8601String()),
+                              savedPaymentSchedule(),
+                              notifyListeners(),
+                              // Navigator.of(context).pop(),
+                            }
+                        });
+                  }
                 });
-                return Container();
+                return Text(displayText.isNotEmpty? displayText : "New Date",
+                    style: TextStyle(
+                        color: SecondaryColors.secondaryPurple,
+                        fontSize: CustomFontSize.small));
               },
             )
           : TextField(
