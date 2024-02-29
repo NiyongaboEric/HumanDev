@@ -47,6 +47,7 @@ class InvoiceDetails extends StatefulWidget {
 
 class _InvoiceDetailsState extends State<InvoiceDetails> {
   var prefs = sl.get<SharedPreferenceModule>();
+  String defaultCurrency = 'GHS';
   TextEditingController itemNameController = TextEditingController();
   TextEditingController dueAmountController = TextEditingController();
   TextEditingController paidAmountController = TextEditingController();
@@ -61,6 +62,16 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
     setState(() {
       date = newDate;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    var space = prefs.getSpaces().first;
+    defaultCurrency = space.currency ?? 'GHS';
+    date = widget.invoice != null
+        ? DateTime.parse(widget.invoice!.invoiceDate)
+        : DateTime.now();
   }
 
   // Get Items Data
@@ -119,7 +130,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       saveDraft = true;
     });
     // Save Invoice as Draft
-    Space space = prefs.getSpaces().first;
     context.read<InvoiceBloc>().add(
           widget.invoiceType == InvoiceType.CREATE
               ? InvoiceEventCreateInvoice(
@@ -129,7 +139,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                             widget.person!.childRelations!.first.id,
                         studentPersonId: widget.person!.id,
                         invoiceDate: date.toIso8601String(),
-                        currency: space.currency ?? "GHS",
+                        currency: defaultCurrency,
                         invoiceItems: invoiceItems,
                         paymentSchedules: paymentSchedules,
                         totalAmount: totalAmount()!,
@@ -145,7 +155,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                       studentPersonId: widget.person!.id,
                       invoiceePersonId: widget.person!.childRelations!.first.id,
                       invoiceDate: date.toIso8601String(),
-                      currency: space.currency ?? "GHS",
+                      currency: defaultCurrency,
                       invoiceItems: invoiceItems,
                       paymentSchedules: paymentSchedules,
                       totalAmount: totalAmount()!,
@@ -164,7 +174,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
       saveDraft = false;
     });
     // Commit Invoice
-    Space space = prefs.getSpaces().first;
     context.read<InvoiceBloc>().add(widget.invoiceType == InvoiceType.CREATE
         ? InvoiceEventCreateInvoice(
             [
@@ -172,7 +181,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                 studentPersonId: widget.person!.id,
                 invoiceePersonId: widget.person!.childRelations!.first.id,
                 invoiceDate: date.toIso8601String(),
-                currency: space.currency ?? "GHS",
+                currency: defaultCurrency,
                 invoiceItems: invoiceItems,
                 paymentSchedules: paymentSchedules,
                 totalAmount: totalAmount()!,
@@ -190,7 +199,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
               studentPersonId: widget.person!.id,
               invoiceePersonId: widget.person!.childRelations!.first.id,
               invoiceDate: date.toIso8601String(),
-              currency: space.currency ?? "GHS",
+              currency: defaultCurrency,
               invoiceItems: invoiceItems,
               paymentSchedules: paymentSchedules,
               totalAmount: totalAmount()!,
@@ -271,15 +280,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
         toastBorderRadius: 12.0,
       );
     }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    date = widget.invoice != null
-        ? DateTime.parse(widget.invoice!.invoiceDate)
-        : DateTime.now();
-    super.initState();
   }
 
   @override
@@ -597,7 +597,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                   );
                   return;
                 }
-                Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(
                         context: context,
@@ -613,7 +612,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                                             e.childRelations!.first.id,
                                         studentPersonId: e.id,
                                         invoiceDate: date.toIso8601String(),
-                                        currency: space.currency ?? "GHS",
+                                        currency: defaultCurrency,
                                         invoiceItems: invoiceItems,
                                         paymentSchedules: paymentSchedules,
                                         totalAmount: totalAmount()!,
@@ -707,7 +706,6 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                   );
                   return;
                 }
-                Space space = prefs.getSpaces().first;
                 widget.persons != null && widget.persons!.isNotEmpty
                     ? nextScreen(
                         context: context,
@@ -723,7 +721,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
                                             e.childRelations!.first.id,
                                         studentPersonId: e.id,
                                         invoiceDate: date.toIso8601String(),
-                                        currency: space.currency ?? "GHS",
+                                        currency: defaultCurrency,
                                         invoiceItems: invoiceItems,
                                         paymentSchedules: paymentSchedules,
                                         totalAmount: totalAmount()!,

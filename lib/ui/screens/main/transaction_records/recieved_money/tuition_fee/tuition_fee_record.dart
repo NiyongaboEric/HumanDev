@@ -42,6 +42,7 @@ class TuitionFeeRecord extends StatefulWidget {
 }
 
 class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
+  String defaultCurrency = 'GHS';
   // Text Editing Controllers
   TextEditingController amountController = TextEditingController();
   TextEditingController phoneNumberController = TextEditingController();
@@ -49,6 +50,13 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   var prefs = sl<SharedPreferences>();
   var preferences = sl<SharedPreferenceModule>();
   bool logout = false;
+
+  @override
+  void initState() {
+    super.initState();
+    var space = preferences.getSpaces().first;
+    defaultCurrency = space.currency ?? 'GHS';
+  }
 
   // final Connectivity _connectivity = Connectivity();
 
@@ -93,7 +101,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
 
   // Save Offline
   void saveOffline() {
-    // var prefs = sl<SharedPreferences>();
+    var prefs = sl<SharedPreferences>();
     List<OfflineModel> offlineTuitionFee = [];
     String? value = prefs.getString("offlineTuitionFee");
     var accounts = preferences.getAccounts();
@@ -268,11 +276,6 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return BlocConsumer<JournalBloc, JournalState>(
       listener: (context, state) {
@@ -280,9 +283,8 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
         handleStateChange(context, state);
       },
       builder: (context, state) {
-        var space = preferences.getSpaces()[0];
-        logger.d(space.toJson());
-        selectedCurrency = space.currency ?? "GHS";
+        // logger.d(space?.toJson());
+        selectedCurrency = defaultCurrency;
         return Scaffold(
           backgroundColor: Colors.green.shade50,
           appBar: AppBar(
@@ -352,7 +354,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Old balance: ${space.currency ?? "GHS"} ",
+                      "Old balance: $defaultCurrency ",
                       style: TextStyle(
                         // fontWeight: FontWeight.bold,
                         color: SecondaryColors.secondaryGreen.withOpacity(0.7),
