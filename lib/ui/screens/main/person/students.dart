@@ -54,8 +54,7 @@ class Students extends StatefulWidget {
 
 class _StudentsState extends State<Students> {
   var prefs = sl.get<SharedPreferenceModule>();
-  late Space space;
-  late String defaultCurrency;
+  String defaultCurrency = 'GHS';
   bool logout = false;
   TextEditingController searchController = TextEditingController();
   ConnectivityResult _connectivityResult = ConnectivityResult.none;
@@ -75,6 +74,49 @@ class _StudentsState extends State<Students> {
   bool loading = false;
   Key studentData = const Key("student-data");
   bool isCurrentPage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    var space = prefs.getSpaces().first;
+    defaultCurrency = space.currency ?? 'GHS';
+
+    _connectivity.onConnectivityChanged.listen((result) {
+      _connectivityResult = result;
+    });
+    String? studentValue = preferences.getString("students");
+    String? groupValue = preferences.getString("groups");
+    if (studentValue != null) {
+      List<dynamic> studentData = json.decode(studentValue);
+      try {
+        List<PersonModel> studentList = studentData.map((data) {
+          return PersonModel.fromJson(data);
+        }).toList();
+        students.addAll(studentList);
+      } catch (e) {
+        logger.f(studentData);
+        logger.w(e);
+      }
+    }
+    if (groupValue != null) {
+      List<dynamic> groupData = json.decode(groupValue);
+      try {
+        List<Group> groupList = groupData.map((data) {
+          return Group.fromJson(data);
+        }).toList();
+        // Add ones with only student name
+        for (var group in groupList) {
+          if (group.name == "Student") {
+            groups.add(group.name!);
+          }
+        }
+      } catch (e) {
+        logger.f(groupData);
+        logger.w(e);
+      }
+    }
+    _getAllStudents();
+  }
 
   // Search Function
   search(String query) {
@@ -372,49 +414,6 @@ class _StudentsState extends State<Students> {
       //   toastDuration: 6,
       // );
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    Space space = prefs.getSpaces().first;
-    defaultCurrency = space.currency ?? 'GHS';
-
-    _connectivity.onConnectivityChanged.listen((result) {
-      _connectivityResult = result;
-    });
-    String? studentValue = preferences.getString("students");
-    String? groupValue = preferences.getString("groups");
-    if (studentValue != null) {
-      List<dynamic> studentData = json.decode(studentValue);
-      try {
-        List<PersonModel> studentList = studentData.map((data) {
-          return PersonModel.fromJson(data);
-        }).toList();
-        students.addAll(studentList);
-      } catch (e) {
-        logger.f(studentData);
-        logger.w(e);
-      }
-    }
-    if (groupValue != null) {
-      List<dynamic> groupData = json.decode(groupValue);
-      try {
-        List<Group> groupList = groupData.map((data) {
-          return Group.fromJson(data);
-        }).toList();
-        // Add ones with only student name
-        for (var group in groupList) {
-          if (group.name == "Student") {
-            groups.add(group.name!);
-          }
-        }
-      } catch (e) {
-        logger.f(groupData);
-        logger.w(e);
-      }
-    }
-    _getAllStudents();
   }
 
   @override

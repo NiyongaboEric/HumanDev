@@ -42,7 +42,6 @@ class TuitionFeeRecord extends StatefulWidget {
 }
 
 class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
-  Space? space;
   String defaultCurrency = 'GHS';
   // Text Editing Controllers
   TextEditingController amountController = TextEditingController();
@@ -55,8 +54,8 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
   @override
   void initState() {
     super.initState();
-    space = preferences.getSpaces().first;
-    defaultCurrency = space?.currency ?? 'GHS';
+    var space = preferences.getSpaces().first;
+    defaultCurrency = space.currency ?? 'GHS';
   }
 
   // final Connectivity _connectivity = Connectivity();
@@ -284,7 +283,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
         handleStateChange(context, state);
       },
       builder: (context, state) {
-        logger.d(space?.toJson());
+        // logger.d(space?.toJson());
         selectedCurrency = defaultCurrency;
         return Scaffold(
           backgroundColor: Colors.green.shade50,

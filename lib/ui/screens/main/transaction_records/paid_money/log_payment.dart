@@ -32,8 +32,7 @@ class LogPayment extends StatefulWidget {
 
 class _LogPaymentState extends State<LogPayment> {
   var prefs = sl.get<SharedPreferenceModule>();
-  late Space space;
-  late String selectedCurrency;
+  String selectedCurrency = 'GHS';
   // Text Editing Controller
   TextEditingController amountController = TextEditingController();
   TextEditingController otherController = TextEditingController();
@@ -44,7 +43,7 @@ class _LogPaymentState extends State<LogPayment> {
   @override
   void initState() {
     super.initState();
-    Space space = prefs.getSpaces().first;
+    var space = prefs.getSpaces().first;
     selectedCurrency = space.currency ?? 'GHS';
   } // JournalState? state;
 

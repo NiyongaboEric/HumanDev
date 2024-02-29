@@ -47,8 +47,7 @@ class InvoiceDetails extends StatefulWidget {
 
 class _InvoiceDetailsState extends State<InvoiceDetails> {
   var prefs = sl.get<SharedPreferenceModule>();
-  late Space space;
-  late String defaultCurrency;
+  String defaultCurrency = 'GHS';
   TextEditingController itemNameController = TextEditingController();
   TextEditingController dueAmountController = TextEditingController();
   TextEditingController paidAmountController = TextEditingController();
@@ -68,7 +67,7 @@ class _InvoiceDetailsState extends State<InvoiceDetails> {
   @override
   void initState() {
     super.initState();
-    Space space = prefs.getSpaces().first;
+    var space = prefs.getSpaces().first;
     defaultCurrency = space.currency ?? 'GHS';
     date = widget.invoice != null
         ? DateTime.parse(widget.invoice!.invoiceDate)
