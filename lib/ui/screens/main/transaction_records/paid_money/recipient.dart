@@ -297,7 +297,7 @@ class _RecipientState extends State<Recipient> {
     super.initState();
   }
 
-  addRecipient() async {
+  addRecipient(BuildContext context, JournalState state) async {
     PersonModel? recipient = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -310,17 +310,12 @@ class _RecipientState extends State<Recipient> {
     if (index != -1) {
       logger.wtf("Exists");
       allPeople[index] = recipient;
-      return;
     } else {
       logger.i("Does not exist");
       allPeople.add(recipient);
-      setState(() {});
     }
-
-    // if (refresh != null && refresh) {
-    //   await Future.delayed(const Duration(seconds: 1));
-    //   _getParents();
-    // }
+    setState(() {});
+    navigate(context, state, recipient);
   }
 
   navigate(
@@ -406,7 +401,7 @@ class _RecipientState extends State<Recipient> {
                 child: Container(),
               ),
               IconButton(
-                onPressed: addRecipient,
+                onPressed: () => addRecipient(context, state),
                 icon: const Icon(Icons.add_rounded),
               ),
             ],
@@ -565,7 +560,7 @@ class _RecipientState extends State<Recipient> {
                           //   );
                           // }),
                           ListTile(
-                            onTap: addRecipient,
+                            onTap: () => addRecipient(context, state),
                             leading: Icon(
                               Icons.add_circle_outline_rounded,
                               color: SecondaryColors.secondaryRed,

@@ -7,6 +7,7 @@ final class JournalState {
   final bool isLoading;
   final JournalModel? journalData;
   final List<JournalModel>? journals;
+  final PersonModel? recipient;
   final JournalStatus status;
   final String? successMessage;
   final String? errorMessage;
@@ -15,6 +16,7 @@ final class JournalState {
     this.isLoading = false,
     this.journalData = const JournalModel(),    
     this.journals = const <JournalModel>[],
+    this.recipient,
     this.status = JournalStatus.initial,
     this.successMessage,
     this.errorMessage,
@@ -25,6 +27,7 @@ final class JournalState {
     JournalModel? journalData,
     List<JournalModel>? journals,
     JournalStatus? status,
+    PersonModel? recipient,
     String? successMessage,
     String? errorMessage,
   }) {
@@ -32,6 +35,7 @@ final class JournalState {
       isLoading: isLoading ?? this.isLoading,
       journalData: journalData ?? this.journalData,
       journals: journals ?? this.journals,
+      recipient: recipient ?? this.recipient,
       status: status ?? this.status,
       successMessage: successMessage ?? this.successMessage,
       errorMessage: errorMessage ?? this.errorMessage,

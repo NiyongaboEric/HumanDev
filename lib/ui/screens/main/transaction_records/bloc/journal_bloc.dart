@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:seymo_pay_mobile_application/data/journal/api/journal_api.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/request_model.dart';
 import 'package:seymo_pay_mobile_application/data/journal/model/journal_model.dart';
+import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 
 part 'journal_event.dart';
 part 'journal_state.dart';

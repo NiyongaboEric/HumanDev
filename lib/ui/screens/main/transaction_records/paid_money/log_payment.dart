@@ -39,6 +39,7 @@ class _LogPaymentState extends State<LogPayment> {
   DateTime date = DateTime.now();
   var preferences = sl<SharedPreferenceModule>();
   bool logout = false;
+  // JournalState? state;
 
   // Update Payment Method
   void updatePaymentMethod(value) {
@@ -423,7 +424,8 @@ class _LogPaymentState extends State<LogPayment> {
                 color: const Color(0xff410002),
                 options: [
                   "Payment method",
-                  ...Constants.paymentMethods.map((e) => e.name.name.split("_").join(" "))
+                  ...Constants.paymentMethods
+                      .map((e) => e.name.name.split("_").join(" "))
                 ],
                 value: selectedPaymentMethod.name.name,
                 onChanged: updatePaymentMethod,

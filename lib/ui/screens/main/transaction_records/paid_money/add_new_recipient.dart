@@ -12,6 +12,7 @@ import 'package:seymo_pay_mobile_application/data/constants/shared_prefs.dart';
 import 'package:seymo_pay_mobile_application/data/groups/model/group_model.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
+import 'package:seymo_pay_mobile_application/ui/screens/main/transaction_records/paid_money/log_payment.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/custom_colors.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/auth_bloc/auth_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -21,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../data/constants/logger.dart';
+import '../../../../../data/journal/model/journal_model.dart';
 import '../../../../../data/person/model/person_request.dart';
 import '../../../../utilities/colors.dart';
 import '../../../../utilities/custom_colors.dart';
@@ -29,6 +31,7 @@ import '../../../../widgets/constants/recipients_model.dart';
 import '../../../../widgets/inputs/drop_down_menu.dart';
 import '../../../auth/login.dart';
 import '../../person/bloc/person_bloc.dart';
+import '../bloc/journal_bloc.dart';
 
 var sl = GetIt.instance;
 
@@ -148,7 +151,9 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
               .where((element) => element.name == currentSelectedGroupSpace)
               .map((e) => e.id!)
               .toList()
-          : [groupSpace.firstWhere((element) => element.name == "Supplier").id!],
+          : [
+              groupSpace.firstWhere((element) => element.name == "Supplier").id!
+            ],
     )));
   }
 
@@ -181,6 +186,45 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
       }
     }
   }
+
+  // navigate(
+  //   BuildContext context,
+  //   PersonModel recipient,
+  // ) async {
+  //   print('AddNewRecipient - navigate()...');
+  //   JournalState state = context.read<JournalBloc>().state;
+  //   state.copyWith(
+  //     recipient: recipient,
+  //   );
+  //   var paymentRequest = JournalModel(
+  //       recipientFirstName: recipient.firstName,
+  //       recipientLastName: recipient.lastName1,
+  //       companyName: recipient.organizationName,
+  //       recipientRole: recipient.role,
+  //       // supplier: recipient.supplier,
+  //       tags: state.journalData?.tags,
+  //       amount: state.journalData?.amount,
+  //       accountantId: state.journalData?.accountantId,
+  //       recipientId: recipient.id,
+  //       createdAt: state.journalData?.createdAt,
+  //       updatedAt: state.journalData?.updatedAt,
+  //       currency: state.journalData?.currency,
+  //       description: state.journalData?.description,
+  //       // images: state.journalData?.images,
+  //       spaceId: state.journalData?.spaceId,
+  //       id: state.journalData?.id,
+  //       creditAccountId: state.journalData?.creditAccountId,
+  //       debitAccountId: state.journalData?.debitAccountId,
+  //       personId: recipient.id);
+  //   try {
+  //     context.read<JournalBloc>().add(
+  //           SaveDataJournalState(paymentRequest),
+  //         );
+  //     nextScreenAndReplace(context: context, screen: LogPayment());
+  //   } catch (e) {
+  //     logger.e(e);
+  //   }
+  // }
 
   // Handle Get User Data State Change
   void _handleRefreshStateChange(BuildContext context, AuthState state) {
@@ -254,7 +298,8 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
             hintText: "First Name",
             controller: recipientFirstNameController,
             inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
+              FilteringTextInputFormatter.allow(
+                  RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
             ],
             validator: (val) {
               if (val!.isEmpty) {
@@ -269,7 +314,8 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
               hintText: "Last Name",
               controller: recipientLastNameController,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
+                FilteringTextInputFormatter.allow(
+                    RegExp(r'^[A-Za-z][A-Za-z0-9\s\S]*$')),
               ],
               validator: (val) {
                 if (val!.isEmpty) {
@@ -282,7 +328,10 @@ class _AddNewRecipientState extends State<AddNewRecipient> {
             color: SecondaryColors.secondaryRed,
             options: [
               "Select group",
-              ...groupSpace.where((element) => element.isRole! && element.name != "Supplier").map((group) {
+              ...groupSpace
+                  .where((element) =>
+                      element.isRole! && element.name != "Supplier")
+                  .map((group) {
                 return group.name;
               }).toList(),
             ],
