@@ -87,6 +87,9 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.green.shade800,
       );
       logger.f(state.spaces.first.name);
+      setState(() {
+        nameUpdated = false;
+      });
     }
     if (state.status == SpaceStateStatus.error) {
       if (state.errorMessage == "Unauthorized" ||
@@ -219,15 +222,15 @@ class _HomePageState extends State<HomePage> {
       iconTheme: IconThemeData(
         color: SecondaryColors.secondaryOrange,
       ),
-      title: 
-      
-      Text(
-        state.spaces.first.name!.isNotEmpty ?  "${state.spaces.first.name}" : "Seymo",
+      title: Text(
+        state.spaces.first.name!.isNotEmpty
+            ? "${state.spaces.first.name}"
+            : "Seymo",
         style: TextStyle(
           color: SecondaryColors.secondaryOrange,
         ),
       ),
-      
+
       // Text(
       //   updatedName.isNotEmpty
       //       ? updatedName
@@ -270,6 +273,11 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             onTap: () {
+              setState(() {
+                nameController.text = state.spaces.first.name!.isNotEmpty
+                    ? '${state.spaces.first.name}'
+                    : 'Seymo';
+              });
               _showChangeSchoolNameDialog(context, state);
             },
           ),
