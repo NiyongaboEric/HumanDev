@@ -155,8 +155,8 @@ class _TuitionFeeStudentListScreenState extends State<TuitionFeeStudentListScree
   void initState() {
     // TODO: implement initState
     // Get All Students from Shared Preferences
-    var studentsFromSharedPrefs = prefs.getStudents();
-    students.addAll(studentsFromSharedPrefs);
+    // var studentsFromSharedPrefs = prefs.getStudents();
+    // students.addAll(studentsFromSharedPrefs);
 
     // Get All Groups from Shared Preferences
     var groupsFromSharedPrefs = prefs.getGroups();

@@ -4,12 +4,8 @@ import 'package:get_it/get_it.dart';
 import 'package:getwidget/getwidget.dart';
 import 'package:seymo_pay_mobile_application/data/auth/model/auth_request.dart';
 import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
-import 'package:seymo_pay_mobile_application/data/person/model/person_model.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/auth/login.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/invoice_list/invoice_details.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
-import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
-import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/invoice/student_invoice/people_list.dart';
 import 'package:seymo_pay_mobile_application/ui/screens/main/person/bloc/person_bloc.dart';
 import 'package:seymo_pay_mobile_application/ui/utilities/font_sizes.dart';
@@ -196,7 +192,7 @@ class _InvoiceListState extends State<InvoiceList> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 20),
                           children: [
-                            ...invoices.map(
+                            ...invoices.where((element) => element.paymentSchedules!.any((element) => element.paidAmount != null)).map(
                               (element) => Column(
                                 children: [
                                   GestureDetector(
@@ -250,10 +246,10 @@ class _InvoiceListState extends State<InvoiceList> {
                                       isVoid: element.isVoid,
                                       isPaid: element.isPaid,
                                       isDraft: element.isDraft,
-                                      // paidAmount: element.paymentSchedules!
-                                      //     .map((e) => e.paidAmount)
-                                      //     .reduce(
-                                      //         (value, val) => value! + val!),
+                                      paidAmount: element.paymentSchedules
+                                          ?.map((e) => e.paidAmount! < 0 ? e.paidAmount!.abs() : e.paidAmount)
+                                          .toList()
+                                          .reduce((a, b) => (a ?? 0) + (b ?? 0))  ?? 0,
                                       invoiceNumber: element.number,
                                     ),
                                   ),
