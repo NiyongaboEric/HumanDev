@@ -282,10 +282,12 @@ class PersonModel {
           ? List<Group>.from(json['groups'].map((x) => Group.fromJson(x)))
           : null,
       totalDue: json['totalDue'],
-      studentInvoices: json['studentInvoices'] != null
-          ? List<InvoiceModel>.from((json['studentInvoices'] as List)
-              .map((x) => InvoiceModel.fromJson(x)))
-          : null,
+      studentInvoices: json["studentInvoices"] != null ? List<InvoiceModel>.from((json['studentInvoices'])
+              ?.map((x) => InvoiceModel.fromJson(x))) ?? [] : [],
+      // (json['studentInvoices'] != null ?? json['studentInvoices'] != [])
+      //     ? List<InvoiceModel>.from((json['studentInvoices'] as List)
+      //         .map((x) => InvoiceModel.fromJson(x)))
+      //     : [],
       notes: json['notes']
     );
   }
@@ -325,6 +327,10 @@ class PersonModel {
           ? relativeRelations!.map((x) => x.toJson()).toList()
           : null,
       'groups': groups != null ? groups!.map((x) => x.toJson()).toList() : null,
+      'totalDue': totalDue,
+      'studentInvoices': studentInvoices != null
+          ? studentInvoices!.map((x) => x.toJson()).toList()
+          : [],
       'notes': notes
     };
   }

@@ -362,7 +362,7 @@ class _TuitionFeeRecordState extends State<TuitionFeeRecord> {
                       ),
                     ),
                     Text(
-                      "1000",
+                      widget.student.totalDue?.toString() ?? "0",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: SecondaryColors.secondaryGreen.withOpacity(0.7),
